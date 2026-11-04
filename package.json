@@ -1,0 +1,16 @@
+{
+  "name": "campfire",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A cozy multiplayer campsite for friends: walk around, chat nearby, share stories around the fire.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "8.18.3"
+  }
+}
