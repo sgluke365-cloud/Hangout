@@ -155,6 +155,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
   background: transparent; border: 0; padding: 8px 8px; outline: none;
 }
 .chatbar input::placeholder { color: #8c8678; }
+.mic {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 12px; padding: 0;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--muted);
+}
+.mic[aria-pressed="true"] { background: var(--ember); border-color: var(--ember); color: #2a1606; }
+.mic[aria-pressed="true"] .slash { display: none; }
+.mic.busy { opacity: 0.6; }
 .emote { background: transparent; border: 0; border-radius: 10px; padding: 6px 7px; font-size: 18px; line-height: 1; }
 .emote:hover { background: rgba(255,255,255,0.08); }
 .send { border: 0; border-radius: 12px; padding: 8px 14px; background: var(--ember); color: #2a1606; font-weight: 700; }
@@ -311,6 +319,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 <div class="hud" id="bottombar" hidden>
   <button id="actionBtn" type="button" hidden>Sit by the fire</button>
   <form class="chatbar" id="chatForm" autocomplete="off">
+    <button class="mic" id="micBtn" type="button" aria-pressed="false" aria-label="Turn microphone on" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
     <button class="emote" type="button" data-emo="wave" aria-label="Wave">👋</button>
     <button class="emote" type="button" data-emo="laugh" aria-label="Laugh">😂</button>
     <button class="emote" type="button" data-emo="heart" aria-label="Heart">❤️</button>
@@ -343,6 +354,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
       <span>Drag (phone)</span><span>Thumb joystick</span>
       <span><kbd>Enter</kbd></span><span>Chat</span>
       <span><kbd>E</kbd></span><span>Sit, stand, or fish</span>
+      <span><kbd>M</kbd> / mic button</span><span>Talk to people nearby</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing.</p>
     <button class="btn-ghost" data-close type="button">Got it</button>
@@ -706,6 +718,7 @@ function doJoin() {
   if (!me.name) return;
   store('campfire.me', { name: me.name, av: me.av });
   joined = true;
+  if (HOSTED) getAC();
   $('join').hidden = true;
   ['topbar', 'bottombar', 'log'].forEach(id => $(id).hidden = false);
   sentDirty = true; pushPresence(true);
@@ -725,7 +738,7 @@ function makeNetRoom(code) {
   let ws = null, conn = false, backoff = 600;
   let mine = {}, sent = {}, queued = null, timer = 0, notify = false;
   const others = new Map();
-  const peerHandlers = [], connHandlers = [];
+  const peerHandlers = [], connHandlers = [], sigHandlers = [];
   const snapshot = () => {
     const list = [{ peer: myId, by: null, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: mine, updatedAt: Date.now() }];
     for (const [id, p] of others) list.push({ peer: id, by: null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: p, updatedAt: Date.now() });
@@ -748,6 +761,7 @@ function makeNetRoom(code) {
       else if (m.t === 'upd' && m.id !== myId) { others.set(m.id, m.full ? (m.p || {}) : merge(others.get(m.id) || {}, m.p || {})); emitPeers(); }
       else if (m.t === 'left') { others.delete(m.id); emitPeers(); }
       else if (m.t === 'error') { netError = m.code; updateStatus(); }
+      else if (m.t === 'sig' && typeof m.from === 'string') sigHandlers.forEach(h => h(m.from, m.d));
     };
     ws.onclose = () => { setConn(false); others.clear(); emitPeers(); if (netError !== 'room_full' && netError !== 'bad_room') { setTimeout(connect, backoff); backoff = Math.min(8000, backoff * 1.7); } };
     ws.onerror = () => { try { ws.close(); } catch (err) { } };
@@ -777,7 +791,9 @@ function makeNetRoom(code) {
     onPeers(h) { peerHandlers.push(h); emitPeers(); return () => { }; },
     onConnection(h) { connHandlers.push(h); setTimeout(() => h(conn), 0); return () => { }; },
     peers: snapshot,
-    connected: () => conn
+    connected: () => conn,
+    signal(to, d) { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'sig', to, d })); },
+    onSignal(h) { sigHandlers.push(h); return () => { }; }
   };
 }
 let netError = '';
@@ -787,6 +803,7 @@ roomP.then(r => {
   $('joinNote').textContent = HOSTED ? 'Connecting to the campsite…' : 'The campsite is live. Friends who open this page appear here.';
   room.onConnection(c => { connected = c; updateStatus(); if (c) { sentDirty = true; pushPresence(true); } }, () => { connected = false; updateStatus(); });
   room.onPeers(onPeers, () => { connected = false; updateStatus(); });
+  if (typeof room.onSignal === 'function') room.onSignal(onVoiceSignal);
 }).catch(() => { room = null; updateStatus(); });
 
 function onPeers(change) {
@@ -823,6 +840,7 @@ function onPeers(change) {
   }
   resolveStory();
   updateStatus();
+  manageVoice();
 }
 function num(v, d) { return typeof v === 'number' && isFinite(v) ? v : d; }
 
@@ -850,6 +868,7 @@ function pushPresence(force) {
     n: me.name, av: me.av,
     x: Math.round(me.x), y: Math.round(me.y), f: me.face, mv: me.moving ? 1 : 0, sit: me.sit,
     msgs: me.msgs, emo: me.emo, fish: me.fish ? { st: me.fish.st } : null,
+    mic: voice.micOn ? 1 : 0,
     story
   }).catch(() => { });
 }
@@ -1024,23 +1043,31 @@ $('copyBtn').addEventListener('click', () => {
 });
 
 // ===== Fire sound (WebAudio, started by a click) =====
-let audio = null, soundOn = false, fireGain = null;
+// One audio context for everything (fire sound and voices); started from a click.
+let audio = null, soundOn = false, fireGain = null, fireBus = null;
+function getAC() {
+  if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; } }
+  if (audio && audio.state === 'suspended') audio.resume().catch(() => { });
+  return audio;
+}
+window.addEventListener('pointerdown', () => { if (audio && audio.state === 'suspended') audio.resume().catch(() => { }); }, true);
 $('soundBtn').addEventListener('click', () => {
   soundOn = !soundOn;
   $('soundBtn').setAttribute('aria-pressed', String(soundOn));
-  if (soundOn && !audio) startAudio();
-  if (audio) { if (soundOn) audio.resume(); else audio.suspend(); }
+  if (soundOn && !fireBus) startAudio();
+  if (fireBus) fireBus.gain.value = soundOn ? 1 : 0;
 });
 function startAudio() {
   try {
-    audio = new (window.AudioContext || window.webkitAudioContext)();
+    if (!getAC()) return;
+    fireBus = audio.createGain(); fireBus.gain.value = 1; fireBus.connect(audio.destination);
     const len = audio.sampleRate * 2, buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
     let last = 0;
     for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
     const src = audio.createBufferSource(); src.buffer = buf; src.loop = true;
     const lp = audio.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
     fireGain = audio.createGain(); fireGain.gain.value = 0.25;
-    src.connect(lp).connect(fireGain).connect(audio.destination); src.start();
+    src.connect(lp).connect(fireGain).connect(fireBus); src.start();
     const crackle = () => {
       if (!audio) return;
       if (soundOn) {
@@ -1048,17 +1075,177 @@ function startAudio() {
         for (let i = 0; i < 800; i++) bd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / 800, 6);
         n.buffer = b; const hp = audio.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500 + Math.random() * 2500;
         const gg = audio.createGain(); gg.gain.value = (0.15 + Math.random() * 0.35) * (fireGain ? fireGain.gain.value * 3 : 0.5);
-        n.connect(hp).connect(gg).connect(audio.destination); n.start();
+        n.connect(hp).connect(gg).connect(fireBus); n.start();
       }
       setTimeout(crackle, 60 + Math.random() * 380);
     };
     crackle();
-  } catch (e) { audio = null; }
+  } catch (e) { fireBus = null; }
 }
 function chime() {
   if (!audio) return;
   try { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 660; o.type = 'sine'; g.gain.setValueAtTime(0.08, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.9); o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + 1); } catch (e) { }
 }
+
+// ===== Proximity voice (hosted version; WebRTC is not available inside Claude) =====
+// Each pair of players opens a direct audio connection. The game server only
+// relays the setup messages. Volume follows distance, like text earshot.
+const VOICE_OK = HOSTED && window.isSecureContext !== false && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && typeof RTCPeerConnection === 'function';
+const VOICE_FULL = 120, VOICE_FAR = 340;
+const ICE_SERVERS = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
+const voice = { micOn: false, micStream: null, micTrack: null, micAnalyser: null, links: new Map(), retry: new Map(), speaking: new Map(), busy: false };
+if (VOICE_OK) $('micBtn').hidden = false;
+$('micBtn').addEventListener('click', () => toggleMic());
+
+function sendSignal(to, d) { if (room && typeof room.signal === 'function') room.signal(to, d); }
+function makeLink(peerId, caller) {
+  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const link = { pc, peer: peerId, caller, queue: [], sender: null, gain: null, analyser: null, src: null, el: null, stream: null, level: 0 };
+  pc.onicecandidate = e => { if (e.candidate) sendSignal(peerId, { c: e.candidate.toJSON() }); };
+  pc.ontrack = e => attachRemote(link, e.streams && e.streams[0] ? e.streams[0] : new MediaStream([e.track]));
+  pc.onconnectionstatechange = () => {
+    if (pc.connectionState === 'connected') voice.retry.delete(peerId);
+    if (pc.connectionState === 'failed') dropLink(peerId);
+  };
+  voice.links.set(peerId, link);
+  return link;
+}
+function dropLink(peerId) {
+  const link = voice.links.get(peerId);
+  if (!link) return;
+  voice.links.delete(peerId);
+  voice.speaking.delete(peerId);
+  try { link.pc.close(); } catch (e) { }
+  try { if (link.src) link.src.disconnect(); if (link.gain) link.gain.disconnect(); } catch (e) { }
+  if (link.el) { try { link.el.pause(); } catch (e) { } link.el.srcObject = null; }
+}
+function useMicOn(sender) { if (sender && voice.micTrack) sender.replaceTrack(voice.micTrack).catch(() => { }); }
+async function callPeer(peerId) {
+  const link = makeLink(peerId, true);
+  try {
+    const tr = link.pc.addTransceiver('audio', { direction: 'sendrecv' });
+    link.sender = tr.sender;
+    useMicOn(tr.sender);
+    await link.pc.setLocalDescription(await link.pc.createOffer());
+    sendSignal(peerId, { sdp: { type: link.pc.localDescription.type, sdp: link.pc.localDescription.sdp } });
+  } catch (e) { dropLink(peerId); }
+}
+function flushQueue(link) { const q = link.queue; link.queue = []; q.forEach(c => link.pc.addIceCandidate(c).catch(() => { })); }
+async function onVoiceSignal(from, d) {
+  if (!VOICE_OK || !joined || !d || typeof d !== 'object') return;
+  if (d.sdp && d.sdp.type === 'offer' && typeof d.sdp.sdp === 'string') {
+    dropLink(from);
+    const link = makeLink(from, false);
+    try {
+      await link.pc.setRemoteDescription({ type: 'offer', sdp: d.sdp.sdp });
+      const tr = link.pc.getTransceivers()[0];
+      if (tr) { tr.direction = 'sendrecv'; link.sender = tr.sender; useMicOn(tr.sender); }
+      await link.pc.setLocalDescription(await link.pc.createAnswer());
+      sendSignal(from, { sdp: { type: link.pc.localDescription.type, sdp: link.pc.localDescription.sdp } });
+      flushQueue(link);
+    } catch (e) { dropLink(from); }
+  } else if (d.sdp && d.sdp.type === 'answer' && typeof d.sdp.sdp === 'string') {
+    const link = voice.links.get(from);
+    if (!link || !link.caller || link.pc.signalingState !== 'have-local-offer') return;
+    try { await link.pc.setRemoteDescription({ type: 'answer', sdp: d.sdp.sdp }); flushQueue(link); } catch (e) { dropLink(from); }
+  } else if (d.c && typeof d.c === 'object') {
+    const link = voice.links.get(from);
+    if (!link) return;
+    if (!link.pc.remoteDescription) link.queue.push(d.c);
+    else link.pc.addIceCandidate(d.c).catch(() => { });
+  }
+}
+function attachRemote(link, stream) {
+  if (link.stream === stream) return;
+  link.stream = stream;
+  const el = new Audio();
+  el.autoplay = true; el.playsInline = true; el.srcObject = stream;
+  const ac = getAC();
+  if (ac) {
+    // Chrome only plays WebRTC audio through Web Audio if a media element also holds the stream.
+    el.muted = true; el.play().catch(() => { });
+    const src = ac.createMediaStreamSource(stream);
+    const an = ac.createAnalyser(); an.fftSize = 512;
+    const g = ac.createGain(); g.gain.value = 0;
+    src.connect(an); src.connect(g); g.connect(ac.destination);
+    link.src = src; link.analyser = an; link.gain = g;
+  } else { el.volume = 0; el.play().catch(() => { }); }
+  link.el = el;
+}
+function manageVoice() {
+  if (!VOICE_OK || !room || typeof room.signal !== 'function' || !joined || !myPeer) return;
+  const want = new Set();
+  for (const o of others.values()) if (o.p && o.p.n) want.add(o.peer);
+  for (const id of [...voice.links.keys()]) if (!want.has(id)) dropLink(id);
+  const now = performance.now();
+  for (const id of want) {
+    if (voice.links.has(id) || !(String(myPeer) < String(id))) continue;
+    const r = voice.retry.get(id) || { at: 0, n: 0 };
+    if (now < r.at) continue;
+    voice.retry.set(id, { at: now + Math.min(60000, 5000 * Math.pow(2, r.n)), n: r.n + 1 });
+    callPeer(id);
+  }
+}
+setInterval(manageVoice, 2000);
+async function toggleMic() {
+  if (!VOICE_OK || voice.busy) return;
+  getAC();
+  if (!voice.micTrack) {
+    voice.busy = true; $('micBtn').classList.add('busy');
+    try {
+      voice.micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    } catch (e) {
+      voice.busy = false; $('micBtn').classList.remove('busy');
+      showToast('Your microphone is blocked. Allow it for this site in your browser settings, then try again.', 6000);
+      return;
+    }
+    voice.busy = false; $('micBtn').classList.remove('busy');
+    voice.micTrack = voice.micStream.getAudioTracks()[0];
+    const ac = getAC();
+    if (ac) { const src = ac.createMediaStreamSource(voice.micStream); voice.micAnalyser = ac.createAnalyser(); voice.micAnalyser.fftSize = 512; src.connect(voice.micAnalyser); }
+    for (const link of voice.links.values()) useMicOn(link.sender);
+    voice.micOn = true;
+    showToast('Mic on. People near you can hear you.');
+  } else {
+    voice.micOn = !voice.micOn;
+  }
+  voice.micTrack.enabled = voice.micOn;
+  $('micBtn').setAttribute('aria-pressed', String(voice.micOn));
+  $('micBtn').setAttribute('aria-label', voice.micOn ? 'Turn microphone off' : 'Turn microphone on');
+  sentDirty = true; pushPresence(true);
+}
+function levelOf(an) {
+  if (!an) return 0;
+  const buf = new Uint8Array(an.fftSize);
+  an.getByteTimeDomainData(buf);
+  let sum = 0;
+  for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+  return Math.sqrt(sum / buf.length);
+}
+function voiceTick() {
+  if (!VOICE_OK || !joined) return;
+  const ac = audio;
+  for (const link of voice.links.values()) {
+    const o = others.get(link.peer);
+    let vol = 0;
+    if (o && o.p) {
+      const d = dist(me.x, me.y, o.rx, o.ry);
+      vol = d <= VOICE_FULL ? 1 : d >= VOICE_FAR ? 0 : 1 - (d - VOICE_FULL) / (VOICE_FAR - VOICE_FULL);
+      if (me.sit >= 0 && typeof o.p.sit === 'number' && o.p.sit >= 0) vol = 1;
+    }
+    if (link.gain && ac) link.gain.gain.setTargetAtTime(vol, ac.currentTime, 0.12);
+    else if (link.el) link.el.volume = vol;
+    link.level = levelOf(link.analyser);
+    link.vol = vol;
+    const talking = vol > 0.02 && link.level > 0.035;
+    if (talking) voice.speaking.set(link.peer, performance.now()); 
+  }
+  if (voice.micOn && levelOf(voice.micAnalyser) > 0.035) voice.speaking.set('me', performance.now());
+}
+window.campfireVoiceDebug = () => ({
+  micOn: voice.micOn,
+  links: [...voice.links.values()].map(l => ({ peer: l.peer, state: l.pc.connectionState, vol: Math.round((l.vol || 0) * 100) / 100, level: Math.round(l.level * 1000) / 1000 }))
+});
 
 // ===== Input =====
 const keys = new Set();
@@ -1068,6 +1255,7 @@ window.addEventListener('keydown', e => {
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Enter') { $('chatInput').focus(); e.preventDefault(); return; }
   if (e.key === 'e' || e.key === 'E') { doAction(); return; }
+  if ((e.key === 'm' || e.key === 'M') && VOICE_OK) { toggleMic(); return; }
   const k = e.key.toLowerCase();
   if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { keys.add(k); e.preventDefault(); }
 });
@@ -1304,10 +1492,10 @@ function drawBubble(g, sx, sy, text, alpha, far) {
   lines.forEach((l, i) => g.fillText(l, sx, y + 7 + i * 17));
   g.restore();
 }
-function drawNameTag(g, sx, sy, name, mine, holder) {
+function drawNameTag(g, sx, sy, name, mine, holder, mic) {
   g.save();
   g.font = `700 12px "Atkinson Hyperlegible", system-ui, sans-serif`;
-  const label = holder ? name + '  ·  stick' : name;
+  const label = (mic ? '🎙 ' : '') + (holder ? name + '  ·  stick' : name);
   const w = g.measureText(label).width + 14;
   g.fillStyle = mine ? 'rgba(242,160,61,0.92)' : 'rgba(16,20,38,0.78)';
   roundRect(g, sx - w / 2, sy, w, 18, 9); g.fill();
@@ -1353,11 +1541,11 @@ function render(t) {
   items.push({ y: FIRE.y + 6, d: () => drawFire(ctx, t) });
   items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
   const people = [];
-  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold() });
+  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn });
   for (const o of others.values()) {
     if (!o.p || !o.p.n || !o.p.av) continue;
     const av = sanitizeAv(o.p.av);
-    people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit: typeof o.p.sit === 'number' && o.p.sit >= 0, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer });
+    people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit: typeof o.p.sit === 'number' && o.p.sit >= 0, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer, mic: o.p.mic === 1 });
   }
   for (const p of people) {
     items.push({ y: p.y, d: () => {
@@ -1419,7 +1607,16 @@ function render(t) {
   const now = performance.now();
   for (const p of people) {
     const [sx, sy] = w2s(p.x, p.y);
-    drawNameTag(ctx, sx, sy + 6, p.name, p.mine, p.holder);
+    drawNameTag(ctx, sx, sy + 6, p.name, p.mine, p.holder, p.mic);
+    const spk = voice.speaking.get(p.key);
+    if (spk && now - spk < 350) {
+      const hy = sy - (p.sit ? 30 : 38) * ZOOM, pulse = 1 + Math.sin(now / 90) * 0.12;
+      ctx.save(); ctx.strokeStyle = 'rgba(255,211,107,0.9)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      for (const side of [-1, 1]) for (const r of [17, 23]) {
+        ctx.beginPath(); ctx.arc(sx, hy, r * ZOOM * pulse, side < 0 ? Math.PI * 0.8 : -Math.PI * 0.2, side < 0 ? Math.PI * 1.2 : Math.PI * 0.2); ctx.stroke();
+      }
+      ctx.restore();
+    }
     const em = emotes.get(p.key);
     if (em && now - em.at < 2600) {
       const k = (now - em.at) / 2600;
@@ -1457,7 +1654,7 @@ function sanitizeAv(a) {
 
 // ===== Loop =====
 let last = performance.now();
-let storyTick = 0;
+let storyTick = 0, voiceAcc = 0;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   const t = now / 1000;
@@ -1473,6 +1670,8 @@ function frame(now) {
   render(t);
   storyTick += dt;
   if (storyTick > 0.5) { storyTick = 0; if (me.sit >= 0) renderStory(false); }
+  voiceAcc += dt;
+  if (voiceAcc > 0.1) { voiceAcc = 0; voiceTick(); }
   requestAnimationFrame(frame);
 }
 try { if (document.fonts) { document.fonts.load('16px Kalam'); document.fonts.load('700 12px "Atkinson Hyperlegible"'); } } catch (e) { }

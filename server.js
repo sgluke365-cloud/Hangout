@@ -13,7 +13,8 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const MAX_PLAYERS_PER_ROOM = 12;
 const MAX_ROOMS = 500;
 const MAX_PRESENCE_BYTES = 6 * 1024;
-const MSGS_PER_SECOND = 40; // per player, with a burst of 2x
+const MSGS_PER_SECOND = 60; // per player, with a burst of 2x
+const MAX_SIGNAL_BYTES = 16 * 1024;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -83,7 +84,7 @@ function leave(client) {
   client.roomCode = null;
 }
 
-const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 8 * 1024 });
+const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 32 * 1024 });
 
 wss.on('connection', ws => {
   const client = { ws, id: null, roomCode: null, presence: {}, tokens: MSGS_PER_SECOND * 2, last: Date.now() };
@@ -139,6 +140,17 @@ wss.on('connection', ws => {
       client.presence = next;
       const room = rooms.get(client.roomCode);
       if (room) broadcast(room, { t: 'upd', id: client.id, p: msg.p }, client.id);
+      return;
+    }
+    // Voice chat setup: pass WebRTC offers, answers and network candidates
+    // from one player to another in the same room. The voice itself flows
+    // directly between players' browsers, not through this server.
+    if (msg.t === 'sig' && client.roomCode && typeof msg.to === 'string') {
+      const room = rooms.get(client.roomCode);
+      const target = room && room.get(msg.to);
+      if (!target || target.ws.readyState !== 1) return;
+      const out = JSON.stringify({ t: 'sig', from: client.id, d: msg.d });
+      if (out.length <= MAX_SIGNAL_BYTES) target.ws.send(out);
       return;
     }
     // 'ka' (keepalive) needs no reply; it just keeps the host awake.

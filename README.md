@@ -9,7 +9,7 @@ Friends join from a link or QR code. No accounts, no app install: it runs in any
 | File | What it does |
 | --- | --- |
 | `public/index.html` | The whole game (graphics, controls, chat, story cards) |
-| `server.js` | Small Node.js server: serves the game and relays players between friends in the same campfire |
+| `server.js` | Small Node.js server: serves the game, relays players between friends in the same campfire, and helps voice connections start |
 | `package.json` | Tells Node what to install (`ws`, the WebSocket library) |
 | `render.yaml` | One-click settings for free hosting on Render |
 
@@ -50,6 +50,11 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Walk | WASD or arrow keys, or click the ground | Drag anywhere (thumb joystick), or tap the ground |
 | Chat | Enter, type, Enter | Type in the bar at the bottom |
 | Sit, stand, fish | E or the button above the chat bar | The button above the chat bar |
+| Voice | M or the mic button | The mic button, left of the chat bar |
+
+## Voice chat
+
+Tap the mic button to talk. The browser asks for microphone permission the first time. Voice goes directly between players' browsers (WebRTC); the server only introduces them. Friends next to you sound normal, friends farther away fade out, and everyone seated at the fire hears each other fully. Works for about 8 people. On some strict networks (certain mobile data or office Wi-Fi) two players may not connect for voice; text chat still works.
 
 ## How multiplayer works
 
