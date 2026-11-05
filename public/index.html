@@ -188,21 +188,62 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .emote:active { transform: scale(1.25); }
 .send { border: 0; border-radius: 12px; padding: 8px 14px; background: var(--ember); color: #2a1606; font-weight: 700; }
 
+/* Chat history: WhatsApp-style. Your messages on the right, everyone else on the left.
+   It fills the space between the top bar and the chat box, and scrolls back through history. */
 #log {
-  left: max(10px, env(safe-area-inset-left, 0px));
-  bottom: calc(120px + env(safe-area-inset-bottom, 0px));
-  width: min(320px, calc(100vw - 20px));
+  left: 50%; transform: translateX(-50%);
+  width: min(640px, calc(100vw - 20px));
+  top: calc(64px + env(safe-area-inset-top, 0px));
+  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   display: flex; flex-direction: column; gap: 4px; pointer-events: none;
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
+  padding-top: 28px; box-sizing: border-box;
 }
+#log::-webkit-scrollbar { display: none; }
 .log-line {
-  align-self: flex-start; max-width: 100%;
-  background: rgba(16, 20, 38, 0.72); border-radius: 10px; padding: 5px 10px;
+  pointer-events: auto; max-width: 78%; box-sizing: border-box;
+  border-radius: 14px; padding: 6px 11px;
   font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;
   transition: opacity 1.2s;
 }
-.log-line b { font-weight: 700; }
-.log-line.sys { color: var(--muted); font-style: italic; }
+.log-line:first-child { margin-top: auto; }
+.log-line.theirs {
+  align-self: flex-start; background: rgba(16, 20, 38, 0.82); border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+.log-line.mine {
+  align-self: flex-end; background: var(--ember); color: #2a1606;
+  border-bottom-right-radius: 4px;
+}
+.log-line.cont { margin-top: -1px; }
+.log-line.theirs.cont { border-top-left-radius: 6px; }
+.log-line.mine.cont { border-top-right-radius: 6px; }
+.log-line .who { display: block; font-weight: 700; font-size: 12.5px; margin-bottom: 1px; }
+.log-line.sys {
+  align-self: center; text-align: center; max-width: 90%;
+  background: rgba(16, 20, 38, 0.72); color: var(--muted); font-style: italic;
+  font-size: 13px; padding: 4px 11px; border-radius: 10px; margin: 2px 0;
+}
 .log-line.old { opacity: 0.35; }
+#log.browsing .log-line.old { opacity: 1; }
+.log-nav {
+  position: fixed; z-index: 11;
+  right: max(14px, calc((100vw - 640px) / 2 + 4px));
+  width: 40px; height: 40px; border-radius: 999px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgb(22, 27, 48); border: 1px solid var(--line); color: var(--cream);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.log-nav[hidden] { display: none; }
+#logUp { width: 34px; height: 34px; opacity: 0.85; }
+.log-nav .badge {
+  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 999px; background: var(--ember); color: #2a1606;
+  font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; box-sizing: border-box;
+}
+.log-nav .badge:empty { display: none; }
 
 /* ---------- story panel ---------- */
 #story {
@@ -321,6 +362,13 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 </div>
 
 <div class="hud" id="log" hidden aria-live="polite"></div>
+<button class="log-nav" id="logUp" type="button" aria-label="Earlier messages" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<button class="log-nav" id="logDown" type="button" aria-label="Latest messages" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="badge" id="logUnread"></span>
+</button>
 
 <div class="hud" id="story" hidden>
   <div class="story-head">
@@ -1023,23 +1071,62 @@ $('passBtn').addEventListener('click', () => {
 
 // ===== Chat & emotes =====
 const logBox = $('log');
-function addLog(name, text, sys, color) {
+const LOG_KEEP = 150;
+let logLastWho = null, logUnread = 0;
+function logAtBottom() { return logBox.scrollHeight - logBox.scrollTop - logBox.clientHeight < 12; }
+function logToBottom() { logBox.scrollTop = logBox.scrollHeight; }
+function updateLogNav() {
+  const bottom = logAtBottom();
+  if (bottom) logUnread = 0;
+  $('logDown').hidden = bottom;
+  $('logUp').hidden = logBox.scrollTop < 4;
+  $('logUnread').textContent = logUnread ? String(Math.min(logUnread, 99)) : '';
+  logBox.classList.toggle('browsing', !bottom);
+}
+function addLog(name, text, sys, color, mine) {
+  const stick = mine || logAtBottom();
+  const who = sys ? null : (mine ? '\u0001me' : name);
   const div = document.createElement('div');
-  div.className = 'log-line' + (sys ? ' sys' : '');
-  if (name) { const b = document.createElement('b'); b.textContent = name + ': '; b.style.color = color || 'var(--ember-hot)'; div.appendChild(b); }
+  div.className = 'log-line ' + (sys ? 'sys' : mine ? 'mine' : 'theirs');
+  if (who && who === logLastWho) div.classList.add('cont');
+  else if (name && !mine && !sys) {
+    const b = document.createElement('span'); b.className = 'who';
+    b.textContent = name; b.style.color = color || 'var(--ember-hot)'; div.appendChild(b);
+  }
+  logLastWho = who;
   div.appendChild(document.createTextNode(text));
   logBox.appendChild(div);
-  while (logBox.children.length > 5) logBox.removeChild(logBox.firstChild);
-  [...logBox.children].forEach((c, i, arr) => c.classList.toggle('old', i < arr.length - 3));
-  clearTimeout(div._t);
+  while (logBox.children.length > LOG_KEEP) logBox.removeChild(logBox.firstChild);
+  [...logBox.children].forEach((c, i, arr) => { if (i < arr.length - 3) c.classList.add('old'); });
   setTimeout(() => { div.classList.add('old'); }, 15000);
+  if (stick) logToBottom(); else logUnread += 1;
+  updateLogNav();
 }
+logBox.addEventListener('scroll', updateLogNav, { passive: true });
+$('logUp').addEventListener('click', () => logBox.scrollBy({ top: -logBox.clientHeight * 0.8, behavior: 'smooth' }));
+$('logDown').addEventListener('click', () => logBox.scrollTo({ top: logBox.scrollHeight, behavior: 'smooth' }));
+// Keep the chat history between the top bar (and story panel) and the chat box as they change size.
+function layoutLog() {
+  const wasBottom = logAtBottom();
+  let top = 0;
+  ['topbar', 'story'].forEach(id => { const el = $(id); if (!el.hidden) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); } });
+  const bb = $('bottombar').getBoundingClientRect();
+  const bottomGap = bb.height ? Math.max(0, window.innerHeight - bb.top) : 70;
+  logBox.style.top = Math.round(top + 4) + 'px';
+  logBox.style.bottom = Math.round(bottomGap + 4) + 'px';
+  $('logDown').style.bottom = Math.round(bottomGap + 12) + 'px';
+  $('logUp').style.top = Math.round(top + 10) + 'px';
+  if (wasBottom) logToBottom();
+  updateLogNav();
+}
+if (window.ResizeObserver) { const ro = new ResizeObserver(layoutLog); ['topbar', 'story', 'bottombar'].forEach(id => ro.observe($(id))); }
+window.addEventListener('resize', layoutLog);
 function say(text, kind) {
   me.msgId += 1;
   me.msgs = me.msgs.concat([{ i: me.msgId, t: text, k: kind || 'c' }]).slice(-3);
   sentDirty = true; pushPresence(true);
   if (kind === 'f') { addLog(null, `You caught ${text}.`, true); bubbles.set('me', { text: `Caught ${text}!`, at: performance.now() }); }
-  else { bubbles.set('me', { text, at: performance.now() }); addLog(me.name, text, false, hashColor(me.name)); }
+  else { bubbles.set('me', { text, at: performance.now() }); addLog(me.name, text, false, hashColor(me.name), true); }
 }
 // Chat box grows upward line by line as you type (like WhatsApp), up to 5 lines, then scrolls.
 const chatInput = $('chatInput');
@@ -1322,7 +1409,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.3.2';
+const VERSION = 'v0.3.3';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
