@@ -241,6 +241,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .link-row { display: flex; gap: 6px; }
 .link-row input { flex: 1; min-width: 0; font-size: 13px; }
 .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; }
+body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; }
+.hud { transition: opacity 0.5s; }
+.setting-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.ver { text-align: center; font-size: 12px !important; color: #8c8678 !important; }
 .keys kbd { font-family: var(--font-body); background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
 
 #toast {
@@ -356,8 +360,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
       <span><kbd>E</kbd></span><span>Sit, stand, or fish</span>
       <span><kbd>M</kbd> / mic button</span><span>Talk to people nearby</span>
     </div>
-    <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing.</p>
+    <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
+    <div class="setting-row">
+      <span>Forest scares</span>
+      <button class="chip" id="scareBtn" type="button" aria-pressed="true">On</button>
+    </div>
     <button class="btn-ghost" data-close type="button">Got it</button>
+    <p class="ver" id="verText"></p>
   </div>
 </div>
 
@@ -674,7 +683,7 @@ let lastSent = 0, sentDirty = true;
 let lastPeersCount = 0;
 
 // ===== Join screen =====
-const EMO_ICON = { wave: '👋', laugh: '😂', heart: '❤️' };
+const EMO_ICON = { wave: '👋', laugh: '😂', heart: '❤️', scream: '😱' };
 function buildSwatches() {
   const mk = (box, items, key, render) => {
     box.innerHTML = '';
@@ -718,7 +727,7 @@ function doJoin() {
   if (!me.name) return;
   store('campfire.me', { name: me.name, av: me.av });
   joined = true;
-  if (HOSTED) getAC();
+  getAC();
   $('join').hidden = true;
   ['topbar', 'bottombar', 'log'].forEach(id => $(id).hidden = false);
   sentDirty = true; pushPresence(true);
@@ -850,6 +859,11 @@ function receiveMsg(o, m) {
   const name = cleanText(o.p.n, 16) || 'Someone';
   const d = dist(me.x, me.y, num(o.p.x, 0), num(o.p.y, 0));
   const heard = !joined ? false : d <= EARSHOT;
+  if (m.k === 's') {
+    addLog(null, heard ? `${name} screamed!` : `A scream echoes from the forest… was that ${name}?`, true);
+    bubbles.set(o.peer, { text: 'AAAAH!', at: performance.now(), far: false });
+    return;
+  }
   if (m.k === 'f') {
     addLog(null, `${name} caught ${text}.`, true);
     bubbles.set(o.peer, { text: `Caught ${text}!`, at: performance.now(), far: false });
@@ -1247,6 +1261,215 @@ window.campfireVoiceDebug = () => ({
   links: [...voice.links.values()].map(l => ({ peer: l.peer, state: l.pc.connectionState, vol: Math.round((l.vol || 0) * 100) / 100, level: Math.round(l.level * 1000) / 1000 }))
 });
 
+// ===== Forest scares =====
+// Linger in the deep forest and something starts watching from the trees.
+// Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
+const VERSION = 'v0.3';
+const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
+const scare = {
+  on: load('campfire.scares') !== false,
+  forestT: 0, need: 5 + Math.random() * 5, at: -1, until: 0,
+  eyes: null, whispered: false, seed: 1
+};
+function inForest(x, y) {
+  if (dist(x, y, FIRE.x, FIRE.y) < 360) return false;
+  if (inLake(x, y, 1.9)) return false;
+  if (TENTS.some(t => dist(x, y, t.x, t.y) < 150)) return false;
+  if (nearPath(x, y, 45)) return false;
+  let n = 0;
+  for (const t of TREES) if (dist(x, y, t.x, t.y) < 150) n++;
+  return n >= 4;
+}
+function scareActive() { return scare.at >= 0 && (performance.now() - scare.at) / 1000 < SCARE_LEN; }
+function updateScare(dt) {
+  const now = performance.now();
+  if (scareActive()) return (now - scare.at) / 1000 < SCARE_FREEZE;
+  if (!scare.on || me.sit >= 0 || me.fish || now < scare.until) { scare.forestT = 0; scare.eyes = null; scare.whispered = false; return false; }
+  if (inForest(me.x, me.y)) scare.forestT += dt;
+  else scare.forestT = Math.max(0, scare.forestT - dt * 2);
+  const k = scare.forestT / scare.need;
+  if (k > 0.3 && !scare.eyes) pickEyes();
+  if (k <= 0.05) { scare.eyes = null; scare.whispered = false; }
+  if (k > 0.55 && !scare.whispered) { scare.whispered = true; addLog(null, 'Something is moving in the trees…', true); }
+  if (k >= 1) startScare();
+  return false;
+}
+function pickEyes() {
+  const cands = TREES.filter(t => { const d = dist(me.x, me.y, t.x, t.y); return d > 170 && d < 330; });
+  if (!cands.length) return;
+  const t = rnd(cands);
+  scare.eyes = { x: t.x + (Math.random() - 0.5) * 20, y: t.y - 40 * t.s, born: performance.now() };
+}
+function startScare() {
+  const now = performance.now();
+  scare.at = now; scare.until = now + SCARE_COOLDOWN * 1000;
+  scare.forestT = 0; scare.need = 5 + Math.random() * 5; scare.eyes = null; scare.whispered = false;
+  scare.seed = Math.floor(Math.random() * 1e6);
+  keys.clear(); me.target = null;
+  playScream();
+  document.body.classList.add('scared');
+  setTimeout(() => document.body.classList.remove('scared'), (SCARE_LEN - 0.6) * 1000);
+  try { if (navigator.vibrate) navigator.vibrate([180, 60, 320]); } catch (e) { }
+  me.emoId += 1; me.emo = { i: me.emoId, k: 'scream' };
+  emotes.set('me', { k: 'scream', at: now });
+  me.msgId += 1;
+  me.msgs = me.msgs.concat([{ i: me.msgId, t: 'scream', k: 's' }]).slice(-3);
+  bubbles.set('me', { text: 'AAAAH!', at: now + SCARE_FREEZE * 1000 });
+  sentDirty = true; pushPresence(true);
+  setTimeout(() => addLog(null, 'You ran out of the forest screaming.', true), SCARE_LEN * 1000);
+}
+function playScream() {
+  const ac = getAC();
+  if (!ac) return;
+  try {
+    const t0 = ac.currentTime;
+    const master = ac.createGain(); master.gain.value = 0.55; master.connect(ac.destination);
+    // breathy shriek: noise through a falling band-pass
+    const len = Math.floor(ac.sampleRate * 1.5), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const noise = ac.createBufferSource(); noise.buffer = buf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(2800, t0); bp.frequency.exponentialRampToValueAtTime(700, t0 + 1.3);
+    const ng = ac.createGain(); ng.gain.setValueAtTime(0.0001, t0); ng.gain.exponentialRampToValueAtTime(0.9, t0 + 0.02); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.4);
+    noise.connect(bp).connect(ng).connect(master); noise.start(t0); noise.stop(t0 + 1.5);
+    // screeching voice: detuned saws sliding down, with a fast wobble
+    const lfo = ac.createOscillator(); lfo.frequency.value = 28;
+    const lfoG = ac.createGain(); lfoG.gain.value = 35; lfo.connect(lfoG);
+    const vg = ac.createGain(); vg.gain.setValueAtTime(0.0001, t0); vg.gain.exponentialRampToValueAtTime(0.35, t0 + 0.03); vg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.3);
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200;
+    lp.connect(vg).connect(master);
+    [880, 905, 1320].forEach(f => {
+      const o = ac.createOscillator(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f, t0); o.frequency.exponentialRampToValueAtTime(f * 0.42, t0 + 1.2);
+      lfoG.connect(o.frequency); o.connect(lp); o.start(t0); o.stop(t0 + 1.35);
+    });
+    lfo.start(t0); lfo.stop(t0 + 1.35);
+    // low thump
+    const b = ac.createOscillator(); b.type = 'sine';
+    b.frequency.setValueAtTime(90, t0); b.frequency.exponentialRampToValueAtTime(32, t0 + 0.7);
+    const bg = ac.createGain(); bg.gain.setValueAtTime(1, t0); bg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.8);
+    b.connect(bg).connect(master); b.start(t0); b.stop(t0 + 0.85);
+  } catch (e) { }
+}
+function drawWatchingEyes(g, t) {
+  const e = scare.eyes;
+  if (!e) return;
+  const k = clamp(scare.forestT / scare.need, 0, 1);
+  const age = (performance.now() - e.born) / 1000;
+  const blink = (Math.sin(age * 2.3) > 0.96 || Math.sin(age * 1.1 + 2) > 0.985) ? 0.1 : 1;
+  const a = clamp((k - 0.3) / 0.3, 0, 1);
+  if (a <= 0) return;
+  const [sx, sy] = w2s(e.x, e.y);
+  g.save();
+  g.globalAlpha = a;
+  for (const side of [-1, 1]) {
+    const ex = sx + side * 7 * ZOOM, ey = sy;
+    const gl = g.createRadialGradient(ex, ey, 0, ex, ey, 12 * ZOOM);
+    gl.addColorStop(0, 'rgba(255,60,40,0.55)'); gl.addColorStop(1, 'rgba(255,60,40,0)');
+    g.fillStyle = gl; g.fillRect(ex - 12 * ZOOM, ey - 12 * ZOOM, 24 * ZOOM, 24 * ZOOM);
+    g.fillStyle = '#ffd0b0';
+    g.beginPath(); g.ellipse(ex, ey, 3.2 * ZOOM, 2.2 * ZOOM * blink, side * 0.25, 0, Math.PI * 2); g.fill();
+  }
+  g.restore();
+  // darken the edges as the forest closes in
+  const v = g.createRadialGradient(VW / 2, VH / 2, Math.min(VW, VH) * 0.25, VW / 2, VH / 2, Math.max(VW, VH) * 0.75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${0.55 * k})`);
+  g.fillStyle = v; g.fillRect(0, 0, VW, VH);
+}
+function drawScare(g, t) {
+  drawWatchingEyes(g, t);
+  if (scare.at < 0) return;
+  const e = (performance.now() - scare.at) / 1000;
+  if (e >= SCARE_LEN) return;
+  const r = mulberry(scare.seed + Math.floor(e * 30));
+  // a beat of darkness first
+  if (e < 0.14) { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); return; }
+  const fade = e > 1.45 ? clamp(1 - (e - 1.45) / (SCARE_LEN - 1.45), 0, 1) : 1;
+  const grow = REDUCED_MOTION ? 1 : 0.7 + 0.42 * (1 - Math.pow(1 - clamp((e - 0.14) / 0.22, 0, 1), 3));
+  const shake = REDUCED_MOTION ? 0 : 14 * clamp(1 - (e - 0.14) / 1.1, 0, 1);
+  const cx = VW / 2 + (r() - 0.5) * 2 * shake, cy = VH * 0.57 + (r() - 0.5) * 2 * shake;
+  const S = Math.min(VW, VH * 0.95) * 0.5 * grow;
+  g.save();
+  g.globalAlpha = fade;
+  const bg = g.createRadialGradient(cx, cy, S * 0.2, cx, cy, Math.max(VW, VH) * 0.8);
+  bg.addColorStop(0, '#3a0606'); bg.addColorStop(1, '#050000');
+  g.fillStyle = bg; g.fillRect(0, 0, VW, VH);
+  drawCreature(g, cx, cy, S, e);
+  g.restore();
+}
+// An original forest wraith: antlered shadow head, burning eyes, jagged mouth.
+function drawCreature(g, cx, cy, S, e) {
+  const rr = mulberry(77);
+  g.save(); g.translate(cx, cy);
+  // antlers
+  g.strokeStyle = '#120808'; g.lineCap = 'round';
+  for (const side of [-1, 1]) {
+    const branch = (x, y, ang, len, w, depth) => {
+      const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+      g.lineWidth = w; g.beginPath(); g.moveTo(x, y); g.lineTo(x2, y2); g.stroke();
+      if (depth > 0) {
+        branch(x2, y2, ang - 0.45 * side, len * 0.62, w * 0.62, depth - 1);
+        branch(x2, y2, ang + 0.5 * side, len * 0.55, w * 0.6, depth - 1);
+      }
+    };
+    branch(side * S * 0.42, -S * 0.62, -Math.PI / 2 + side * 0.55, S * 0.38, S * 0.07, 3);
+  }
+  // head: a ragged dark mass
+  g.fillStyle = '#0d0707';
+  g.beginPath();
+  const N = 40;
+  for (let i = 0; i <= N; i++) {
+    const a = i / N * Math.PI * 2;
+    const jag = 1 + (rr() - 0.5) * 0.18 + (i % 2 ? 0.06 : -0.04);
+    const x = Math.cos(a) * S * 0.78 * jag, y = Math.sin(a) * S * 0.95 * jag + (Math.sin(a) > 0 ? S * 0.1 : 0);
+    if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+  }
+  g.fill();
+  // eyes
+  const look = Math.sin(e * 9) * S * 0.01;
+  for (const side of [-1, 1]) {
+    const ex = side * S * 0.3, ey = -S * 0.22;
+    const glow = g.createRadialGradient(ex, ey, 0, ex, ey, S * 0.32);
+    glow.addColorStop(0, 'rgba(255,90,40,0.75)'); glow.addColorStop(1, 'rgba(255,40,20,0)');
+    g.fillStyle = glow; g.beginPath(); g.arc(ex, ey, S * 0.32, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#fff3d6';
+    g.beginPath(); g.ellipse(ex, ey, S * 0.15, S * 0.1, side * -0.28, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#b3120a';
+    g.beginPath(); g.ellipse(ex + look, ey + S * 0.01, S * 0.035, S * 0.075, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#1a0000';
+    g.beginPath(); g.ellipse(ex + look, ey + S * 0.01, S * 0.014, S * 0.05, 0, 0, Math.PI * 2); g.fill();
+    // brow
+    g.strokeStyle = '#000'; g.lineWidth = S * 0.05;
+    g.beginPath(); g.moveTo(ex - side * S * 0.2, ey - S * 0.17); g.lineTo(ex + side * S * 0.16, ey - S * 0.07); g.stroke();
+  }
+  // mouth, opening wider at the start
+  const open = 0.75 + 0.25 * Math.min(1, (e - 0.14) / 0.2);
+  const mw = S * 0.52, mh = S * 0.34 * open, my = S * 0.3;
+  g.fillStyle = '#2a0303';
+  g.beginPath(); g.ellipse(0, my, mw, mh, 0, 0, Math.PI * 2); g.fill();
+  const inner = g.createRadialGradient(0, my + mh * 0.3, 0, 0, my, mw);
+  inner.addColorStop(0, '#000'); inner.addColorStop(1, 'rgba(60,0,0,0)');
+  g.fillStyle = inner; g.beginPath(); g.ellipse(0, my, mw * 0.95, mh * 0.92, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#efe4c8';
+  const T = 11;
+  for (let i = 0; i < T; i++) {
+    const u = (i + 0.5) / T * 2 - 1, x = u * mw * 0.92, w = mw * 2 / T * 0.5;
+    const edge = Math.sqrt(Math.max(0, 1 - u * u));
+    const top = my - mh * edge * 0.95, bot = my + mh * edge * 0.95;
+    const lt = mh * (0.35 + rr() * 0.3) * edge, lb = mh * (0.3 + rr() * 0.25) * edge;
+    g.beginPath(); g.moveTo(x - w, top); g.lineTo(x + w, top); g.lineTo(x, top + lt); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(x - w, bot); g.lineTo(x + w, bot); g.lineTo(x, bot - lb); g.closePath(); g.fill();
+  }
+  g.restore();
+}
+const scareBtn = $('scareBtn');
+function renderScareBtn() { scareBtn.setAttribute('aria-pressed', String(scare.on)); scareBtn.textContent = scare.on ? 'On' : 'Off'; }
+scareBtn.addEventListener('click', () => { scare.on = !scare.on; store('campfire.scares', scare.on); renderScareBtn(); });
+renderScareBtn();
+$('verText').textContent = 'Campfire ' + VERSION;
+window.campfireScareDebug = () => ({ on: scare.on, inForest: inForest(me.x, me.y), forestT: Math.round(scare.forestT * 10) / 10, need: Math.round(scare.need * 10) / 10, active: scareActive(), eyes: !!scare.eyes });
+
 // ===== Input =====
 const keys = new Set();
 window.addEventListener('keydown', e => {
@@ -1374,6 +1597,7 @@ function step(dt, t) {
     const dx = me.target.x - me.x, dy = me.target.y - me.y, l = Math.hypot(dx, dy);
     if (l < 6) me.target = null; else { vx = dx / l; vy = dy / l; }
   }
+  if (updateScare(dt)) { vx = 0; vy = 0; me.target = null; }
   const l = Math.hypot(vx, vy);
   const wasMoving = me.moving;
   if (l > 0.05) {
@@ -1644,6 +1868,7 @@ function render(t) {
     const [sx, sy] = w2s(me.target.x, me.target.y);
     ctx.strokeStyle = 'rgba(255,211,107,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy, 10 + Math.sin(t * 6) * 2, 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
+  drawScare(ctx, t);
 }
 function sanitizeAv(a) {
   return {

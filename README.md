@@ -56,6 +56,14 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 
 Tap the mic button to talk. The browser asks for microphone permission the first time. Voice goes directly between players' browsers (WebRTC); the server only introduces them. Friends next to you sound normal, friends farther away fade out, and everyone seated at the fire hears each other fully. Works for about 8 people. On some strict networks (certain mobile data or office Wi-Fi) two players may not connect for voice; text chat still works.
 
+## Forest scares
+
+Linger in the deep forest and glowing eyes start watching from the trees. Stay a few more seconds and something jumps out with a scream. It happens at most once every 90 seconds per player, and anyone can switch it off in the **?** panel (Forest scares: Off).
+
+## Versions
+
+See `CHANGELOG.md`. Every version is saved as a `release-vX.Y` branch, so you can always go back.
+
 ## How multiplayer works
 
 Each player sends their position, avatar, last few chat lines and the story-circle state to the server. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot.
