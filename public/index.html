@@ -146,15 +146,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 #actionBtn.bite { animation: pulse 0.5s ease-in-out infinite alternate; }
 @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
 .chatbar {
-  width: min(640px, 100%); display: flex; gap: 6px; align-items: center;
+  width: min(640px, 100%); display: flex; gap: 6px; align-items: flex-end;
   background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 6px;
   backdrop-filter: blur(6px); box-sizing: border-box;
 }
-.chatbar input {
-  flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--cream);
+.chatbar textarea {
+  flex: 1; min-width: 0; font: inherit; font-size: 16px; line-height: 22px; color: var(--cream);
   background: transparent; border: 0; padding: 8px 8px; outline: none;
+  resize: none; height: 38px; max-height: 126px; overflow-y: hidden; box-sizing: border-box;
+  overflow-wrap: anywhere; display: block;
 }
-.chatbar input::placeholder { color: #8c8678; }
+.chatbar textarea::placeholder { color: #8c8678; }
 .mic {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
   width: 38px; height: 38px; border-radius: 12px; padding: 0;
@@ -329,7 +331,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
     <button class="emote" type="button" data-emo="wave" aria-label="Wave">👋</button>
     <button class="emote" type="button" data-emo="laugh" aria-label="Laugh">😂</button>
     <button class="emote" type="button" data-emo="heart" aria-label="Heart">❤️</button>
-    <input id="chatInput" maxlength="140" placeholder="Say something to people nearby" aria-label="Chat message">
+    <textarea id="chatInput" rows="1" maxlength="140" enterkeyhint="send" placeholder="Say something to people nearby" aria-label="Chat message"></textarea>
     <button class="send" type="submit">Say</button>
   </form>
 </div>
@@ -1013,13 +1015,31 @@ function say(text, kind) {
   if (kind === 'f') { addLog(null, `You caught ${text}.`, true); bubbles.set('me', { text: `Caught ${text}!`, at: performance.now() }); }
   else { bubbles.set('me', { text, at: performance.now() }); addLog(me.name, text, false, hashColor(me.name)); }
 }
+// Chat box grows upward line by line as you type (like WhatsApp), up to 5 lines, then scrolls.
+const chatInput = $('chatInput');
+const CHAT_MAX_H = 126;
+function growChat() {
+  if (!chatInput.value) { chatInput.style.height = ''; chatInput.style.overflowY = 'hidden'; return; }
+  chatInput.style.height = 'auto';
+  const h = Math.min(chatInput.scrollHeight, CHAT_MAX_H);
+  chatInput.style.height = h + 'px';
+  chatInput.style.overflowY = chatInput.scrollHeight > CHAT_MAX_H ? 'auto' : 'hidden';
+}
+chatInput.addEventListener('input', () => {
+  if (/[\r\n]/.test(chatInput.value)) chatInput.value = chatInput.value.replace(/[\r\n]+/g, ' ');
+  growChat();
+});
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('chatForm').requestSubmit(); }
+});
 $('chatForm').addEventListener('submit', e => {
   e.preventDefault();
-  const v = cleanText($('chatInput').value, 140);
+  const v = cleanText(chatInput.value, 140);
   if (!v) return;
-  $('chatInput').value = '';
+  chatInput.value = '';
+  growChat();
   say(v);
-  $('chatInput').blur();
+  chatInput.blur();
 });
 document.querySelectorAll('.emote').forEach(b => b.addEventListener('click', () => {
   me.emoId += 1; me.emo = { i: me.emoId, k: b.dataset.emo };
@@ -1264,7 +1284,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.3';
+const VERSION = 'v0.3.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -1474,7 +1494,7 @@ window.campfireScareDebug = () => ({ on: scare.on, inForest: inForest(me.x, me.y
 const keys = new Set();
 window.addEventListener('keydown', e => {
   if (!joined) return;
-  const typing = document.activeElement && document.activeElement.tagName === 'INPUT';
+  const typing = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Enter') { $('chatInput').focus(); e.preventDefault(); return; }
   if (e.key === 'e' || e.key === 'E') { doAction(); return; }
@@ -1488,7 +1508,7 @@ window.addEventListener('blur', () => keys.clear());
 let touch = null; // {id, sx, sy, x, y, t, joy}
 cv.addEventListener('pointerdown', e => {
   if (!joined) return;
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') document.activeElement.blur();
+  if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) document.activeElement.blur();
   touch = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, t: performance.now(), joy: false };
   cv.setPointerCapture(e.pointerId);
 });
