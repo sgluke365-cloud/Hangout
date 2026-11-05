@@ -4,6 +4,7 @@ Each version is saved on GitHub as its own branch (`release-v0.1`, `release-v0.2
 
 | Version | Branch | What changed |
 | --- | --- | --- |
+| v0.3.2 | `release-v0.3.2` | Wave, laugh and heart now sit behind one smiley button: tap it to open a small picker, tap one to send it. Gives the chat box more room on phones. |
 | v0.3.1 | `release-v0.3.1` | Chat box grows upward as you type (like WhatsApp), up to 5 lines, then scrolls. Shrinks back after you send. |
 | v0.3 | `release-v0.3` | Forest scares: linger in the deep forest and glowing eyes appear in the trees, then a creature jumps out with a scream. Friends hear about it in their chat log. Can be turned off in the **?** panel. |
 | v0.2 | `release-v0.2` | Proximity voice chat with a mic button; volume fades with distance; everyone at the fire hears each other. |

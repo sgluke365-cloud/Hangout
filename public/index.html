@@ -165,8 +165,27 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .mic[aria-pressed="true"] { background: var(--ember); border-color: var(--ember); color: #2a1606; }
 .mic[aria-pressed="true"] .slash { display: none; }
 .mic.busy { opacity: 0.6; }
-.emote { background: transparent; border: 0; border-radius: 10px; padding: 6px 7px; font-size: 18px; line-height: 1; }
+.emo-wrap { position: relative; flex: none; }
+.emo-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 12px; padding: 0;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--muted);
+}
+.emo-toggle[aria-expanded="true"] { border-color: var(--ember); color: var(--ember-hot); }
+.emo-tray {
+  position: absolute; left: 0; bottom: calc(100% + 12px); display: flex; gap: 2px;
+  background: rgb(22, 27, 48); border: 1px solid var(--line); border-radius: 999px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45); transform-origin: 18px 100%;
+  animation: trayIn 0.16s ease-out;
+}
+.emo-tray[hidden] { display: none; }
+@keyframes trayIn { from { opacity: 0; transform: scale(0.6) translateY(8px); } to { opacity: 1; transform: none; } }
+.emote {
+  background: transparent; border: 0; border-radius: 999px; width: 46px; height: 46px; padding: 0;
+  font-size: 26px; line-height: 1; transition: transform 0.12s;
+}
 .emote:hover { background: rgba(255,255,255,0.08); }
+.emote:active { transform: scale(1.25); }
 .send { border: 0; border-radius: 12px; padding: 8px 14px; background: var(--ember); color: #2a1606; font-weight: 700; }
 
 #log {
@@ -328,9 +347,16 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
     <button class="mic" id="micBtn" type="button" aria-pressed="false" aria-label="Turn microphone on" hidden>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
     </button>
-    <button class="emote" type="button" data-emo="wave" aria-label="Wave">👋</button>
-    <button class="emote" type="button" data-emo="laugh" aria-label="Laugh">😂</button>
-    <button class="emote" type="button" data-emo="heart" aria-label="Heart">❤️</button>
+    <div class="emo-wrap" id="emoWrap">
+      <button class="emo-toggle" id="emoBtn" type="button" aria-expanded="false" aria-controls="emoTray" aria-label="Reactions">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/><path d="M8.2 14.2a4.5 4.5 0 0 0 7.6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="emo-tray" id="emoTray" role="menu" hidden>
+        <button class="emote" type="button" role="menuitem" data-emo="wave" aria-label="Wave">👋</button>
+        <button class="emote" type="button" role="menuitem" data-emo="laugh" aria-label="Laugh">😂</button>
+        <button class="emote" type="button" role="menuitem" data-emo="heart" aria-label="Heart">❤️</button>
+      </div>
+    </div>
     <textarea id="chatInput" rows="1" maxlength="140" enterkeyhint="send" placeholder="Say something to people nearby" aria-label="Chat message"></textarea>
     <button class="send" type="submit">Say</button>
   </form>
@@ -1041,10 +1067,22 @@ $('chatForm').addEventListener('submit', e => {
   say(v);
   chatInput.blur();
 });
+// Reactions live in one smiley button; tap it to open a small picker (like WhatsApp reactions).
+const emoBtn = $('emoBtn'), emoTray = $('emoTray');
+function setEmoTray(open) {
+  emoTray.hidden = !open;
+  emoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+emoBtn.addEventListener('click', () => setEmoTray(emoTray.hidden));
+document.addEventListener('pointerdown', e => {
+  if (!emoTray.hidden && !$('emoWrap').contains(e.target)) setEmoTray(false);
+}, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !emoTray.hidden) setEmoTray(false); });
 document.querySelectorAll('.emote').forEach(b => b.addEventListener('click', () => {
   me.emoId += 1; me.emo = { i: me.emoId, k: b.dataset.emo };
   emotes.set('me', { k: b.dataset.emo, at: performance.now() });
   sentDirty = true; pushPresence(true);
+  setEmoTray(false);
 }));
 
 // ===== Toast & modals =====
@@ -1284,7 +1322,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.3.1';
+const VERSION = 'v0.3.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
