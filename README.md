@@ -51,8 +51,9 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Chat | Enter, type, Enter | Type in the bar at the bottom |
 | Sit, stand, fish | E or the button above the chat bar | The button above the chat bar |
 | Voice | M or the mic button | The mic button, left of the chat bar |
-| Start or join a s'mores round | R or **Roast s'mores** | **Roast s'mores** / **Grab a stick!** |
-| Roast / serve | Hold Space / F | Hold **Hold to roast** / tap **Serve!** |
+| Start or join a s'mores round | R, or click **Roast s'mores** / **Grab a stick!** | Tap **Roast s'mores** / **Grab a stick!** |
+| Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
+| Serve | Click **Serve!**, or press F | Tap **Serve!** |
 
 ## Voice chat
 
@@ -60,12 +61,12 @@ Tap the mic button to talk. The browser asks for microphone permission the first
 
 ## S'mores showdown
 
-Walk up to the fire and tap **Roast s'mores**. Everyone else at the fire gets 8 seconds to tap **Grab a stick!** (the starter can tap **Start now** instead of waiting). After a 3-2-1 countdown, everyone roasts at once for 22 seconds:
+Walk up to the fire and click or tap **Roast s'mores**. Everyone else at the fire gets 8 seconds to click or tap **Grab a stick!** (the starter can click **Start now** instead of waiting). After a 3-2-1 countdown, everyone roasts at once for 22 seconds:
 
-- **Hold** to dip your marshmallow into the flames. Let go to pull it out.
-- Watch the **heat** gauge. Hold too long and it catches fire: tap three times to blow it out, then grab a fresh one or serve the charcoal.
+- **Press and hold** the **Hold to roast** button to dip your marshmallow into the flames: click and hold with the mouse, press and hold with your finger on a phone, or hold Space. Let go to pull it out.
+- Watch the **heat** gauge. Hold too long and it catches fire: click or tap three times (or press Space) to blow it out, then grab a fresh one or serve the charcoal.
 - When the fire crackles, a **flare-up** is coming. Pull out fast.
-- Tap **Serve!** when it looks golden brown. Serving early or late both cost points.
+- Click or tap **Serve!** (or press F) when it looks golden brown. Serving early or late both cost points.
 
 Closest to golden wins and gets a 👑 on their name tag until the next round. Friends watching can see everyone's sticks over the fire, and the whole campsite hears who caught fire and who won. Playing alone still works, with a personal best saved on your device.
 

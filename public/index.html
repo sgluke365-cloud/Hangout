@@ -276,10 +276,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
   display: flex; align-items: center; justify-content: center;
   padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
   -webkit-user-select: text; user-select: text;
+  overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; /* tall panels scroll on small phones */
 }
 .modal-box {
   width: min(380px, 100%); background: var(--night-2); border: 1px solid var(--line); border-radius: 18px;
   padding: 18px; display: grid; gap: 12px; box-sizing: border-box;
+  margin: auto 0; /* centred when it fits, scrollable from the top when it doesn't */
 }
 .modal-box h2 { margin: 0; font-family: var(--font-display); font-size: 22px; color: var(--ember-hot); }
 .modal-box p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
@@ -505,12 +507,12 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>Enter</kbd></span><span>Chat</span>
       <span><kbd>E</kbd></span><span>Sit, stand, or fish</span>
       <span><kbd>M</kbd> / mic button</span><span>Talk to people nearby</span>
-      <span><kbd>R</kbd></span><span>Start or join a s'mores round</span>
-      <span><kbd>Space</kbd> (hold)</span><span>Roast your marshmallow</span>
-      <span><kbd>F</kbd></span><span>Serve your s'more</span>
+      <span><kbd>R</kbd> / click</span><span>Start or join a s'mores round</span>
+      <span>Hold <kbd>Space</kbd> / mouse</span><span>Roast your marshmallow</span>
+      <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
-    <p><b>S'mores showdown:</b> at the fire, tap Roast s'mores and friends grab a stick. Hold to dip your marshmallow into the flames, pull it out before it gets too hot, and serve it when it looks golden. Closest to golden brown wins the crown.</p>
+    <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
       <button class="chip" id="scareBtn" type="button" aria-pressed="true">On</button>
@@ -1496,7 +1498,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.4';
+const VERSION = 'v0.4.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -1715,6 +1717,10 @@ const SM_IGNITE_D = 1.6;   // roasted this far, it burns through anyway
 const SM_PUFFS = 3;        // taps needed to blow it out
 const SM_STATES = ['in', 'roast', 'fire', 'char', 'served'];
 const SM_ACTIVE = ['join', 'count', 'roast', 'wait'];
+const SM_TOUCH = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })();
+const SM_HINT = SM_TOUCH
+  ? 'Press and hold Hold to roast to dip it in the fire. Let go to pull it out. Tap Serve! when it looks golden.'
+  : 'Click and hold Hold to roast (or hold Space) to dip it in the fire. Let go to pull it out. Click Serve! when it looks golden.';
 let smRound = { v: 0, id: '', by: '', bn: '', go: 0 };
 const sm = {
   id: '', stale: true, goAt: 0, phase: 'idle',
@@ -1797,7 +1803,7 @@ function smBegin(r, stale) {
   Object.assign(sm, {
     id: r.id, stale, goAt: now + (r.go ? 0 : SM_JOIN * 1000), phase: stale ? 'idle' : 'join',
     in: false, d: 0, T: 0, depth: 0, hold: false, fire: false, burnt: false, served: false, servedAt: 0, puffs: 0,
-    warnAt: 0, flareAt: 0, flareEnd: 0, nextFlare: 0, beep: -1, results: null, shownAt: 0, closed: false, resKey: ''
+    warnAt: 0, flareAt: 0, flareEnd: 0, nextFlare: 0, beep: -1, results: null, shownAt: 0, closed: false, resKey: '', pressed: false
   });
   if (me.smp) { me.smp = null; sentDirty = true; }
   if (!stale && joined && r.by !== (myPeer || 'me')) {
@@ -2036,7 +2042,11 @@ function smRenderDom(now) {
       s.appendChild(document.createTextNode(`${p.mine ? 'You' : p.name} · ${words[p.st] || 'ready'}`));
       box.appendChild(s);
     }
-    $('smNote').hidden = true;
+    // how-to line until the first press of this round
+    const note = $('smNote');
+    const hint = sm.in && !sm.served && !sm.pressed && ph !== 'wait' ? SM_HINT : '';
+    if (note.textContent !== hint) note.textContent = hint;
+    note.hidden = !hint;
     return;
   }
   if (sm.resKey === sm.id) return;
@@ -2072,7 +2082,7 @@ function smPress() {
   if (!sm.in || sm.served || (sm.phase !== 'roast' && sm.phase !== 'count')) return false;
   if (sm.fire) { smPuff(); return true; }
   if (sm.burnt) { smFresh(); return true; }
-  sm.hold = true;
+  sm.hold = true; sm.pressed = true;
   return true;
 }
 roastBtn.addEventListener('pointerdown', e => {
