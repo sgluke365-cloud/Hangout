@@ -4,6 +4,7 @@ Each version is saved on GitHub as its own branch (`release-v0.1`, `release-v0.2
 
 | Version | Branch | What changed |
 | --- | --- | --- |
+| v0.4 | `release-v0.4` | S'mores showdown: anyone at the fire can start a round, friends grab a stick, and everyone roasts at once. Hold to dip the marshmallow into the flames, watch the heat, dodge flare-ups, and serve when it looks golden. Closest to golden wins a crown. Works solo too, with a personal best. S'mores sounds follow the campsite volume slider. |
 | v0.3.4 | `release-v0.3.4` | Campsite sound volume: the speaker button in the top bar opens a slider (with mute) for the fire, chimes and forest scares. Friends' voices aren't affected. Your level is remembered on your device; the fire now starts at 50% when you join instead of being off. |
 | v0.3.2 | `release-v0.3.2` | Wave, laugh and heart now sit behind one smiley button: tap it to open a small picker, tap one to send it. Gives the chat box more room on phones. |
 | v0.3.1 | `release-v0.3.1` | Chat box grows upward as you type (like WhatsApp), up to 5 lines, then scrolls. Shrinks back after you send. |

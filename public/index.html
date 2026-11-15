@@ -299,8 +299,69 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px;
   font-size: 14px; max-width: calc(100vw - 32px); text-align: center; transition: opacity 0.6s;
 }
+/* ---------- s'mores showdown ---------- */
+.action-row { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; pointer-events: none; }
+.action-row > * { pointer-events: auto; }
+.sm-btn {
+  border: 0; border-radius: 999px; padding: 10px 18px;
+  font-family: var(--font-display); font-weight: 700; font-size: 17px;
+  background: linear-gradient(180deg, #fff6e4, #ecd6ae); color: #3a2a1f;
+  box-shadow: 0 4px 18px rgba(246,236,216,0.22), inset 0 -3px 0 rgba(0,0,0,0.12);
+}
+.sm-btn:disabled { opacity: 0.72; cursor: default; }
+.sm-btn.pulse { animation: pulse 0.55s ease-in-out infinite alternate; }
+.roast-btn {
+  border: 0; border-radius: 18px; padding: 14px 24px; min-width: 176px;
+  font-family: var(--font-display); font-weight: 800; font-size: 19px;
+  background: linear-gradient(180deg, var(--ember-hot), #e2572b); color: #2a1606;
+  box-shadow: 0 6px 22px rgba(242,120,40,0.45), inset 0 -4px 0 rgba(0,0,0,0.18);
+  touch-action: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+}
+.roast-btn.held { transform: translateY(2px) scale(0.98); box-shadow: 0 2px 10px rgba(242,120,40,0.6), inset 0 3px 0 rgba(0,0,0,0.22); }
+.roast-btn.blow { background: linear-gradient(180deg, #d4ecff, #86bde9); color: #10223a; box-shadow: 0 6px 22px rgba(134,189,233,0.45), inset 0 -4px 0 rgba(0,0,0,0.15); }
+.roast-btn.fresh { background: linear-gradient(180deg, #fff6e4, #ecd6ae); color: #3a2a1f; box-shadow: 0 4px 18px rgba(246,236,216,0.22), inset 0 -4px 0 rgba(0,0,0,0.12); }
+.serve-btn {
+  border: 0; border-radius: 18px; padding: 14px 20px;
+  font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  background: #5b3421; color: var(--cream);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 -3px 0 rgba(0,0,0,0.25);
+}
+#smPanel {
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  width: min(330px, calc(100vw - 24px)); box-sizing: border-box;
+  background: var(--panel); border: 1px solid rgba(242,160,61,0.4); border-radius: 18px;
+  padding: 12px; display: grid; gap: 8px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 40px rgba(242,160,61,0.12);
+}
+@media (max-width: 640px) {
+  #smPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+}
+@media (max-width: 420px) {
+  .roast-btn { min-width: 0; padding: 13px 18px; font-size: 18px; }
+  .serve-btn { padding: 13px 16px; font-size: 17px; }
+  .sm-btn { padding: 10px 14px; font-size: 16px; }
+}
+.sm-timer { font-family: var(--font-display); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sm-timer.low { color: #ff8a5c; }
+#smView { width: 100%; height: clamp(108px, 20vh, 150px); border-radius: 12px; display: block; background: #1a1a2c; }
+.sm-status { margin: 0; font-size: 15px; font-weight: 700; text-align: center; min-height: 20px; }
+.sm-status.hot { color: #ff8a5c; }
+.sm-players { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; font-size: 13px; color: var(--muted); }
+.sm-p { display: inline-flex; align-items: center; gap: 5px; }
+.sm-dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.4); }
+.sm-results { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 46vh; overflow-y: auto; }
+.sm-row { display: grid; grid-template-columns: 18px 44px minmax(0, 1fr) auto; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 6px 10px 6px 8px; }
+.sm-row.win { background: rgba(242,160,61,0.16); box-shadow: inset 0 0 0 1px rgba(242,160,61,0.5); }
+.sm-rank { font-family: var(--font-display); font-weight: 800; color: var(--muted); text-align: center; }
+.sm-ico { width: 44px; height: 34px; display: block; }
+.sm-who { min-width: 0; display: grid; }
+.sm-who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sm-who span { font-size: 12px; color: var(--muted); }
+.sm-score { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--ember-hot); font-variant-numeric: tabular-nums; }
+.sm-note { margin: 0; text-align: center; font-size: 13px; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
-  .card.flip, #actionBtn.bite { animation: none; }
+  .card.flip, #actionBtn.bite, .sm-btn.pulse { animation: none; }
 }
 </style>
 
@@ -348,7 +409,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
           <button class="vol-mute" id="volMute" type="button" aria-label="Mute campsite sounds"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="w2" d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
           <input type="range" id="volSlider" min="0" max="100" step="1" value="50" aria-label="Campsite sound volume">
         </div>
-        <p class="vol-note">Fire, chimes and forest scares. Friends' voices aren't affected.</p>
+        <p class="vol-note">Fire, chimes, s'mores and forest scares. Friends' voices aren't affected.</p>
       </div>
     </div>
     <button class="icon-btn" id="inviteBtn" type="button">Invite</button>
@@ -377,8 +438,29 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   <div class="circle-list" id="circleList"></div>
 </div>
 
+<div class="hud" id="smPanel" hidden>
+  <div class="story-head">
+    <h2 id="smTitle">S'mores showdown</h2>
+    <span class="sm-timer" id="smTimer"></span>
+  </div>
+  <canvas id="smView" aria-hidden="true"></canvas>
+  <p class="sm-status" id="smStatus"></p>
+  <div class="sm-players" id="smPlayers"></div>
+  <ol class="sm-results" id="smResults" hidden></ol>
+  <p class="sm-note" id="smNote" hidden></p>
+  <div class="story-row" id="smResultBtns" hidden>
+    <button class="btn-warm" id="smAgainBtn" type="button">Another round</button>
+    <button class="btn-ghost" id="smCloseBtn" type="button">Close</button>
+  </div>
+</div>
+
 <div class="hud" id="bottombar" hidden>
-  <button id="actionBtn" type="button" hidden>Sit by the fire</button>
+  <div class="action-row" id="actionRow">
+    <button id="actionBtn" type="button" hidden>Sit by the fire</button>
+    <button class="sm-btn" id="smBtn" type="button" hidden>Roast s'mores</button>
+    <button class="roast-btn" id="roastBtn" type="button" hidden>Hold to roast</button>
+    <button class="serve-btn" id="serveBtn" type="button" hidden>Serve!</button>
+  </div>
   <form class="chatbar" id="chatForm" autocomplete="off">
     <button class="mic" id="micBtn" type="button" aria-pressed="false" aria-label="Turn microphone on" hidden>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -423,8 +505,12 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>Enter</kbd></span><span>Chat</span>
       <span><kbd>E</kbd></span><span>Sit, stand, or fish</span>
       <span><kbd>M</kbd> / mic button</span><span>Talk to people nearby</span>
+      <span><kbd>R</kbd></span><span>Start or join a s'mores round</span>
+      <span><kbd>Space</kbd> (hold)</span><span>Roast your marshmallow</span>
+      <span><kbd>F</kbd></span><span>Serve your s'more</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
+    <p><b>S'mores showdown:</b> at the fire, tap Roast s'mores and friends grab a stick. Hold to dip your marshmallow into the flames, pull it out before it gets too hot, and serve it when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
       <button class="chip" id="scareBtn" type="button" aria-pressed="true">On</button>
@@ -881,7 +967,7 @@ roomP.then(r => {
 }).catch(() => { room = null; updateStatus(); });
 
 function onPeers(change) {
-  const seenNow = new Set();
+  const seenNow = new Set(), freshPeers = new Set();
   for (const peer of change.peers) {
     if (peer.kind !== 'viewer') continue;
     if (peer.sameTab) { myPeer = peer.peer; continue; }
@@ -903,6 +989,12 @@ function onPeers(change) {
       if (!o.fresh && EMO_ICON[pr.emo.k]) emotes.set(peer.peer, { k: pr.emo.k, at: performance.now() });
       o.lastEmo = pr.emo.i;
     }
+    // s'mores: tell the fire when someone's marshmallow goes up in flames
+    const q = pr.smp;
+    const qst = q && q.id === sm.id && !sm.stale ? q.st : '';
+    if (qst === 'fire' && o.smLast !== 'fire' && !o.fresh && joined && (sm.in || nearFire() || me.sit >= 0)) addLog(null, `${cleanText(pr.n, 16) || 'Someone'}'s marshmallow caught fire! 🔥`, true);
+    o.smLast = qst;
+    if (o.fresh) freshPeers.add(peer.peer);
     o.fresh = false;
   }
   for (const key of [...others.keys()]) {
@@ -913,6 +1005,7 @@ function onPeers(change) {
     }
   }
   resolveStory();
+  resolveSm(freshPeers);
   updateStatus();
   manageVoice();
 }
@@ -948,7 +1041,8 @@ function pushPresence(force) {
     x: Math.round(me.x), y: Math.round(me.y), f: me.face, mv: me.moving ? 1 : 0, sit: me.sit,
     msgs: me.msgs, emo: me.emo, fish: me.fish ? { st: me.fish.st } : null,
     mic: voice.micOn ? 1 : 0,
-    story
+    story,
+    sm: smRound, smp: me.smp, ch: me.champ
   }).catch(() => { });
 }
 
@@ -1008,7 +1102,7 @@ function seatedPeople() {
 function iHold() { return story.holder && (story.holder === myPeer || (story.holder === 'me' && !room)); }
 function renderStory(flip) {
   const box = $('story');
-  box.hidden = !(joined && me.sit >= 0);
+  box.hidden = !(joined && me.sit >= 0) || sm.showing;
   if (box.hidden) return;
   deckBtns.forEach(b => b.setAttribute('aria-pressed', String(story.deck === b.dataset.deck)));
   $('cardDeck').textContent = DECKS[story.deck].name;
@@ -1402,7 +1496,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.3.4';
+const VERSION = 'v0.4';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -1608,6 +1702,622 @@ renderScareBtn();
 $('verText').textContent = 'Campfire ' + VERSION;
 window.campfireScareDebug = () => ({ on: scare.on, inForest: inForest(me.x, me.y), forestT: Math.round(scare.forestT * 10) / 10, need: Math.round(scare.need * 10) / 10, active: scareActive(), eyes: !!scare.eyes });
 
+// ===== S'mores showdown =====
+// Anyone at the fire can start a round. Friends at the fire grab a stick, then
+// everyone roasts at the same time: hold to dip the marshmallow into the flames,
+// pull it out before it gets too hot, and serve it when it looks golden.
+// Closest to golden brown wins. The round itself is shared like the story circle
+// (highest version wins); each player's marshmallow travels in their own presence,
+// so every browser works out the same results without any server changes.
+const SM_JOIN = 8, SM_COUNT = 3, SM_ROAST = 22, SM_GRACE = 3, SM_SHOW = 16;
+const SM_IGNITE_T = 1.3;   // surface heat that sets the marshmallow alight
+const SM_IGNITE_D = 1.6;   // roasted this far, it burns through anyway
+const SM_PUFFS = 3;        // taps needed to blow it out
+const SM_STATES = ['in', 'roast', 'fire', 'char', 'served'];
+const SM_ACTIVE = ['join', 'count', 'roast', 'wait'];
+let smRound = { v: 0, id: '', by: '', bn: '', go: 0 };
+const sm = {
+  id: '', stale: true, goAt: 0, phase: 'idle',
+  in: false, d: 0, T: 0, depth: 0, hold: false, fire: false, burnt: false, served: false, servedAt: 0, puffs: 0,
+  warnAt: 0, flareAt: 0, flareEnd: 0, nextFlare: 0, beep: -1, lockNote: 0,
+  results: null, shownAt: 0, closed: false,
+  best: num(load('campfire.smoreBest'), 0), uiAt: 0, resKey: '', showing: false
+};
+me.smp = null; me.champ = 0;
+EMO_ICON.trophy = '🏆'; EMO_ICON.fire = '🔥';
+
+function smIsStarter() { return smRound.id === sm.id && smRound.by === (myPeer || 'me'); }
+function smRoastEnd() { return sm.goAt + (SM_COUNT + SM_ROAST) * 1000; }
+function smPhase(now) {
+  if (!sm.id) return 'idle';
+  if (sm.stale) {
+    // A round already under way when we arrived: wait for it to finish before allowing a new one.
+    for (const o of others.values()) { const q = o.p && o.p.smp; if (q && q.id === sm.id && q.st !== 'served') return 'busy'; }
+    return 'idle';
+  }
+  if (sm.results) return !sm.closed && now - sm.shownAt < SM_SHOW * 1000 ? 'results' : 'idle';
+  if (now < sm.goAt) return 'join';
+  if (now < sm.goAt + SM_COUNT * 1000) return 'count';
+  if (now < smRoastEnd()) return 'roast';
+  return 'wait';
+}
+function smMyState() {
+  if (sm.served) return 'served';
+  if (sm.fire) return 'fire';
+  if (sm.burnt) return 'char';
+  return sm.phase === 'roast' || sm.phase === 'wait' ? 'roast' : 'in';
+}
+function smHoldsStick() { return sm.in && !sm.served && (sm.phase === 'count' || sm.phase === 'roast'); }
+function smParticipants() {
+  const list = [];
+  // my own doneness is rounded the same way friends receive it, so every screen scores alike
+  if (sm.in) list.push({ key: 'me', mine: true, name: me.name, d: Math.round(sm.d * 100) / 100, b: sm.burnt, st: smMyState() });
+  for (const o of others.values()) {
+    const q = o.p && o.p.smp;
+    if (!o.p || !o.p.n || !q || q.id !== sm.id) continue;
+    list.push({ key: o.peer, name: cleanText(o.p.n, 16) || 'Someone', d: clamp(num(q.d, 0), 0, 300) / 100, b: q.b === 1, st: SM_STATES.includes(q.st) ? q.st : 'in' });
+  }
+  return list;
+}
+function smScore(d, burnt) {
+  if (burnt) return 2;
+  return Math.max(1, Math.round(100 * Math.exp(-Math.pow((d - 1) / 0.24, 2))));
+}
+function smVerdict(d, burnt) {
+  if (burnt) return 'Charcoal';
+  if (d < 0.25) return 'Still raw';
+  if (d < 0.55) return 'Barely warm';
+  if (d < 0.8) return 'Lightly toasted';
+  if (d < 0.92) return 'Nicely toasted';
+  if (d <= 1.08) return 'Golden perfection';
+  if (d <= 1.25) return 'Deep brown';
+  return 'Scorched';
+}
+// raw white → cream → tan → golden brown → dark → nearly black
+const SM_STOPS = [[0, 252, 248, 240], [0.35, 248, 234, 196], [0.65, 238, 200, 128], [0.9, 218, 158, 76], [1.0, 204, 138, 58], [1.15, 166, 100, 42], [1.35, 108, 62, 30], [1.6, 50, 32, 20]];
+function smColor(d, burnt, shade) {
+  let c;
+  if (burnt) c = [36, 26, 20];
+  else {
+    d = clamp(d, 0, 1.6); c = SM_STOPS[SM_STOPS.length - 1].slice(1);
+    for (let i = 1; i < SM_STOPS.length; i++) {
+      const a = SM_STOPS[i - 1], b = SM_STOPS[i];
+      if (d <= b[0]) { const k = (d - a[0]) / (b[0] - a[0]); c = [1, 2, 3].map(j => a[j] + (b[j] - a[j]) * k); break; }
+    }
+  }
+  const s = 1 - (shade || 0);
+  return `rgb(${c.map(v => Math.round(v * s)).join(',')})`;
+}
+
+// ---- round flow ----
+function smBegin(r, stale) {
+  const now = performance.now();
+  if (sm.id && !sm.stale && !sm.results && (sm.phase === 'roast' || sm.phase === 'wait')) smFinish();
+  smStopSizzle();
+  Object.assign(sm, {
+    id: r.id, stale, goAt: now + (r.go ? 0 : SM_JOIN * 1000), phase: stale ? 'idle' : 'join',
+    in: false, d: 0, T: 0, depth: 0, hold: false, fire: false, burnt: false, served: false, servedAt: 0, puffs: 0,
+    warnAt: 0, flareAt: 0, flareEnd: 0, nextFlare: 0, beep: -1, results: null, shownAt: 0, closed: false, resKey: ''
+  });
+  if (me.smp) { me.smp = null; sentDirty = true; }
+  if (!stale && joined && r.by !== (myPeer || 'me')) {
+    const who = r.bn || 'Someone';
+    addLog(null, `${who} is handing out marshmallow sticks by the fire.`, true);
+    if (!(me.sit >= 0 || nearFire()) && !r.go) showToast(`${who} started a s'mores round. Walk to the fire and grab a stick!`, 5000);
+    smBlip(660, 0.09, 'triangle', 0.06); setTimeout(() => smBlip(880, 0.12, 'triangle', 0.06), 110);
+  }
+}
+function smEnsureSeat() {
+  if (me.sit >= 0) return true;
+  if (!nearFire()) { showToast('Walk over to the fire first.'); return false; }
+  const s = nearestFreeSeat();
+  if (s < 0) { showToast('Every seat is taken. Wait for a free log to roast.'); return false; }
+  sitAt(s);
+  return true;
+}
+function smStart() {
+  if (!joined || (sm.phase !== 'idle' && sm.phase !== 'results')) return;
+  if (!smEnsureSeat()) return;
+  const alone = ![...others.values()].some(o => o.p && o.p.n);
+  smRound = { v: smRound.v + 1, id: Math.random().toString(36).slice(2, 10), by: myPeer || 'me', bn: me.name, go: alone ? 1 : 0 };
+  smBegin(smRound, false);
+  sm.in = true;
+  sm.phase = smPhase(performance.now());
+  smSync(true);
+  sentDirty = true; pushPresence(true);
+  addLog(null, alone ? 'You grabbed a marshmallow stick. Roast it golden!' : 'You started a s\'mores round. Friends at the fire can grab a stick.', true);
+}
+function smJoin() {
+  if (sm.phase !== 'join' || sm.in) return;
+  if (!smEnsureSeat()) return;
+  sm.in = true;
+  smSync(true); pushPresence(true);
+  addLog(null, 'You grabbed a marshmallow stick.', true);
+}
+function smLeave() {
+  if (!sm.in || sm.phase !== 'join') return;
+  sm.in = false; me.smp = null; sentDirty = true; pushPresence(true);
+  addLog(null, 'You put your marshmallow stick down.', true);
+}
+function smGo() {
+  if (sm.phase !== 'join' || !smIsStarter() || smRound.go) return;
+  smRound = Object.assign({}, smRound, { v: smRound.v + 1, go: 1 });
+  sm.goAt = performance.now();
+  sentDirty = true; pushPresence(true);
+}
+function smPrimary() {
+  if (!joined) return;
+  if (sm.phase === 'join') { if (!sm.in) smJoin(); else if (smIsStarter()) smGo(); return; }
+  if (sm.phase === 'idle' || sm.phase === 'results') smStart();
+}
+// Every player carries the latest round they know; the highest version wins (ties by peer label).
+function resolveSm(freshPeers) {
+  let best = null, bestPeer = '', bestFresh = false;
+  for (const o of others.values()) {
+    const s = o.p && o.p.sm;
+    if (!s || typeof s.v !== 'number' || !(s.v > 0) || typeof s.id !== 'string') continue;
+    if (!best || s.v > best.v || (s.v === best.v && String(o.peer) > bestPeer)) { best = s; bestPeer = String(o.peer); bestFresh = freshPeers.has(o.peer); }
+  }
+  if (!best) return;
+  if (smRound.v > best.v || (smRound.v === best.v && String(myPeer || '') >= bestPeer)) return;
+  const next = {
+    v: best.v, id: String(best.id).replace(/[^a-z0-9]/g, '').slice(0, 16),
+    by: typeof best.by === 'string' ? best.by.slice(0, 64) : '', bn: cleanText(best.bn, 16), go: best.go === 1 ? 1 : 0
+  };
+  if (!next.id) return;
+  const isNew = next.id !== smRound.id;
+  smRound = next; sentDirty = true;
+  if (isNew) smBegin(next, bestFresh);
+  else if (next.go && sm.id === next.id && !sm.stale && sm.phase === 'join') sm.goAt = Math.min(sm.goAt, performance.now());
+}
+// Publish my marshmallow. Doneness goes out in small steps while roasting, exactly when served.
+function smSync(force) {
+  if (!sm.in || !sm.id) { if (me.smp) { me.smp = null; sentDirty = true; } return; }
+  const next = { id: sm.id, st: smMyState(), d: Math.round(sm.d * 100), b: sm.burnt ? 1 : 0, h: sm.depth > 0.5 ? 1 : 0 };
+  const cur = me.smp;
+  if (force || !cur || cur.id !== next.id || cur.st !== next.st || cur.b !== next.b || cur.h !== next.h || Math.abs(cur.d - next.d) >= 3) { me.smp = next; sentDirty = true; }
+}
+
+// ---- roasting ----
+function smPhysics(dt, now) {
+  if (!sm.nextFlare) sm.nextFlare = now + 2500 + Math.random() * 3500;
+  if (now >= sm.nextFlare) {
+    sm.warnAt = now; sm.flareAt = now + 800; sm.flareEnd = sm.flareAt + 1100;
+    sm.nextFlare = sm.flareEnd + 2600 + Math.random() * 4200;
+    smWhoosh();
+  }
+  const flaring = now >= sm.flareAt && now < sm.flareEnd;
+  const heat = (flaring ? 2.2 : 1) * (0.94 + 0.06 * Math.sin(now / 140) + 0.03 * Math.sin(now / 53));
+  const want = sm.hold && !sm.fire && !sm.burnt ? 1 : 0;
+  sm.depth += (want - sm.depth) * Math.min(1, dt * 9);
+  if (sm.fire) {
+    sm.d += dt * 0.4; sm.T = Math.max(sm.T, SM_IGNITE_T);
+  } else if (!sm.burnt) {
+    // heat builds while dipped and drains quickly once pulled out
+    sm.T = Math.max(0, sm.T + (sm.depth * heat - sm.T * (0.35 + 1.6 * (1 - sm.depth))) * dt);
+    sm.d += sm.T * 0.15 * dt;
+    if (sm.T >= SM_IGNITE_T || sm.d >= SM_IGNITE_D) smIgnite();
+  } else {
+    sm.T = Math.max(0, sm.T - sm.T * 2 * dt);
+  }
+}
+function smIgnite() {
+  sm.fire = true; sm.burnt = true; sm.puffs = 0; sm.hold = false;
+  smPoof();
+  me.emoId += 1; me.emo = { i: me.emoId, k: 'fire' };
+  emotes.set('me', { k: 'fire', at: performance.now() });
+  try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { }
+  addLog(null, 'Your marshmallow caught fire! Tap to blow it out.', true);
+  smSync(true); pushPresence(true);
+}
+function smPuff() {
+  if (!sm.fire) return;
+  sm.puffs += 1; smPuffSound();
+  if (sm.puffs >= SM_PUFFS) { sm.fire = false; addLog(null, 'Phew, it\'s out. That one is charcoal now.', true); smSync(true); }
+}
+function smFresh() {
+  if (!sm.burnt || sm.fire || sm.served) return;
+  sm.burnt = false; sm.d = 0; sm.T = 0; sm.depth = 0; sm.puffs = 0;
+  smBlip(520, 0.08, 'triangle', 0.05);
+  smSync(true);
+}
+function smServe(auto) {
+  if (!sm.in || sm.served || (sm.phase !== 'roast' && sm.phase !== 'wait')) return;
+  if (sm.fire) sm.fire = false;
+  sm.served = true; sm.servedAt = performance.now(); sm.hold = false; sm.depth = 0;
+  smStopSizzle(); smSquish();
+  const sc = smScore(sm.d, sm.burnt);
+  addLog(null, `${auto ? 'Time\'s up! ' : ''}You served your s'more: ${smVerdict(sm.d, sm.burnt).toLowerCase()} (${sc}).`, true);
+  smSync(true); pushPresence(true);
+}
+function smFinish() {
+  const now = performance.now();
+  const list = smParticipants().map(p => Object.assign(p, { score: smScore(p.d, p.b), verdict: smVerdict(p.d, p.b) }));
+  list.sort((a, b) => b.score - a.score || Math.abs(a.d - 1) - Math.abs(b.d - 1));
+  const top = list.length ? list[0].score : 0;
+  const winners = list.length >= 2 && top >= 10 ? list.filter(p => p.score === top) : [];
+  sm.results = { list, winners, newBest: false, mine: null };
+  sm.shownAt = now;
+  const relevant = sm.in || me.sit >= 0 || dist(me.x, me.y, FIRE.x, FIRE.y) < 340;
+  sm.closed = !joined || !relevant || !list.length;
+  const iWon = winners.some(p => p.mine);
+  if (list.length >= 2) me.champ = iWon ? 1 : 0;
+  const mine = list.find(p => p.mine);
+  if (mine) {
+    sm.results.mine = mine;
+    if (mine.score > sm.best) { sm.results.newBest = mine.score >= 20; sm.best = mine.score; store('campfire.smoreBest', sm.best); }
+  }
+  if (joined && winners.length) {
+    const names = winners.map(p => p.mine ? 'you' : p.name);
+    if (winners.length === 1) addLog(null, iWon ? `🏆 You won the s'mores round with ${top} points!` : `🏆 ${names[0]} won the s'mores round with ${top} points.`, true);
+    else addLog(null, `🏆 ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} tied for the win at ${top} points.`, true);
+  }
+  if (iWon) {
+    me.emoId += 1; me.emo = { i: me.emoId, k: 'trophy' };
+    emotes.set('me', { k: 'trophy', at: now });
+    smFanfare();
+  }
+  sentDirty = true; pushPresence(true);
+}
+function smTick(dt) {
+  const now = performance.now();
+  const ph = smPhase(now), prev = sm.phase;
+  sm.phase = ph;
+  if (ph !== prev) {
+    if (ph === 'count' && sm.in) { const a = document.activeElement; if (a && a.tagName === 'BUTTON' && a.id !== 'roastBtn') a.blur(); }
+    if (ph === 'roast' && sm.in && !sm.served) { sm.nextFlare = 0; smStartSizzle(); }
+    if (ph === 'wait' && sm.in && !sm.served) smServe(true);
+    if (ph === 'idle' && prev === 'results') { sm.results = sm.results || null; }
+  }
+  if (ph === 'count' && sm.in) {
+    const n = 3 - Math.floor((now - sm.goAt) / 1000);
+    if (n !== sm.beep) { sm.beep = n; smBlip(520, 0.12, 'square', 0.05); }
+  } else if (ph === 'roast' && sm.in && sm.beep !== 0) { sm.beep = 0; smBlip(784, 0.22, 'square', 0.06); }
+  if (ph === 'roast' && sm.in && !sm.served) smPhysics(dt, now);
+  if ((ph === 'roast' || ph === 'wait') && !sm.results) {
+    const list = smParticipants();
+    if ((list.length && list.every(p => p.st === 'served')) || (ph === 'wait' && now > smRoastEnd() + SM_GRACE * 1000)) smFinish();
+  }
+  smSync(false);
+  smSfxTick();
+  renderSm(now);
+}
+
+// ---- panel ----
+function renderSm(now) {
+  const ph = sm.phase;
+  const show = joined && ((sm.in && SM_ACTIVE.includes(ph)) || ph === 'results');
+  if (show !== sm.showing) { sm.showing = show; $('smPanel').hidden = !show; sm.uiAt = 0; renderStory(false); }
+  if (!show) return;
+  if (now - sm.uiAt > 200) { sm.uiAt = now; smRenderDom(now); }
+  if (ph !== 'results') drawSmView(now, now / 1000);
+}
+function smLive(now) {
+  if (sm.fire) return [`On fire! Tap to blow it out (${SM_PUFFS - sm.puffs} more)`, true];
+  if (sm.burnt) return ['Charred! Grab a fresh one, or serve it as is.', true];
+  if (now >= sm.flareAt && now < sm.flareEnd) return ['Flare-up! Pull it out!', true];
+  if (now >= sm.warnAt && now < sm.flareAt) return ['The fire is crackling…', true];
+  if (sm.T > 1.05) return ['Too hot! Pull it out!', true];
+  if (sm.d < 0.35) return ['Pale and squishy', false];
+  if (sm.d < 0.7) return ['Warming up', false];
+  if (sm.d < 1.15) return ['Toasting… serve when it looks golden', false];
+  if (sm.d < 1.4) return ['Getting dark!', true];
+  return ['Smoking!', true];
+}
+function smRenderDom(now) {
+  const ph = sm.phase, res = ph === 'results';
+  $('smView').hidden = res;
+  $('smResults').hidden = !res; $('smResultBtns').hidden = !res; $('smPlayers').hidden = res;
+  $('smTitle').textContent = res ? 'S\'mores results' : 'S\'mores showdown';
+  let secs = '';
+  if (ph === 'join') secs = Math.max(0, Math.ceil((sm.goAt - now) / 1000)) + 's';
+  else if (ph === 'roast') secs = Math.max(0, Math.ceil((smRoastEnd() - now) / 1000)) + 's';
+  const timer = $('smTimer');
+  timer.textContent = secs;
+  timer.classList.toggle('low', ph === 'roast' && smRoastEnd() - now < 5500);
+  let status = '', hot = false;
+  if (ph === 'join') status = smIsStarter() ? (others.size ? 'Waiting for friends to grab a stick…' : 'Get ready…') : `${smRound.bn || 'Someone'} is handing out sticks…`;
+  else if (ph === 'count') status = 'Get ready…';
+  else if (ph === 'roast' || ph === 'wait') {
+    if (sm.served) status = `Served! ${smVerdict(sm.d, sm.burnt)}. Waiting for the others…`;
+    else [status, hot] = smLive(now);
+  }
+  const st = $('smStatus');
+  st.hidden = res;
+  if (st.textContent !== status) st.textContent = status;
+  st.classList.toggle('hot', hot);
+  if (!res) {
+    const box = $('smPlayers'); box.textContent = '';
+    const words = { in: 'ready', roast: 'roasting', fire: 'on fire!', char: 'charred', served: 'served' };
+    for (const p of smParticipants()) {
+      const s = document.createElement('span'); s.className = 'sm-p';
+      const dot = document.createElement('span'); dot.className = 'sm-dot'; dot.style.background = smColor(p.d, p.b);
+      s.appendChild(dot);
+      s.appendChild(document.createTextNode(`${p.mine ? 'You' : p.name} · ${words[p.st] || 'ready'}`));
+      box.appendChild(s);
+    }
+    $('smNote').hidden = true;
+    return;
+  }
+  if (sm.resKey === sm.id) return;
+  sm.resKey = sm.id;
+  const r = sm.results, ol = $('smResults');
+  ol.textContent = '';
+  r.list.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.className = 'sm-row' + (r.winners.includes(p) ? ' win' : '');
+    const rank = document.createElement('span'); rank.className = 'sm-rank'; rank.textContent = String(i + 1);
+    const ico = document.createElement('canvas'); ico.className = 'sm-ico'; ico.width = 88; ico.height = 68;
+    const ig = ico.getContext('2d'); ig.scale(2, 2); drawSmore(ig, 22, 18, 30, p.d, p.b, 1);
+    const who = document.createElement('span'); who.className = 'sm-who';
+    const b = document.createElement('b'); b.textContent = (p.mine ? 'You' : p.name) + (r.winners.includes(p) ? ' 👑' : '');
+    const v = document.createElement('span'); v.textContent = p.verdict;
+    who.append(b, v);
+    const sc = document.createElement('span'); sc.className = 'sm-score'; sc.textContent = String(p.score);
+    li.append(rank, ico, who, sc);
+    ol.appendChild(li);
+  });
+  const note = $('smNote');
+  let n = '';
+  if (r.mine && r.newBest) n = `New personal best: ${r.mine.score}!`;
+  else if (r.mine) n = `Your best so far: ${sm.best}`;
+  if (r.list.length === 1 && r.mine) n += ' · Invite friends to compete for the crown.';
+  note.textContent = n; note.hidden = !n;
+}
+$('smAgainBtn').addEventListener('click', () => { sm.closed = true; sm.phase = 'idle'; smStart(); });
+$('smCloseBtn').addEventListener('click', () => { sm.closed = true; });
+$('smBtn').addEventListener('click', smPrimary);
+const roastBtn = $('roastBtn'), serveBtn = $('serveBtn');
+function smPress() {
+  if (!sm.in || sm.served || (sm.phase !== 'roast' && sm.phase !== 'count')) return false;
+  if (sm.fire) { smPuff(); return true; }
+  if (sm.burnt) { smFresh(); return true; }
+  sm.hold = true;
+  return true;
+}
+roastBtn.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  getAC();
+  if (smPress() && sm.hold) { try { roastBtn.setPointerCapture(e.pointerId); } catch (err) { } }
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => roastBtn.addEventListener(ev, () => { sm.hold = false; }));
+roastBtn.addEventListener('contextmenu', e => e.preventDefault());
+serveBtn.addEventListener('click', () => smServe(false));
+function setBtn(b, label, dis, cls) {
+  if (label === null) { if (!b.hidden) b.hidden = true; return; }
+  if (b.hidden) b.hidden = false;
+  if (b.textContent !== label) b.textContent = label;
+  if (b.disabled !== dis) b.disabled = dis;
+  const c = b.dataset.cls || '';
+  if (c !== cls) { if (c) b.classList.remove(c); if (cls) b.classList.add(cls); b.dataset.cls = cls; }
+}
+function updateSmButtons() {
+  const now = performance.now(), ph = sm.phase, near = me.sit >= 0 || nearFire();
+  let label = null, dis = false, pulse = false;
+  if (ph === 'join') {
+    const secs = Math.max(0, Math.ceil((sm.goAt - now) / 1000));
+    if (!sm.in) { if (near) { label = `Grab a stick! ${secs}`; pulse = true; } }
+    else if (smIsStarter() && !smRound.go) label = `Start now · ${secs}`;
+    else { label = `Get ready · ${secs}`; dis = true; }
+  } else if (ph === 'idle' || ph === 'results') { if (near) label = 'Roast s\'mores'; }
+  else if (ph === 'busy' && near) { label = 'S\'mores round in progress'; dis = true; }
+  setBtn($('smBtn'), label, dis, pulse ? 'pulse' : '');
+  let rl = null, rcls = '';
+  if (smHoldsStick()) {
+    if (ph === 'count') rl = 'Get ready…';
+    else if (sm.fire) { rl = `Blow it out! 💨 ${SM_PUFFS - sm.puffs}`; rcls = 'blow'; }
+    else if (sm.burnt) { rl = 'Fresh one'; rcls = 'fresh'; }
+    else { rl = sm.hold ? 'Roasting…' : 'Hold to roast'; rcls = sm.hold ? 'held' : ''; }
+  }
+  setBtn(roastBtn, rl, false, rcls);
+  setBtn(serveBtn, sm.in && !sm.served && ph === 'roast' ? (sm.burnt && !sm.fire ? 'Serve it' : 'Serve!') : null, false, '');
+}
+
+// ---- drawing ----
+function drawFlames(g, cx, by, w, fh, t, n) {
+  const layers = [['rgba(226,87,43,0.95)', 1, 1], ['rgba(243,154,60,0.95)', 0.74, 0.78], ['rgba(255,211,107,0.95)', 0.5, 0.56], ['rgba(255,243,196,0.9)', 0.26, 0.32]];
+  for (const [col, ws, hs] of layers) {
+    g.fillStyle = col;
+    for (let i = 0; i < n; i++) {
+      const u = n === 1 ? 0 : (i + 0.5) / n - 0.5;
+      const x = cx + u * w * 0.85;
+      const tw = w / n * 0.62 * ws;
+      const th = fh * hs * (0.78 + 0.22 * Math.sin(t * (7 + i * 1.7) + i * 2)) * (1 - Math.abs(u) * 0.6);
+      const sway = Math.sin(t * 3 + i * 1.3) * tw * 0.3;
+      g.beginPath(); g.moveTo(x - tw, by);
+      g.quadraticCurveTo(x - tw * 0.9, by - th * 0.55, x + sway, by - th);
+      g.quadraticCurveTo(x + tw * 0.9, by - th * 0.55, x + tw, by);
+      g.closePath(); g.fill();
+    }
+  }
+}
+function drawMarsh(g, w, h, d, burnt, T) {
+  const rr = Math.min(w, h) * 0.4;
+  const grad = g.createLinearGradient(0, -h / 2, 0, h / 2);
+  grad.addColorStop(0, smColor(d * 0.8, burnt));
+  grad.addColorStop(0.5, smColor(d, burnt));
+  grad.addColorStop(1, smColor(Math.min(1.6, d * 1.12 + 0.04), burnt, 0.06));
+  g.fillStyle = grad; roundRect(g, -w / 2, -h / 2, w, h, rr); g.fill();
+  const r = mulberry(5);
+  if (burnt) {
+    g.fillStyle = 'rgba(150,140,130,0.5)';
+    for (let i = 0; i < 9; i++) { g.beginPath(); g.arc((r() - 0.5) * w * 0.8, (r() - 0.5) * h * 0.7, 1 + r() * 2, 0, Math.PI * 2); g.fill(); }
+  } else if (d > 0.25) {
+    g.fillStyle = smColor(d * 1.22 + 0.08, false);
+    g.globalAlpha = clamp((d - 0.25) * 0.8, 0, 0.5);
+    for (let i = 0; i < 7; i++) { g.beginPath(); g.ellipse((r() - 0.5) * w * 0.75, (r() - 0.15) * h * 0.55, w * (0.06 + r() * 0.07), h * (0.06 + r() * 0.06), r() * 3, 0, Math.PI * 2); g.fill(); }
+    g.globalAlpha = 1;
+  }
+  // the cut end, facing the stick tip
+  g.fillStyle = smColor(d * 0.6, burnt); g.globalAlpha = 0.55;
+  g.beginPath(); g.ellipse(-w / 2 + w * 0.09, 0, w * 0.08, h * 0.4, 0, 0, Math.PI * 2); g.fill();
+  g.globalAlpha = 1;
+  if (!burnt) { g.fillStyle = 'rgba(255,255,255,0.4)'; g.beginPath(); g.ellipse(-w * 0.08, -h * 0.28, w * 0.24, h * 0.08, 0, 0, Math.PI * 2); g.fill(); }
+  if (T > 0.85 && !burnt) {
+    g.strokeStyle = `rgba(255,110,40,${clamp((T - 0.85) / 0.45, 0, 0.9)})`; g.lineWidth = 2.5;
+    roundRect(g, -w / 2, -h / 2, w, h, rr); g.stroke();
+  }
+}
+function drawCracker(g, cx, cy, s) {
+  g.fillStyle = '#c88c4a'; roundRect(g, cx - s / 2, cy - s * 0.08, s, s * 0.16, s * 0.04); g.fill();
+  g.fillStyle = 'rgba(255,232,190,0.3)'; g.fillRect(cx - s / 2 + 2, cy - s * 0.07, s - 4, s * 0.035);
+  g.fillStyle = 'rgba(110,62,26,0.55)';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(cx - s * 0.3 + i * s * 0.2, cy + s * 0.01, Math.max(0.8, s * 0.018), 0, Math.PI * 2); g.fill(); }
+}
+// side view of a finished s'more; k = how far the crackers have closed (0 → 1)
+function drawSmore(g, cx, cy, s, d, burnt, k) {
+  const gap = (1 - k) * s * 0.35;
+  g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(cx, cy + s * 0.27 + gap, s * 0.55, s * 0.07, 0, 0, Math.PI * 2); g.fill();
+  drawCracker(g, cx, cy + s * 0.16 + gap, s);
+  g.fillStyle = '#4e2a17'; roundRect(g, cx - s * 0.4, cy + s * 0.04 + gap * 0.6, s * 0.8, s * 0.07, Math.max(1, s * 0.02)); g.fill();
+  g.fillStyle = smColor(d, burnt);
+  g.beginPath(); g.ellipse(cx, cy - s * 0.02, s * (0.4 + 0.14 * k), s * (0.11 + (1 - k) * 0.06), 0, 0, Math.PI * 2); g.fill();
+  if (!burnt) { g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(cx - s * 0.1, cy - s * 0.07, s * 0.16, s * 0.03, 0, 0, Math.PI * 2); g.fill(); }
+  drawCracker(g, cx, cy - s * 0.18 - gap, s);
+}
+function drawSmView(now, t) {
+  const c = $('smView');
+  const w = c.clientWidth, h = c.clientHeight;
+  if (!w || !h) return;
+  const pw = Math.round(w * DPR), ph = Math.round(h * DPR);
+  if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
+  const g = c.getContext('2d');
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const bg = g.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, '#161b31'); bg.addColorStop(1, '#3b2216');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  const flaring = now >= sm.flareAt && now < sm.flareEnd, warning = now >= sm.warnAt && now < sm.flareAt;
+  const glow = g.createRadialGradient(w / 2, h, 0, w / 2, h, h * 1.1);
+  glow.addColorStop(0, `rgba(255,150,60,${flaring ? 0.6 : 0.38})`); glow.addColorStop(1, 'rgba(255,120,40,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, w, h);
+  // logs and coals
+  g.fillStyle = '#4a2f1c';
+  roundRect(g, w * 0.18, h - 10, w * 0.64, 12, 6); g.fill();
+  g.fillStyle = 'rgba(255,120,40,0.85)';
+  for (let i = 0; i < 9; i++) { const x = w * 0.22 + i * w * 0.07; g.beginPath(); g.arc(x, h - 6 + Math.sin(i * 7) * 2, 2 + Math.sin(t * 5 + i) * 0.8, 0, Math.PI * 2); g.fill(); }
+  const fh = h * (flaring ? 0.82 : warning ? 0.5 + 0.06 * Math.sin(t * 40) : 0.44);
+  drawFlames(g, w / 2, h - 2, w * 0.72, fh, t, 5);
+  if (warning || flaring) {
+    g.fillStyle = 'rgba(255,220,140,0.9)';
+    for (let i = 0; i < 8; i++) { const k = (t * 1.6 + i / 8) % 1; g.fillRect(w * 0.3 + ((i * 37) % 40) / 40 * w * 0.4 + Math.sin(t * 6 + i) * 6, h - k * h * 0.9, 2, 2); }
+  }
+  if (sm.served) {
+    const k = clamp((now - sm.servedAt) / 450, 0, 1), e = 1 - Math.pow(1 - k, 3);
+    const s = Math.min(w * 0.4, h * 0.8);
+    g.fillStyle = 'rgba(16,20,38,0.55)'; g.fillRect(0, 0, w, h);
+    drawSmore(g, w / 2, h * 0.5, s, sm.d, sm.burnt, e);
+    return;
+  }
+  // stick and marshmallow, dipping into the flames while held
+  const mx = w * 0.47, my = h * (0.3 + 0.3 * sm.depth) + Math.sin(t * 2.2) * 1.2;
+  const hx = w + 8, hy = h * 0.04;
+  const ang = Math.atan2(hy - my, hx - mx);
+  const mw = h * 0.36 * (1 + Math.min(sm.d, 1) * 0.12), mh = h * 0.27 * (1 + Math.min(sm.d, 1) * 0.08);
+  g.strokeStyle = '#7a5434'; g.lineWidth = 4; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(hx, hy); g.lineTo(mx - Math.cos(ang) * (mw / 2 + 6), my - Math.sin(ang) * (mw / 2 + 6)); g.stroke();
+  g.save(); g.translate(mx, my); g.rotate(ang + Math.PI);
+  drawMarsh(g, mw, mh, sm.d, sm.burnt, sm.T);
+  g.restore();
+  // smoke when too hot or charred
+  const smoke = sm.fire ? 1 : sm.burnt ? 0.6 : clamp((sm.T - 0.95) / 0.3, 0, 1);
+  if (smoke > 0) {
+    for (let i = 0; i < 6; i++) {
+      const k = (t * 0.9 + i / 6) % 1;
+      g.fillStyle = `rgba(170,170,175,${(1 - k) * 0.35 * smoke})`;
+      g.beginPath(); g.arc(mx + Math.sin(t * 2 + i) * 8 * k, my - mh / 2 - k * h * 0.4, 3 + k * 9, 0, Math.PI * 2); g.fill();
+    }
+  }
+  if (sm.fire) drawFlames(g, mx, my + mh * 0.35, mw * 1.2, mh * 2.4, t * 1.4, 3);
+  // heat gauge on the left
+  if (sm.in && (sm.phase === 'roast' || sm.phase === 'count')) {
+    const gx = 12, gy = h * 0.12, gh = h * 0.7, gw = 8;
+    g.fillStyle = 'rgba(0,0,0,0.45)'; roundRect(g, gx - 2, gy - 2, gw + 4, gh + 4, 6); g.fill();
+    const danger = gh * (1 - 1.05 / SM_IGNITE_T);
+    g.fillStyle = 'rgba(255,80,50,0.35)'; g.fillRect(gx, gy, gw, danger);
+    const f = clamp(sm.T / SM_IGNITE_T, 0, 1);
+    g.fillStyle = f > 1.05 / SM_IGNITE_T ? '#ff6a3d' : f > 0.6 ? '#ffb347' : '#ffd36b';
+    g.fillRect(gx, gy + gh * (1 - f), gw, gh * f);
+    g.fillStyle = 'rgba(246,236,216,0.75)'; g.font = '700 9px "Atkinson Hyperlegible", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'top';
+    g.fillText('HEAT', gx + gw / 2, gy + gh + 5);
+  }
+  // countdown
+  let big = '';
+  if (sm.phase === 'count') big = String(Math.max(1, 3 - Math.floor((now - sm.goAt) / 1000)));
+  else if (sm.phase === 'roast' && now - (sm.goAt + SM_COUNT * 1000) < 800) big = 'Roast!';
+  if (big) {
+    g.save(); g.font = `800 ${Math.round(h * 0.34)}px "Grandstander", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 6; g.strokeStyle = 'rgba(42,22,6,0.85)'; g.strokeText(big, w / 2, h * 0.5);
+    g.fillStyle = '#ffcf6b'; g.fillText(big, w / 2, h * 0.5); g.restore();
+  }
+}
+// In the world: a stick pointing at the fire, marshmallow on the tip.
+function drawRoastStick(g, p, t) {
+  const sx = p.x, sy = p.y - (p.sit ? 12 : 18);
+  let dx = FIRE.x - sx, dy = FIRE.y - 16 - sy;
+  const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+  const reach = clamp(L - (p.sm.h ? 10 : 30), 24, 86);
+  const ex = sx + dx * reach, ey = sy + dy * reach + (p.sm.h ? 3 : 0);
+  g.strokeStyle = '#7a5434'; g.lineWidth = 2.2; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(sx + dx * 8, sy + dy * 8); g.lineTo(ex + dx * 7, ey + dy * 7); g.stroke();
+  g.save(); g.translate(ex, ey); g.rotate(Math.atan2(dy, dx));
+  g.fillStyle = smColor(p.sm.d, p.sm.b); roundRect(g, -7.5, -5.5, 15, 11, 4.5); g.fill();
+  g.strokeStyle = 'rgba(60,40,25,0.4)'; g.lineWidth = 0.8; g.stroke();
+  g.restore();
+  if (p.sm.st === 'fire') drawFlames(g, ex, ey + 3, 16, 22, t * 1.4 + p.x, 2);
+}
+function smOf(o) {
+  const q = o.p && o.p.smp;
+  if (!q || q.id !== sm.id || q.st === 'served' || !['join', 'count', 'roast', 'wait', 'busy'].includes(sm.phase)) return null;
+  return { d: clamp(num(q.d, 0), 0, 300) / 100, b: q.b === 1, st: q.st, h: q.h === 1 };
+}
+
+// ---- sound effects (short synth blips; they follow the campsite volume slider) ----
+const smSfx = { noise: null, sizzle: null, gain: null };
+function smNoise(ac) {
+  if (!smSfx.noise) { const len = ac.sampleRate, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; smSfx.noise = b; }
+  return smSfx.noise;
+}
+function smBlip(f, dur, type, vol, f2) {
+  const ac = audio; if (!ac) return;
+  try {
+    const t0 = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    g.gain.setValueAtTime(vol || 0.06, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(envOut()); o.start(t0); o.stop(t0 + dur + 0.02);
+  } catch (e) { }
+}
+function smBurst(dur, f0, f1, vol, type) {
+  const ac = audio; if (!ac) return;
+  try {
+    const t0 = ac.currentTime, src = ac.createBufferSource(), flt = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = smNoise(ac); flt.type = type || 'bandpass'; flt.Q.value = 1.2;
+    flt.frequency.setValueAtTime(f0, t0); flt.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + Math.min(0.08, dur / 3)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(flt).connect(g).connect(envOut()); src.start(t0); src.stop(t0 + dur + 0.05);
+  } catch (e) { }
+}
+function smStartSizzle() {
+  const ac = audio; if (!ac || smSfx.sizzle) return;
+  try {
+    const src = ac.createBufferSource(), hp = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = smNoise(ac); src.loop = true; hp.type = 'highpass'; hp.frequency.value = 2600; g.gain.value = 0;
+    src.connect(hp).connect(g).connect(envOut()); src.start();
+    smSfx.sizzle = src; smSfx.gain = g;
+  } catch (e) { }
+}
+function smStopSizzle() { if (smSfx.sizzle) { try { smSfx.sizzle.stop(); } catch (e) { } smSfx.sizzle = null; smSfx.gain = null; } }
+function smSfxTick() {
+  if (!smSfx.gain || !audio) return;
+  const v = sm.fire ? 0.1 : clamp(sm.depth * (0.015 + sm.T * 0.045), 0, 0.08);
+  smSfx.gain.gain.setTargetAtTime(v * (0.55 + Math.random() * 0.9), audio.currentTime, 0.03);
+}
+function smWhoosh() { smBurst(0.9, 250, 1600, 0.16, 'lowpass'); }
+function smPoof() { smBurst(0.55, 2400, 300, 0.32); smBlip(120, 0.45, 'sine', 0.25, 45); }
+function smPuffSound() { smBurst(0.2, 900, 380, 0.18); }
+function smSquish() { smBlip(300, 0.14, 'triangle', 0.08, 560); }
+function smFanfare() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => smBlip(f, 0.28, 'triangle', 0.07), i * 120)); }
+window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stale, in: sm.in, d: Math.round(sm.d * 100) / 100, T: Math.round(sm.T * 100) / 100, fire: sm.fire, burnt: sm.burnt, served: sm.served, round: smRound, players: smParticipants().map(p => ({ name: p.name, d: Math.round(p.d * 100) / 100, st: p.st })), results: sm.results && sm.results.list.map(p => ({ name: p.name, score: p.score })), champ: me.champ });
+
 // ===== Input =====
 const keys = new Set();
 window.addEventListener('keydown', e => {
@@ -1615,13 +2325,22 @@ window.addEventListener('keydown', e => {
   const typing = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Enter') { $('chatInput').focus(); e.preventDefault(); return; }
+  if (e.key === ' ' || e.code === 'Space') {
+    if (smHoldsStick()) { e.preventDefault(); if (!e.repeat || sm.hold) smPress(); }
+    return;
+  }
   if (e.key === 'e' || e.key === 'E') { doAction(); return; }
   if ((e.key === 'm' || e.key === 'M') && VOICE_OK) { toggleMic(); return; }
+  if ((e.key === 'r' || e.key === 'R') && !e.repeat) { smPrimary(); return; }
+  if ((e.key === 'f' || e.key === 'F') && !e.repeat) { smServe(false); return; }
   const k = e.key.toLowerCase();
   if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { keys.add(k); e.preventDefault(); }
 });
-window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur', () => keys.clear());
+window.addEventListener('keyup', e => {
+  keys.delete(e.key.toLowerCase());
+  if (e.key === ' ' || e.code === 'Space') { sm.hold = false; if (smHoldsStick()) e.preventDefault(); }
+});
+window.addEventListener('blur', () => { keys.clear(); sm.hold = false; });
 
 let touch = null; // {id, sx, sy, x, y, t, joy}
 cv.addEventListener('pointerdown', e => {
@@ -1637,7 +2356,7 @@ cv.addEventListener('pointermove', e => {
 });
 const endTouch = e => {
   if (!touch || e.pointerId !== touch.id) return;
-  if (!touch.joy && performance.now() - touch.t < 450) {
+  if (!touch.joy && performance.now() - touch.t < 450 && !smHoldsStick()) {
     const wx = (touch.x - VW / 2) / ZOOM + cam.x, wy = (touch.y - VH / 2) / ZOOM + cam.y;
     const seat = SEATS.findIndex(s => dist(wx, wy, s.x, s.y) < 22);
     if (seat >= 0 && !seatTaken(seat) && dist(me.x, me.y, FIRE.x, FIRE.y) < 230) sitAt(seat);
@@ -1678,6 +2397,8 @@ function atDock() { return dist(me.x, me.y, FISH_SPOT.x, FISH_SPOT.y) < 60; }
 function nearFire() { return dist(me.x, me.y, FIRE.x, FIRE.y) < 190; }
 function stopFishing() { if (me.fish) { clearTimeout(me.fish.timer); me.fish = null; sentDirty = true; } }
 function doAction() {
+  if (smHoldsStick()) return;
+  if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   if (me.sit >= 0) { stand(); return; }
   if (me.fish) {
     if (me.fish.st === 'bite') {
@@ -1711,7 +2432,9 @@ function updateActionBtn() {
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
   else if (nearFire()) label = 'Sit by the fire';
   else if (atDock()) label = 'Cast a line';
+  if (smHoldsStick()) label = null;
   if (label === null) b.hidden = true; else { b.hidden = false; if (b.textContent !== label) b.textContent = label; }
+  updateSmButtons();
 }
 
 // ===== Simulation =====
@@ -1736,6 +2459,15 @@ function step(dt, t) {
     if (l < 6) me.target = null; else { vx = dx / l; vy = dy / l; }
   }
   if (updateScare(dt)) { vx = 0; vy = 0; me.target = null; }
+  // s'mores: walking away before the roast starts puts the stick down; once roasting you stay on your log
+  if (sm.in && !sm.served && Math.hypot(vx, vy) > 0.05) {
+    if (sm.phase === 'join') smLeave();
+    else if (smHoldsStick()) {
+      vx = 0; vy = 0; me.target = null;
+      const now = performance.now();
+      if (now - sm.lockNote > 4000) { sm.lockNote = now; showToast('You\'re holding a marshmallow over the fire! Serve it first.', 2500); }
+    }
+  }
   const l = Math.hypot(vx, vy);
   const wasMoving = me.moving;
   if (l > 0.05) {
@@ -1854,10 +2586,10 @@ function drawBubble(g, sx, sy, text, alpha, far) {
   lines.forEach((l, i) => g.fillText(l, sx, y + 7 + i * 17));
   g.restore();
 }
-function drawNameTag(g, sx, sy, name, mine, holder, mic) {
+function drawNameTag(g, sx, sy, name, mine, holder, mic, champ) {
   g.save();
   g.font = `700 12px "Atkinson Hyperlegible", system-ui, sans-serif`;
-  const label = (mic ? '🎙 ' : '') + (holder ? name + '  ·  stick' : name);
+  const label = (champ ? '👑 ' : '') + (mic ? '🎙 ' : '') + (holder ? name + '  ·  stick' : name);
   const w = g.measureText(label).width + 14;
   g.fillStyle = mine ? 'rgba(242,160,61,0.92)' : 'rgba(16,20,38,0.78)';
   roundRect(g, sx - w / 2, sy, w, 18, 9); g.fill();
@@ -1903,11 +2635,12 @@ function render(t) {
   items.push({ y: FIRE.y + 6, d: () => drawFire(ctx, t) });
   items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
   const people = [];
-  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn });
+  const mySm = sm.in && !sm.served && SM_ACTIVE.includes(sm.phase) ? { d: sm.d, b: sm.burnt, st: smMyState(), h: sm.depth > 0.5 } : null;
+  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn, champ: me.champ === 1, sm: mySm });
   for (const o of others.values()) {
     if (!o.p || !o.p.n || !o.p.av) continue;
     const av = sanitizeAv(o.p.av);
-    people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit: typeof o.p.sit === 'number' && o.p.sit >= 0, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer, mic: o.p.mic === 1 });
+    people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit: typeof o.p.sit === 'number' && o.p.sit >= 0, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer, mic: o.p.mic === 1, champ: o.p.ch === 1, sm: smOf(o) });
   }
   for (const p of people) {
     items.push({ y: p.y, d: () => {
@@ -1919,6 +2652,7 @@ function render(t) {
         if (p.fish === 'bite') { ctx.strokeStyle = 'rgba(220,240,255,0.7)'; ctx.beginPath(); ctx.ellipse(bx, by + 2, 9 + Math.sin(t * 12) * 3, 3, 0, 0, Math.PI * 2); ctx.stroke(); }
       }
       drawAvatar(ctx, p.x, p.y, p.av, { t: t + p.x * 0.01, moving: p.moving, face: p.face, sit: p.sit });
+      if (p.sm) drawRoastStick(ctx, p, t);
     } });
   }
   items.sort((a, b) => a.y - b.y);
@@ -1969,7 +2703,7 @@ function render(t) {
   const now = performance.now();
   for (const p of people) {
     const [sx, sy] = w2s(p.x, p.y);
-    drawNameTag(ctx, sx, sy + 6, p.name, p.mine, p.holder, p.mic);
+    drawNameTag(ctx, sx, sy + 6, p.name, p.mine, p.holder, p.mic, p.champ);
     const spk = voice.speaking.get(p.key);
     if (spk && now - spk < 350) {
       const hy = sy - (p.sit ? 30 : 38) * ZOOM, pulse = 1 + Math.sin(now / 90) * 0.12;
@@ -2030,6 +2764,7 @@ function frame(now) {
     for (const o of others.values()) { if (o.p) { o.rx += (num(o.p.x, o.rx) - o.rx) * 0.2; o.ry += (num(o.p.y, o.ry) - o.ry) * 0.2; } }
     drawPreview();
   } else step(dt, t);
+  smTick(dt);
   render(t);
   storyTick += dt;
   if (storyTick > 0.5) { storyTick = 0; if (me.sit >= 0) renderStory(false); }

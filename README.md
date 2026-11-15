@@ -1,6 +1,6 @@
 # Campfire
 
-A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, and sit by the fire to share stories with prompt cards and a talking stick.
+A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, and see who can roast the best s'more.
 
 Friends join from a link or QR code. No accounts, no app install: it runs in any modern browser on phones and computers.
 
@@ -51,10 +51,23 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Chat | Enter, type, Enter | Type in the bar at the bottom |
 | Sit, stand, fish | E or the button above the chat bar | The button above the chat bar |
 | Voice | M or the mic button | The mic button, left of the chat bar |
+| Start or join a s'mores round | R or **Roast s'mores** | **Roast s'mores** / **Grab a stick!** |
+| Roast / serve | Hold Space / F | Hold **Hold to roast** / tap **Serve!** |
 
 ## Voice chat
 
 Tap the mic button to talk. The browser asks for microphone permission the first time. Voice goes directly between players' browsers (WebRTC); the server only introduces them. Friends next to you sound normal, friends farther away fade out, and everyone seated at the fire hears each other fully. Works for about 8 people. On some strict networks (certain mobile data or office Wi-Fi) two players may not connect for voice; text chat still works.
+
+## S'mores showdown
+
+Walk up to the fire and tap **Roast s'mores**. Everyone else at the fire gets 8 seconds to tap **Grab a stick!** (the starter can tap **Start now** instead of waiting). After a 3-2-1 countdown, everyone roasts at once for 22 seconds:
+
+- **Hold** to dip your marshmallow into the flames. Let go to pull it out.
+- Watch the **heat** gauge. Hold too long and it catches fire: tap three times to blow it out, then grab a fresh one or serve the charcoal.
+- When the fire crackles, a **flare-up** is coming. Pull out fast.
+- Tap **Serve!** when it looks golden brown. Serving early or late both cost points.
+
+Closest to golden wins and gets a 👑 on their name tag until the next round. Friends watching can see everyone's sticks over the fire, and the whole campsite hears who caught fire and who won. Playing alone still works, with a personal best saved on your device.
 
 ## Forest scares
 
