@@ -242,6 +242,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .log-line b { font-weight: 700; }
 .log-line.sys { color: var(--muted); font-style: italic; }
 .log-line.old { opacity: 0.35; }
+/* Messages fade away completely after a few seconds so the campsite stays clear.
+   They come back while you're typing in the chat box. */
+.log-line.gone { opacity: 0; transition: opacity 1.6s; }
+#log.peek .log-line { opacity: 1; transition: opacity 0.2s; }
+#log.peek .log-line.old:not(:nth-last-child(-n+3)) { opacity: 0.6; }
 
 /* ---------- story panel ---------- */
 #story {
@@ -1239,6 +1244,7 @@ $('passBtn').addEventListener('click', () => {
 
 // ===== Chat & emotes =====
 const logBox = $('log');
+const LOG_SHOW_MS = 8000; // how long a chat line stays before fading out
 function addLog(name, text, sys, color) {
   const div = document.createElement('div');
   div.className = 'log-line' + (sys ? ' sys' : '');
@@ -1247,9 +1253,10 @@ function addLog(name, text, sys, color) {
   logBox.appendChild(div);
   while (logBox.children.length > 5) logBox.removeChild(logBox.firstChild);
   [...logBox.children].forEach((c, i, arr) => c.classList.toggle('old', i < arr.length - 3));
-  clearTimeout(div._t);
-  setTimeout(() => { div.classList.add('old'); }, 15000);
+  setTimeout(() => { div.classList.add('gone'); }, LOG_SHOW_MS);
 }
+$('chatInput').addEventListener('focus', () => logBox.classList.add('peek'));
+$('chatInput').addEventListener('blur', () => logBox.classList.remove('peek'));
 function say(text, kind) {
   me.msgId += 1;
   me.msgs = me.msgs.concat([{ i: me.msgId, t: text, k: kind || 'c' }]).slice(-3);
@@ -1582,7 +1589,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.5';
+const VERSION = 'v0.5.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
