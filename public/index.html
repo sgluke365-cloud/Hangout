@@ -616,7 +616,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
-    <p><b>The old church:</b> it hides in the top-right corner of the woods. Look for the signpost by the yellow tent and follow the overgrown trail east. Inside it's warm and quiet: sit on a pew, read the old book, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
+    <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -672,7 +672,8 @@ function newRoomCode() {
   const b = ['otter', 'fox', 'owl', 'pine', 'fern', 'moth', 'robin', 'badger', 'heron', 'maple'];
   return a[Math.floor(Math.random() * a.length)] + '-' + b[Math.floor(Math.random() * b.length)] + '-' + (10 + Math.floor(Math.random() * 90));
 }
-const W = 1800, H = 1300;
+// The campsite was 1800 wide; the deep woods east of it were added later (W0 marks the old edge).
+const W0 = 1800, W = 2500, H = 1300;
 const FIRE = { x: 900, y: 600 };
 const EARSHOT = 270;
 const SPEED = 175;
@@ -680,17 +681,14 @@ const LAKE = { x: 1390, y: 960, rx: 250, ry: 150 };
 const DOCK = { x0: 1095, x1: 1272, y0: 946, y1: 976 };
 const FISH_SPOT = { x: 1250, y: 961 };
 const TENTS = [{ x: 690, y: 410, c: '#c4674a', d: '#8e4330' }, { x: 1120, y: 420, c: '#d4ad56', d: '#9a7a33' }];
-// The old church, deep in the woods at the top-right corner of the map.
-// x/y is the middle of the front wall, at the door.
-const CHURCH = { x: 1606, y: 398, w: 236, d: 124 };
-const YARD = { x: 1600, y: 365, rx: 200, ry: 150 }; // the churchyard clearing (the devil keeps off it)
-// an overgrown trail from the yellow tent to the church door
-const TRAIL = [[1135, 470], [1240, 490], [1340, 480], [1440, 464], [1530, 452], [1606, 444]];
-const SIGN = { x: 1170, y: 508 };
-const GRAVES = [{ x: 1730, y: 436, tilt: -0.08 }, { x: 1700, y: 474, tilt: 0.1 }, { x: 1748, y: 396, tilt: 0.04 }];
+// The old church, hidden in the far top-right corner of the deep woods. No sign, no path:
+// you have to go looking for it. x/y is the middle of the front wall, at the door.
+const CHURCH = { x: 2268, y: 420, w: 236, d: 124 };
+const YARD = { x: 2262, y: 388, rx: 178, ry: 136 }; // a small clearing round it (the devil keeps off it)
+const GRAVES = [{ x: 2392, y: 455, tilt: -0.08 }, { x: 2364, y: 492, tilt: 0.1 }, { x: 2410, y: 417, tilt: 0.04 }];
 // Inside the church is its own room, kept off the edge of the map, so walking,
 // earshot and voice all work the same in there without any server changes.
-const IN = { x0: 2300, y0: 100, w: 560, h: 814 };
+const IN = { x0: W + 800, y0: 100, w: 560, h: 814 };
 IN.x1 = IN.x0 + IN.w; IN.y1 = IN.y0 + IN.h; IN.cx = IN.x0 + IN.w / 2;
 const WALL = 190;                        // the tall back wall, seen face on
 const iy = v => IN.y0 + WALL + v;        // a height in the room, measured from the foot of the back wall
@@ -836,9 +834,9 @@ for (let tries = 0; TREES.length < 95 && tries < 4000; tries++) {
   let x, y;
   if (edge) {
     const side = Math.floor(rand() * 4);
-    x = side < 2 ? rand() * W : (side === 2 ? rand() * 120 : W - rand() * 120);
+    x = side < 2 ? rand() * W0 : (side === 2 ? rand() * 120 : W0 - rand() * 120);
     y = side >= 2 ? rand() * H : (side === 0 ? rand() * 140 : H - rand() * 90);
-  } else { x = 80 + rand() * (W - 160); y = 120 + rand() * (H - 200); }
+  } else { x = 80 + rand() * (W0 - 160); y = 120 + rand() * (H - 200); }
   if (dist(x, y, FIRE.x, FIRE.y) < 320) continue;
   if (inLake(x, y, 1.6)) continue;
   if (TENTS.some(t => dist(x, y, t.x, t.y) < 110)) continue;
@@ -848,17 +846,33 @@ for (let tries = 0; TREES.length < 95 && tries < 4000; tries++) {
 }
 const ROCKS = [];
 for (let i = 0; i < 26; i++) {
-  const x = 60 + rand() * (W - 120), y = 80 + rand() * (H - 160);
+  const x = 60 + rand() * (W0 - 120), y = 80 + rand() * (H - 160);
   if (dist(x, y, FIRE.x, FIRE.y) < 260 || inLake(x, y, 1.2) || nearPath(x, y, 30)) continue;
   ROCKS.push({ x, y, r: 6 + rand() * 9, flower: rand() < 0.5 });
 }
 // Clear the churchyard and the old trail (after the rest of the woods are placed, so
 // nothing else moves), then thicken the trees around the church so it sits deep in the forest.
 const yardPad = (x, y, k) => { const u = (x - YARD.x) / (YARD.rx * k), v = (y - YARD.y) / (YARD.ry * k); return u * u + v * v < 1; };
-// keep a clear lawn in front of the door so nobody walking out disappears behind a tree
-const frontLawn = (x, y) => Math.abs(x - CHURCH.x) < 120 && y > CHURCH.y && y < CHURCH.y + 230;
-for (let i = TREES.length - 1; i >= 0; i--) { const t = TREES[i]; if (yardPad(t.x, t.y, 1.06) || frontLawn(t.x, t.y) || nearLine(TRAIL, t.x, t.y, 46)) TREES.splice(i, 1); }
-for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (yardPad(k.x, k.y, 1) || nearLine(TRAIL, k.x, k.y, 26)) ROCKS.splice(i, 1); }
+// keep a small lawn in front of the door so nobody walking out disappears behind a tree
+const frontLawn = (x, y) => Math.abs(x - CHURCH.x) < 110 && y > CHURCH.y && y < CHURCH.y + 160;
+for (let i = TREES.length - 1; i >= 0; i--) { const t = TREES[i]; if (yardPad(t.x, t.y, 1.06) || frontLawn(t.x, t.y)) TREES.splice(i, 1); }
+for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (yardPad(k.x, k.y, 1)) ROCKS.splice(i, 1); }
+// The deep woods past the old eastern tree line: thick, dark, and easy to get lost in.
+{
+  const r3 = mulberry(77);
+  for (let tries = 0, n = 0; n < 185 && tries < 12000; tries++) {
+    const x = W0 - 60 + r3() * (W - W0 + 40), y = 40 + r3() * (H - 60);
+    const s = 0.85 + r3() * 0.6, pine = r3() < 0.72, hue = r3();
+    if (x > W - 18 || yardPad(x, y, 1.04) || frontLawn(x, y) || inLake(x, y, 1.7)) continue;
+    if (TREES.some(t => dist(x, y, t.x, t.y) < 50)) continue;
+    TREES.push({ x, y, s, pine, hue });
+    n++;
+  }
+  for (let i = 0; i < 14; i++) {
+    const x = W0 + r3() * (W - W0 - 40), y = 80 + r3() * (H - 160), rr = 6 + r3() * 9;
+    if (!yardPad(x, y, 1.1)) ROCKS.push({ x, y, r: rr, flower: false });
+  }
+}
 {
   const r2 = mulberry(31);
   for (let tries = 0, n = 0; n < 26 && tries < 4000; tries++) {
@@ -866,8 +880,8 @@ for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (yardPad(k.
     const x = YARD.x + Math.cos(a) * YARD.rx * k, y = YARD.y + Math.sin(a) * YARD.ry * k;
     const s = 0.8 + r2() * 0.55, pine = r2() < 0.65, hue = r2();
     if (x < 30 || x > W - 30 || y < 150 || y > H - 30) continue;
-    if (dist(x, y, FIRE.x, FIRE.y) < 330 || nearPath(x, y, 60) || nearLine(TRAIL, x, y, 52) || frontLawn(x, y)) continue;
-    if (TENTS.some(t => dist(x, y, t.x, t.y) < 110) || dist(x, y, SIGN.x, SIGN.y) < 40) continue;
+    if (dist(x, y, FIRE.x, FIRE.y) < 330 || nearPath(x, y, 60) || frontLawn(x, y)) continue;
+    if (TENTS.some(t => dist(x, y, t.x, t.y) < 110)) continue;
     if (TREES.some(t => dist(x, y, t.x, t.y) < 56)) continue;
     TREES.push({ x, y, s, pine, hue });
     n++;
@@ -888,7 +902,6 @@ function blocked(x, y) {
   for (const t of TENTS) if (x > t.x - 62 && x < t.x + 62 && y > t.y - 34 && y < t.y + 6) return true;
   if (Math.abs(x - CHURCH.x) < CHURCH.w / 2 && y > CHURCH.y - CHURCH.d && y < CHURCH.y + 4) return true;
   for (const s of GRAVES) if (dist(x, y, s.x, s.y + 2) < 9) return true;
-  if (dist(x, y, SIGN.x, SIGN.y) < 6) return true;
   for (const t of TREES) if (dist(x, y, t.x, t.y) < 13 * t.s) return true;
   return false;
 }
@@ -916,12 +929,26 @@ ground.width = W; ground.height = H;
   g.fillStyle = '#3d6a45'; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 900; i++) {
     g.fillStyle = r() < 0.5 ? 'rgba(80,130,80,0.25)' : 'rgba(30,70,45,0.25)';
-    g.beginPath(); g.ellipse(r() * W, r() * H, 20 + r() * 60, 12 + r() * 35, r() * 3, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(r() * W0, r() * H, 20 + r() * 60, 12 + r() * 35, r() * 3, 0, Math.PI * 2); g.fill();
   }
   g.strokeStyle = 'rgba(120,170,105,0.5)'; g.lineWidth = 1.4;
   for (let i = 0; i < 1600; i++) {
-    const x = r() * W, y = r() * H;
+    const x = r() * W0, y = r() * H;
     g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y - 6); g.moveTo(x + 2, y); g.lineTo(x + 3, y - 5); g.stroke();
+  }
+  // the deep woods: darker, mossier ground with fallen leaves
+  {
+    const dr = mulberry(83);
+    const dg = g.createLinearGradient(W0 - 160, 0, W0 + 220, 0);
+    dg.addColorStop(0, 'rgba(22,48,34,0)'); dg.addColorStop(1, 'rgba(22,48,34,0.5)');
+    g.fillStyle = dg; g.fillRect(W0 - 160, 0, W - W0 + 160, H);
+    for (let i = 0; i < 420; i++) {
+      g.fillStyle = dr() < 0.5 ? 'rgba(50,90,58,0.3)' : 'rgba(18,40,28,0.35)';
+      g.beginPath(); g.ellipse(W0 - 40 + dr() * (W - W0 + 40), dr() * H, 20 + dr() * 60, 12 + dr() * 35, dr() * 3, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = 'rgba(100,150,95,0.4)'; g.lineWidth = 1.4;
+    for (let i = 0; i < 700; i++) { const x = W0 + dr() * (W - W0), y = dr() * H; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y - 6); g.moveTo(x + 2, y); g.lineTo(x + 3, y - 5); g.stroke(); }
+    for (let i = 0; i < 260; i++) { g.fillStyle = ['rgba(120,80,40,0.5)', 'rgba(150,110,50,0.45)', 'rgba(90,60,30,0.5)'][i % 3]; g.save(); g.translate(W0 + dr() * (W - W0), dr() * H); g.rotate(dr() * 6); g.beginPath(); g.ellipse(0, 0, 3.5, 2, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
   }
   // clearing
   const cg = g.createRadialGradient(FIRE.x, FIRE.y, 40, FIRE.x, FIRE.y, 250);
@@ -938,28 +965,12 @@ ground.width = W; ground.height = H;
     const x = p[k][0] + (p[k + 1][0] - p[k][0]) * t + (r() - 0.5) * 30, y = p[k][1] + (p[k + 1][1] - p[k][1]) * t + (r() - 0.5) * 30;
     g.fillStyle = 'rgba(60,44,30,0.35)'; g.beginPath(); g.arc(x, y, 1.5 + r() * 2, 0, Math.PI * 2); g.fill();
   }
-  // churchyard: a mossy clearing, then the old trail, half swallowed by grass
+  // churchyard: a small mossy clearing in the deep woods
   {
     const cr = mulberry(41);
     const yg = g.createRadialGradient(YARD.x, YARD.y, 30, YARD.x, YARD.y, YARD.rx);
     yg.addColorStop(0, '#5b7f52'); yg.addColorStop(0.75, 'rgba(84,122,78,0.85)'); yg.addColorStop(1, 'rgba(84,122,78,0)');
     g.fillStyle = yg; g.beginPath(); g.ellipse(YARD.x, YARD.y, YARD.rx + 20, YARD.ry + 20, 0, 0, Math.PI * 2); g.fill();
-    // the trail: broken dirt patches with grass growing through
-    for (let i = 0; i < TRAIL.length - 1; i++) {
-      const [ax, ay] = TRAIL[i], [bx, by] = TRAIL[i + 1], L = dist(ax, ay, bx, by);
-      for (let s = 0; s < L; s += 9) {
-        if (cr() < 0.22) continue;
-        const k = s / L, x = ax + (bx - ax) * k + (cr() - 0.5) * 14, y = ay + (by - ay) * k + (cr() - 0.5) * 10;
-        g.fillStyle = cr() < 0.5 ? 'rgba(112,88,60,0.55)' : 'rgba(96,76,52,0.45)';
-        g.beginPath(); g.ellipse(x, y, 9 + cr() * 9, 6 + cr() * 5, cr() * 3, 0, Math.PI * 2); g.fill();
-      }
-    }
-    g.strokeStyle = 'rgba(120,170,105,0.65)'; g.lineWidth = 1.4;
-    for (let i = 0; i < 260; i++) {
-      const seg = Math.floor(cr() * (TRAIL.length - 1)), k = cr();
-      const x = TRAIL[seg][0] + (TRAIL[seg + 1][0] - TRAIL[seg][0]) * k + (cr() - 0.5) * 34, y = TRAIL[seg][1] + (TRAIL[seg + 1][1] - TRAIL[seg][1]) * k + (cr() - 0.5) * 26;
-      g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y - 6); g.moveTo(x + 2, y); g.lineTo(x + 3, y - 5); g.stroke();
-    }
     // flagstones up to the door
     for (let i = 0; i < 4; i++) {
       const y = CHURCH.y + 12 + i * 11, x = CHURCH.x + (i % 2 ? 5 : -4);
@@ -2002,7 +2013,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.6.1';
+const VERSION = 'v0.6.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -3324,19 +3335,6 @@ function drawGrave(g, s) {
   g.fillStyle = 'rgba(80,120,70,0.75)'; g.beginPath(); g.ellipse(-3, -1, 7, 3, 0, 0, Math.PI * 2); g.fill();
   g.restore();
 }
-function drawSign(g) {
-  g.save(); g.translate(SIGN.x, SIGN.y);
-  g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(0, 2, 10, 3.5, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#5a3d28'; g.fillRect(-2.5, -42, 5, 43);
-  // a board shaped like an arrow pointing east down the trail, with a little church painted on it
-  g.fillStyle = '#8a6a47'; g.strokeStyle = '#4a3322'; g.lineWidth = 1.5;
-  g.beginPath(); g.moveTo(34, -38); g.lineTo(25, -47); g.lineTo(-14, -47); g.lineTo(-14, -29); g.lineTo(25, -29); g.closePath(); g.fill(); g.stroke();
-  g.fillStyle = '#f3e6c8';
-  g.beginPath(); g.moveTo(11, -32); g.lineTo(11, -38); g.lineTo(5, -43); g.lineTo(-1, -38); g.lineTo(-1, -32); g.closePath(); g.fill();
-  g.strokeStyle = '#f3e6c8'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(5, -43); g.lineTo(5, -46.5); g.moveTo(3.4, -45.2); g.lineTo(6.6, -45.2); g.stroke();
-  g.fillStyle = '#4a3322'; g.fillRect(3.5, -36, 3, 4);
-  g.restore();
-}
 
 // ---- drawing: inside ----
 function drawPew(g, p, back) {
@@ -3829,7 +3827,7 @@ function updateActionBtn() {
 
 // ===== Simulation =====
 const cam = { x: me.x, y: me.y };
-const fireflies = Array.from({ length: 34 }, () => ({ x: Math.random() * W, y: Math.random() * H, p: Math.random() * 10, s: 0.5 + Math.random() }));
+const fireflies = Array.from({ length: 46 }, () => ({ x: Math.random() * W, y: Math.random() * H, p: Math.random() * 10, s: 0.5 + Math.random() }));
 const embers = [];
 function step(dt, t) {
   if (!joined) return;
@@ -4081,11 +4079,12 @@ function drawPerson(p, t) {
   if (p.sm) drawRoastStick(ctx, p, t);
 }
 // Night over the scene, with soft holes cut where light falls.
-function darkPass(fill, holes, vignette) {
+function darkPass(fill, holes, vignette, shade) {
   const dw = dark.width, dh = dark.height, sc = dw / VW;
   dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
   dctx.fillStyle = fill; dctx.fillRect(0, 0, dw, dh);
+  if (shade) shade(dctx, sc, dw, dh);
   dctx.globalCompositeOperation = 'destination-out';
   holes((x, y, r, a) => {
     const [sx, sy] = w2s(x, y), rr = r * ZOOM * sc;
@@ -4136,13 +4135,15 @@ function render(t) {
       const l = 10 + Math.sin(t * 2 + i) * 6;
       ctx.beginPath(); ctx.moveTo(x - l, y); ctx.lineTo(x + l, y); ctx.stroke();
     }
-    for (const tr of TREES) items.push({ y: tr.y, d: () => drawTree(ctx, tr) });
+    // only the trees on screen (a tree's crown reaches well above its trunk, so look further down)
+    const hw = VW / 2 / ZOOM, hh = VH / 2 / ZOOM;
+    const vx0 = cam.x - hw - 80, vx1 = cam.x + hw + 80, vy0 = cam.y - hh - 30, vy1 = cam.y + hh + 200;
+    for (const tr of TREES) if (tr.x > vx0 && tr.x < vx1 && tr.y > vy0 && tr.y < vy1) items.push({ y: tr.y, d: () => drawTree(ctx, tr) });
     for (const tn of TENTS) items.push({ y: tn.y, d: () => drawTent(ctx, tn) });
     items.push({ y: FIRE.y + 6, d: () => drawFire(ctx, t) });
     items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
     items.push({ y: CHURCH.y, d: () => drawChurch(ctx, t) });
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });
-    items.push({ y: SIGN.y, d: () => drawSign(ctx) });
   }
   for (const p of people) items.push({ y: p.y, d: () => drawPerson(p, t) });
   items.sort((a, b) => a.y - b.y);
@@ -4160,6 +4161,13 @@ function lightCamp(t, people) {
     hole(FIRE.x, FIRE.y - 10, 360 * flick, 1);
     for (const L of LIGHTS) hole(L.x, L.y, L.r, 0.85);
     for (const p of people) hole(p.x, p.y - 20, 80, 0.55);
+  }, false, (d, sc, dw, dh) => {
+    // the deep woods past the old tree line are darker still
+    const x0 = w2s(W0 - 150, 0)[0] * sc, x1 = w2s(W0 + 260, 0)[0] * sc;
+    if (x0 >= dw) return;
+    const gr = d.createLinearGradient(x0, 0, x1, 0);
+    gr.addColorStop(0, 'rgba(6,10,24,0)'); gr.addColorStop(1, 'rgba(6,10,24,0.24)');
+    d.fillStyle = gr; d.fillRect(Math.max(0, x0), 0, dw - Math.max(0, x0), dh);
   });
   // warm glow
   ctx.save(); ctx.globalCompositeOperation = 'lighter';

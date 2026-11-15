@@ -76,7 +76,7 @@ Linger in the deep forest and glowing eyes start watching from the trees. Stay a
 
 ## The old church
 
-By the yellow tent, a signpost points east down an overgrown trail to an abandoned gothic church hidden in the top-right corner of the woods. Walk up into the door (or tap the church) to go inside.
+Somewhere in the deep woods past the eastern tree line, an abandoned gothic church is hidden in a small clearing. There's no sign and no path: you have to go looking, and the forest devil lives out there too. When you find it, walk up into the door (or tap the church) to go inside.
 
 Inside is a quiet, candlelit ruin just for the people in there: moonbeams through tall arched windows, a checkered marble floor, golden candelabras and an iron chandelier over the aisle. Friends inside see and hear each other, and the forest can't reach you. Sit on a pew, read the note in the old hymn book by the altar, or try the candle stand. (On slower devices the soft blur at the top and bottom of the screen turns itself off.)
 
