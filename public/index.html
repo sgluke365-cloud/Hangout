@@ -104,6 +104,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-ghost { border: 1px solid var(--line); background: rgba(255,255,255,0.05); border-radius: 12px; padding: 8px 12px; font-size: 14px; }
+.lobby-field { display: flex; gap: 8px; }
+.lobby-field .text-input { flex: 1; min-width: 0; }
+.dice-btn {
+  flex: none; width: 50px; border-radius: 12px; border: 1px solid var(--line);
+  background: rgba(255,255,255,0.05); color: var(--cream); padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.dice-btn:hover { border-color: var(--ember); }
+.dice-btn.roll svg { animation: diceRoll 0.4s ease-out; }
+@keyframes diceRoll { from { transform: rotate(-200deg) scale(0.7); } to { transform: none; } }
+.lobby-hint { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.lobby-hint b { color: var(--cream); }
+.lobby-hint.warn { color: var(--ember-hot); }
 .join-note { text-align: center; color: var(--muted); font-size: 13px; margin: 0; }
 .join-note b { color: var(--cream); }
 .linkish { background: none; border: 0; padding: 0; color: var(--ember-hot); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
@@ -393,9 +406,18 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <label for="nameInput">Your name at the fire</label>
       <input class="text-input" id="nameInput" maxlength="16" placeholder="e.g. Maya" autocomplete="nickname">
     </div>
+    <div class="name-row" id="lobbyRow" hidden>
+      <label for="lobbyInput">Lobby name</label>
+      <div class="lobby-field">
+        <input class="text-input" id="lobbyInput" maxlength="32" placeholder="e.g. maya-birthday" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go">
+        <button class="dice-btn" id="diceBtn" type="button" aria-label="Make up a new lobby name" title="Make up a new lobby name">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <p class="lobby-hint" id="lobbyHint">Friends who type the same lobby name end up at the same fire.</p>
+    </div>
     <button class="btn-primary" id="joinBtn" type="button" disabled>Join the campfire</button>
     <p class="join-note" id="joinNote">Connecting to the campsite…</p>
-    <p class="join-note" id="roomLine" hidden>Campfire code <b id="roomCodeText"></b> · <button class="linkish" id="newRoomBtn" type="button">Start a new campfire</button></p>
   </div>
 </div>
 
@@ -530,12 +552,23 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 const ARTIFACT_URL = 'https://claude.ai/artifact/Nujt744UbhdunFie1U7KHu';
 const IN_CLAUDE = !!(window.claude && typeof window.claude.use === 'function');
 const HOSTED = !IN_CLAUDE && /^https?:$/.test(location.protocol);
-const ROOM_CODE = HOSTED ? getRoomCode() : '';
+// A lobby in the link means a friend invited you (unless it's just your own last lobby after a reload).
+const INVITED_TO = (() => {
+  if (!HOSTED) return '';
+  let h = ''; try { h = cleanLobby(decodeURIComponent(location.hash.slice(1))).replace(/^-+|-+$/g, ''); } catch (e) { }
+  return h.length >= 3 && h !== cleanLobby(load('campfire.lobby') || '') ? h : '';
+})();
+let ROOM_CODE = HOSTED ? getRoomCode() : '';
+// Lobby names become the room code: lowercase letters, numbers and dashes, 3–32 long.
+function cleanLobby(v) { return String(v || '').toLowerCase().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-{2,}/g, '-').slice(0, 32); }
+function lobbyOk(v) { const c = v.replace(/^-+|-+$/g, ''); return c.length >= 3; }
 function joinUrl() { return IN_CLAUDE ? ARTIFACT_URL : (HOSTED ? location.origin + location.pathname + '#' + ROOM_CODE : ''); }
 function getRoomCode() {
-  const h = decodeURIComponent(location.hash.slice(1)).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 32);
+  const h = cleanLobby(decodeURIComponent(location.hash.slice(1))).replace(/^-+|-+$/g, '');
   if (h.length >= 3) return h;
-  const code = newRoomCode();
+  // No lobby in the link: reuse the last lobby on this device, or make one up.
+  const last = cleanLobby(load('campfire.lobby') || '').replace(/^-+|-+$/g, '');
+  const code = last.length >= 3 ? last : newRoomCode();
   try { history.replaceState(null, '', '#' + code); } catch (e) { location.hash = code; }
   return code;
 }
@@ -860,15 +893,51 @@ function drawPreview() {
   pctx.setTransform(3.6, 0, 0, 3.6, 150, 300);
   drawAvatar(pctx, 0, -6, me.av, { face: 0, t: performance.now() / 1000 });
 }
+// ----- Lobby name on the join screen -----
+const lobbyInput = $('lobbyInput');
+let lobbyTimer = 0;
+function lobbyValue() { return cleanLobby(lobbyInput.value).replace(/^-+|-+$/g, ''); }
+function updateLobbyHint() {
+  const hint = $('lobbyHint'), v = lobbyValue();
+  hint.classList.remove('warn');
+  if (!lobbyOk(v)) { hint.textContent = 'Give the lobby a name of at least 3 letters or numbers, or tap the dice.'; hint.classList.add('warn'); return; }
+  if (INVITED_TO && v === INVITED_TO) { hint.innerHTML = ''; hint.append('You were invited to this lobby. Friends who type the same name end up at the same fire.'); return; }
+  hint.textContent = 'Friends who type the same lobby name end up at the same fire.';
+}
+function switchLobby(code) {
+  if (!code || code === ROOM_CODE) return;
+  ROOM_CODE = code;
+  try { history.replaceState(null, '', '#' + code); } catch (e) { }
+  const box = $('qrBox'); delete box.dataset.done; box.innerHTML = '';
+  netError = '';
+  if (room && typeof room.setRoom === 'function') { room.setRoom(code); lastPeersCount = 0; }
+  updateStatus();
+}
 if (HOSTED) {
-  $('roomLine').hidden = false;
-  $('roomCodeText').textContent = ROOM_CODE;
-  $('newRoomBtn').addEventListener('click', () => { location.hash = newRoomCode(); });
+  $('lobbyRow').hidden = false;
+  lobbyInput.value = ROOM_CODE;
+  lobbyInput.addEventListener('input', () => {
+    const pos = lobbyInput.selectionStart, before = lobbyInput.value;
+    const after = cleanLobby(before);
+    if (after !== before) { lobbyInput.value = after; const d = before.length - after.length; try { lobbyInput.setSelectionRange(Math.max(0, pos - d), Math.max(0, pos - d)); } catch (e) { } }
+    updateLobbyHint(); updateJoinBtn();
+    clearTimeout(lobbyTimer);
+    lobbyTimer = setTimeout(() => { if (lobbyOk(lobbyValue())) switchLobby(lobbyValue()); }, 450);
+  });
+  lobbyInput.addEventListener('blur', () => { lobbyInput.value = lobbyValue() || lobbyInput.value; });
+  lobbyInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !$('joinBtn').disabled) doJoin(); });
+  $('diceBtn').addEventListener('click', () => {
+    const b = $('diceBtn'); b.classList.remove('roll'); void b.offsetWidth; b.classList.add('roll');
+    lobbyInput.value = newRoomCode(); clearTimeout(lobbyTimer);
+    updateLobbyHint(); updateJoinBtn(); switchLobby(lobbyValue());
+  });
+  updateLobbyHint();
 }
 $('shuffleBtn').addEventListener('click', () => { me.av = randomAvatar(); buildSwatches(); drawPreview(); });
 const nameInput = $('nameInput');
 nameInput.value = me.name;
-function updateJoinBtn() { $('joinBtn').disabled = cleanText(nameInput.value, 16).length === 0; }
+function canJoin() { return cleanText(nameInput.value, 16).length > 0 && (!HOSTED || lobbyOk(lobbyValue())); }
+function updateJoinBtn() { $('joinBtn').disabled = !canJoin(); }
 nameInput.addEventListener('input', updateJoinBtn);
 nameInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !$('joinBtn').disabled) doJoin(); });
 $('joinBtn').addEventListener('click', doJoin);
@@ -876,7 +945,13 @@ buildSwatches(); drawPreview(); updateJoinBtn();
 
 function doJoin() {
   me.name = cleanText(nameInput.value, 16);
-  if (!me.name) return;
+  if (!me.name || !canJoin()) return;
+  if (HOSTED) {
+    clearTimeout(lobbyTimer);
+    lobbyInput.value = lobbyValue();
+    switchLobby(lobbyValue());
+    store('campfire.lobby', ROOM_CODE);
+  }
   store('campfire.me', { name: me.name, av: me.av });
   joined = true;
   getAC();
@@ -895,7 +970,8 @@ window.addEventListener('hashchange', () => { if (HOSTED && location.hash.slice(
 
 // Same shape as the Claude room capability (presence / onPeers / onConnection),
 // backed by this project's own WebSocket server.
-function makeNetRoom(code) {
+function makeNetRoom(startCode) {
+  let code = startCode;
   const myId = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).replace(/[^a-z0-9]/g, '').slice(0, 16);
   let ws = null, conn = false, backoff = 600;
   let mine = {}, sent = {}, queued = null, timer = 0, notify = false;
@@ -955,7 +1031,14 @@ function makeNetRoom(code) {
     peers: snapshot,
     connected: () => conn,
     signal(to, d) { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ t: 'sig', to, d })); },
-    onSignal(h) { sigHandlers.push(h); return () => { }; }
+    onSignal(h) { sigHandlers.push(h); return () => { }; },
+    // Move to another lobby (used while choosing a lobby on the join screen).
+    setRoom(next) {
+      if (next === code) return;
+      code = next; others.clear(); emitPeers();
+      if (ws) { const old = ws; old.onclose = null; old.onerror = null; old.onmessage = null; try { old.close(); } catch (e) { } }
+      setConn(false); backoff = 600; connect();
+    }
   };
 }
 let netError = '';
@@ -1053,14 +1136,14 @@ function updateStatus() {
   const live = room && connected;
   $('statusDot').classList.toggle('live', !!live);
   $('statusText').textContent = netError === 'room_full' ? 'This campfire is full' : live ? (n <= 1 ? 'Just you at the campsite' : `${n} at the campsite`) : (room ? 'Connecting…' : 'Solo');
-  if (netError === 'room_full' && !joined) $('joinNote').textContent = 'This campfire is full (12 people). Start a new one below.';
+  if (netError === 'room_full' && !joined) $('joinNote').textContent = 'This lobby is full (12 people). Pick another name or tap the dice.';
   if (n > lastPeersCount && lastPeersCount > 0 && joined && soundOn) chime();
   lastPeersCount = n;
   if (!joined && room) {
     const k = [...others.values()].filter(o => o.p && o.p.n).length;
-    if (netError !== 'room_full') $('joinNote').textContent = k ? `${k} ${k === 1 ? 'friend is' : 'friends are'} already by the fire.` : (connected ? (HOSTED ? 'Nobody here yet. Join, then share the invite link.' : 'The campsite is live. Friends who open this page appear here.') : 'Connecting to the campsite…');
+    if (netError !== 'room_full') $('joinNote').textContent = k ? `${k} ${k === 1 ? 'friend is' : 'friends are'} already by the fire.` : (connected ? (HOSTED ? 'Nobody in this lobby yet. Join, then tap Invite to bring friends.' : 'The campsite is live. Friends who open this page appear here.') : 'Connecting to the campsite…');
   }
-  $('joinBtn').disabled = cleanText(nameInput.value, 16).length === 0;
+  updateJoinBtn();
 }
 
 // ===== Story circle =====
@@ -1229,9 +1312,10 @@ $('helpBtn').addEventListener('click', () => openModal('helpModal'));
 $('inviteBtn').addEventListener('click', () => {
   const url = joinUrl();
   $('inviteNote').textContent = HOSTED
-    ? `Friends scan the code or open the link, type a name, and walk in. No account needed. Campfire code: ${ROOM_CODE}`
+    ? 'Friends scan the code or open the link, type a name, and walk into this lobby. No account needed. Or they can type the lobby name: '
     : IN_CLAUDE ? 'Friends scan the code or open the link, type a name, and walk in. To join the live campsite they need a Claude account, and you need to add them with Share on this page.'
     : 'Put this page online to invite friends.';
+  if (HOSTED) { const b = document.createElement('b'); b.textContent = ROOM_CODE; $('inviteNote').append(b); }
   if (url) {
     $('linkRow').hidden = false; $('linkInput').value = url;
     const box = $('qrBox');
@@ -1498,7 +1582,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.4.1';
+const VERSION = 'v0.5';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {

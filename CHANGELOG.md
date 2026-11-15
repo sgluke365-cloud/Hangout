@@ -4,6 +4,7 @@ Each version is saved on GitHub as its own branch (`release-v0.1`, `release-v0.2
 
 | Version | Branch | What changed |
 | --- | --- | --- |
+| v0.5 | `release-v0.5` | Lobbies: the join screen has a Lobby name box. Type any name (friends who type the same name meet at the same fire), or tap the dice for a made-up one. Invite links fill in the lobby for friends, and you see how many people are already there before joining. Your last lobby is remembered on your device. |
 | v0.4.1 | `release-v0.4.1` | S'mores instructions: the help panel and README now say you can click and hold **Hold to roast** with the mouse (not just Space), and click **Roast s'mores** / **Serve!**. A short how-to line shows in the s'mores panel until you first roast. The help panel now scrolls on small phones instead of getting cut off. |
 | v0.4 | `release-v0.4` | S'mores showdown: anyone at the fire can start a round, friends grab a stick, and everyone roasts at once. Hold to dip the marshmallow into the flames, watch the heat, dodge flare-ups, and serve when it looks golden. Closest to golden wins a crown. Works solo too, with a personal best. S'mores sounds follow the campsite volume slider. |
 | v0.3.4 | `release-v0.3.4` | Campsite sound volume: the speaker button in the top bar opens a slider (with mute) for the fire, chimes and forest scares. Friends' voices aren't affected. Your level is remembered on your device; the fire now starts at 50% when you join instead of being off. |
