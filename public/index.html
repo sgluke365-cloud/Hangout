@@ -117,6 +117,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
   display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none;
 }
 #topbar > * { pointer-events: auto; }
+#topbar { z-index: 12; } /* keeps the sound panel above the welcome message */
 .pill {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
@@ -125,6 +126,31 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .dot.live { background: var(--moss); box-shadow: 0 0 8px var(--moss); }
 .top-actions { display: flex; gap: 6px; }
+/* Campsite sound volume: speaker button opens a small slider panel */
+.vol-wrap { position: relative; }
+#soundBtn { display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; color: var(--cream); }
+#soundBtn[aria-expanded="true"] { border-color: var(--ember); }
+.vol-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 230px; box-sizing: border-box;
+  background: rgb(22, 27, 48); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45); animation: trayIn 0.16s ease-out; transform-origin: 90% 0;
+}
+.vol-pop[hidden] { display: none; }
+.vol-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.vol-head output { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vol-row { display: flex; align-items: center; gap: 8px; }
+.vol-mute { flex: none; background: transparent; border: 0; padding: 4px; color: var(--muted); display: inline-flex; border-radius: 8px; }
+.vol-mute:hover { color: var(--cream); background: rgba(255,255,255,0.06); }
+#volSlider {
+  flex: 1; min-width: 0; height: 28px; margin: 0; background: transparent; accent-color: var(--ember);
+  -webkit-appearance: none; appearance: none; --fill: 50%;
+}
+#volSlider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--ember) var(--fill), rgba(255,255,255,0.15) var(--fill)); }
+#volSlider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 50%; background: var(--cream); border: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+#volSlider::-moz-range-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.15); }
+#volSlider::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--ember); }
+#volSlider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--cream); border: 0; }
+.vol-note { margin: 8px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 .icon-btn {
   background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
   padding: 7px 12px; font-size: 14px; backdrop-filter: blur(6px);
@@ -314,7 +340,17 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 <div class="hud" id="topbar" hidden>
   <div class="pill" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Solo</span></div>
   <div class="top-actions">
-    <button class="icon-btn" id="soundBtn" type="button" aria-pressed="false">Fire sound</button>
+    <div class="vol-wrap" id="volWrap">
+      <button class="icon-btn" id="soundBtn" type="button" aria-expanded="false" aria-controls="volPop" aria-label="Campsite sound volume"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="w2" d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="vol-pop" id="volPop" hidden>
+        <div class="vol-head"><span>Campsite sounds</span><output id="volVal" for="volSlider">50%</output></div>
+        <div class="vol-row">
+          <button class="vol-mute" id="volMute" type="button" aria-label="Mute campsite sounds"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="w2" d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <input type="range" id="volSlider" min="0" max="100" step="1" value="50" aria-label="Campsite sound volume">
+        </div>
+        <p class="vol-note">Fire, chimes and forest scares. Friends' voices aren't affected.</p>
+      </div>
+    </div>
     <button class="icon-btn" id="inviteBtn" type="button">Invite</button>
     <button class="icon-btn" id="helpBtn" type="button" aria-label="How to play">?</button>
   </div>
@@ -756,6 +792,7 @@ function doJoin() {
   store('campfire.me', { name: me.name, av: me.av });
   joined = true;
   getAC();
+  if (soundOn && !fireBus) startAudio(); // Join is a tap, so the browser lets the campfire sound start now
   $('join').hidden = true;
   ['topbar', 'bottombar', 'log'].forEach(id => $(id).hidden = false);
   sentDirty = true; pushPresence(true);
@@ -1116,23 +1153,66 @@ $('copyBtn').addEventListener('click', () => {
 
 // ===== Fire sound (WebAudio, started by a click) =====
 // One audio context for everything (fire sound and voices); started from a click.
-let audio = null, soundOn = false, fireGain = null, fireBus = null;
+let audio = null, soundOn = false, fireGain = null, fireBus = null, envBus = null;
+// Campsite (environment) volume, 0–100. Remembered on this device; 50% the first time.
+const savedVol = load('campfire.envVol');
+let envVol = typeof savedVol === 'number' && savedVol >= 0 && savedVol <= 100 ? savedVol : 50;
+let envVolBeforeMute = envVol > 0 ? envVol : 50;
+soundOn = envVol > 0;
+function envOut() {
+  // All campsite sounds go through one gain node so the slider controls them together.
+  if (!audio) return null;
+  if (!envBus) { envBus = audio.createGain(); envBus.gain.value = volToGain(envVol); envBus.connect(audio.destination); }
+  return envBus;
+}
+function volToGain(v) { const x = v / 100; return x * x; } // ears hear loudness roughly on a curve
+function setEnvVol(v, save) {
+  envVol = Math.max(0, Math.min(100, Math.round(v)));
+  if (envVol > 0) envVolBeforeMute = envVol;
+  soundOn = envVol > 0;
+  if (envBus && audio) envBus.gain.setTargetAtTime(volToGain(envVol), audio.currentTime, 0.03);
+  if (soundOn && !fireBus && joined) startAudio();
+  updateVolUI();
+  if (save) store('campfire.envVol', envVol);
+}
+function updateVolUI() {
+  const sl = $('volSlider');
+  sl.value = String(envVol); sl.style.setProperty('--fill', envVol + '%');
+  $('volVal').textContent = envVol ? envVol + '%' : 'Muted';
+  document.querySelectorAll('#soundBtn svg, #volMute svg').forEach(svg => {
+    svg.querySelector('.x').style.display = envVol ? 'none' : '';
+    svg.querySelector('.w1').style.display = envVol ? '' : 'none';
+    svg.querySelector('.w2').style.display = envVol > 50 ? '' : 'none';
+  });
+  $('volMute').setAttribute('aria-label', envVol ? 'Mute campsite sounds' : 'Unmute campsite sounds');
+}
 function getAC() {
   if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; } }
   if (audio && audio.state === 'suspended') audio.resume().catch(() => { });
   return audio;
 }
 window.addEventListener('pointerdown', () => { if (audio && audio.state === 'suspended') audio.resume().catch(() => { }); }, true);
+function setVolPop(open) {
+  $('volPop').hidden = !open;
+  $('soundBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
 $('soundBtn').addEventListener('click', () => {
-  soundOn = !soundOn;
-  $('soundBtn').setAttribute('aria-pressed', String(soundOn));
+  getAC();
   if (soundOn && !fireBus) startAudio();
-  if (fireBus) fireBus.gain.value = soundOn ? 1 : 0;
+  setVolPop($('volPop').hidden);
 });
+$('volSlider').addEventListener('input', e => { getAC(); setEnvVol(+e.target.value, false); });
+$('volSlider').addEventListener('change', e => setEnvVol(+e.target.value, true));
+$('volMute').addEventListener('click', () => { getAC(); setEnvVol(envVol ? 0 : envVolBeforeMute, true); });
+document.addEventListener('pointerdown', e => {
+  if (!$('volPop').hidden && !$('volWrap').contains(e.target)) setVolPop(false);
+}, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('volPop').hidden) setVolPop(false); });
+updateVolUI();
 function startAudio() {
   try {
     if (!getAC()) return;
-    fireBus = audio.createGain(); fireBus.gain.value = 1; fireBus.connect(audio.destination);
+    fireBus = audio.createGain(); fireBus.gain.value = 1; fireBus.connect(envOut());
     const len = audio.sampleRate * 2, buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
     let last = 0;
     for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
@@ -1156,7 +1236,7 @@ function startAudio() {
 }
 function chime() {
   if (!audio) return;
-  try { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 660; o.type = 'sine'; g.gain.setValueAtTime(0.08, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.9); o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + 1); } catch (e) { }
+  try { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 660; o.type = 'sine'; g.gain.setValueAtTime(0.08, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.9); o.connect(g).connect(envOut()); o.start(); o.stop(audio.currentTime + 1); } catch (e) { }
 }
 
 // ===== Proximity voice (hosted version; WebRTC is not available inside Claude) =====
@@ -1322,7 +1402,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.3.2';
+const VERSION = 'v0.3.4';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -1382,7 +1462,7 @@ function playScream() {
   if (!ac) return;
   try {
     const t0 = ac.currentTime;
-    const master = ac.createGain(); master.gain.value = 0.55; master.connect(ac.destination);
+    const master = ac.createGain(); master.gain.value = 0.55; master.connect(envOut());
     // breathy shriek: noise through a falling band-pass
     const len = Math.floor(ac.sampleRate * 1.5), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
