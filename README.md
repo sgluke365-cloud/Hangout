@@ -76,9 +76,9 @@ Linger in the deep forest and glowing eyes start watching from the trees. Stay a
 
 ## The old church
 
-West of the fire, a signpost points down an overgrown trail to an abandoned church in the middle of the forest. Walk up into the door (or tap the church) to go inside.
+By the yellow tent, a signpost points east down an overgrown trail to an abandoned gothic church hidden in the top-right corner of the woods. Walk up into the door (or tap the church) to go inside.
 
-Inside is a quiet room just for the people in there: friends inside see and hear each other, and the forest can't reach you. Sit on a pew, read the note in the old hymn book by the altar, or try the candle stand.
+Inside is a quiet, candlelit ruin just for the people in there: moonbeams through tall arched windows, a checkered marble floor, golden candelabras and an iron chandelier over the aisle. Friends inside see and hear each other, and the forest can't reach you. Sit on a pew, read the note in the old hymn book by the altar, or try the candle stand. (On slower devices the soft blur at the top and bottom of the screen turns itself off.)
 
 **The candle puzzle:** light all nine candles. Touching a candle also flips the candles right above, below, left and right of it. **Hint** makes one helpful candle glow; **Start over** puts the candles back. Friends in the church share the same candle stand and can solve it together. When the last candle catches, everyone inside gets a **talisman**. Tap **Snuff them and play again** for a new pattern.
 

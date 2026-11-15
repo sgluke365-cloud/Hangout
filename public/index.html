@@ -616,7 +616,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
-    <p><b>The old church:</b> follow the overgrown trail west from the fire (look for the signpost). Inside it's warm and quiet: sit on a pew, read the old book, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
+    <p><b>The old church:</b> it hides in the top-right corner of the woods. Look for the signpost by the yellow tent and follow the overgrown trail east. Inside it's warm and quiet: sit on a pew, read the old book, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -680,42 +680,62 @@ const LAKE = { x: 1390, y: 960, rx: 250, ry: 150 };
 const DOCK = { x0: 1095, x1: 1272, y0: 946, y1: 976 };
 const FISH_SPOT = { x: 1250, y: 961 };
 const TENTS = [{ x: 690, y: 410, c: '#c4674a', d: '#8e4330' }, { x: 1120, y: 420, c: '#d4ad56', d: '#9a7a33' }];
-// The old church in the western woods. x/y is the middle of the front wall, at the door.
-const CHURCH = { x: 300, y: 880, w: 210, d: 118 };
-const YARD = { x: 300, y: 840, rx: 190, ry: 150 }; // the churchyard clearing (the devil keeps off it)
-const TRAIL = [[655, 655], [585, 720], [520, 800], [450, 880], [380, 920], [300, 918]];
-const SIGN = { x: 642, y: 626 };
-const GRAVES = [{ x: 165, y: 905, tilt: -0.08 }, { x: 205, y: 950, tilt: 0.1 }, { x: 140, y: 868, tilt: 0.04 }];
+// The old church, deep in the woods at the top-right corner of the map.
+// x/y is the middle of the front wall, at the door.
+const CHURCH = { x: 1606, y: 398, w: 236, d: 124 };
+const YARD = { x: 1600, y: 365, rx: 200, ry: 150 }; // the churchyard clearing (the devil keeps off it)
+// an overgrown trail from the yellow tent to the church door
+const TRAIL = [[1135, 470], [1240, 490], [1340, 480], [1440, 464], [1530, 452], [1606, 444]];
+const SIGN = { x: 1170, y: 508 };
+const GRAVES = [{ x: 1730, y: 436, tilt: -0.08 }, { x: 1700, y: 474, tilt: 0.1 }, { x: 1748, y: 396, tilt: 0.04 }];
 // Inside the church is its own room, kept off the edge of the map, so walking,
 // earshot and voice all work the same in there without any server changes.
-const IN = { x0: 2300, y0: 100, w: 560, h: 720 };
+const IN = { x0: 2300, y0: 100, w: 560, h: 814 };
 IN.x1 = IN.x0 + IN.w; IN.y1 = IN.y0 + IN.h; IN.cx = IN.x0 + IN.w / 2;
+const WALL = 190;                        // the tall back wall, seen face on
+const iy = v => IN.y0 + WALL + v;        // a height in the room, measured from the foot of the back wall
 function inChurch(x) { return x >= IN.x0 - 60; }
 function inYard(x, y) { const u = (x - YARD.x) / YARD.rx, v = (y - YARD.y) / YARD.ry; return u * u + v * v < 1; }
-// Inside: altar at the top, candle stand and lectern either side of it, three rows of pews
-// (one fell over long ago), moonlight through a hole in the roof, the door at the bottom.
+// Inside: three tall windows and the altar at the top, candle stand and lectern either side,
+// golden candelabras, an iron chandelier over the aisle, columns down both walls, three rows
+// of pews (one gave way long ago), rubble, and moonlight through a hole in the roof.
 const PEWS = [];
-[330, 425, 520].forEach((ly, row) => {
-  PEWS.push({ a: IN.x0 + 50, b: IN.x0 + 238, y: IN.y0 + ly, broken: false });
-  PEWS.push({ a: IN.x0 + 322, b: IN.x0 + 510, y: IN.y0 + ly, broken: row === 2 });
+[234, 329, 424].forEach((ly, row) => {
+  PEWS.push({ a: IN.x0 + 50, b: IN.x0 + 238, y: iy(ly), broken: false, rot: [0.012, -0.02, 0.03][row] });
+  PEWS.push({ a: IN.x0 + 322, b: IN.x0 + 510, y: iy(ly), broken: row === 2, rot: [-0.018, 0.01, 0][row] });
 });
 const PEW_SEATS = [];
 PEWS.forEach(p => { if (!p.broken) [0.28, 0.72].forEach(k => PEW_SEATS.push({ x: Math.round(p.a + (p.b - p.a) * k), y: p.y })); });
-const ALTAR = { x: IN.cx, y: IN.y0 + 184, w: 150 };   // y is the front edge of the altar table
-const RACK = { x: IN.x0 + 112, y: IN.y0 + 214 };      // the candle stand (the puzzle)
-const LECTERN = { x: IN.x0 + 450, y: IN.y0 + 214 };   // the old hymn book
-const CAT = { x: IN.x0 + 392, y: IN.y0 + 248 };
-const MOON = { x: IN.x0 + 138, y: IN.y0 + 618 };
+const ALTAR = { x: IN.cx, y: iy(88), w: 150 };   // y is the front edge of the altar table
+const RACK = { x: IN.x0 + 112, y: iy(118) };      // the candle stand (the puzzle)
+const LECTERN = { x: IN.x0 + 450, y: iy(118) };   // the old hymn book
+const CAT = { x: IN.x0 + 392, y: iy(152) };
+const MOON = { x: IN.x0 + 138, y: iy(522) };
 const IN_SPAWN = { x: IN.cx, y: IN.y1 - 112 };
+const CANDELABRA = [{ x: IN.cx - 104, y: iy(112) }, { x: IN.cx + 104, y: iy(112) }];
+const COLUMNS = [];
+[234, 329, 424, 540].forEach(ly => { COLUMNS.push({ x: IN.x0 + 24, y: iy(ly) }); COLUMNS.push({ x: IN.x1 - 24, y: iy(ly) }); });
+const CHANDELIER = { x: IN.cx, y: iy(430), h: 150 };  // hangs over the aisle; y is the spot on the floor below it
+const FLOOR_CANDLES = [[-34, 281], [34, 281], [-34, 376], [34, 376], [-34, 474], [34, 474]].map(([dx, ly]) => ({ x: IN.cx + dx, y: iy(ly) }));
+const RUBBLE = [
+  { x: IN.x0 + 66, y: iy(560), r: 16, n: 9 }, { x: IN.x1 - 62, y: iy(480), r: 15, n: 8 },
+  { x: IN.x1 - 66, y: iy(30), r: 12, n: 6 }, { x: IN.x0 + 62, y: iy(36), r: 10, n: 5 }
+];
+const WIN_X = [IN.cx - 150, IN.cx, IN.cx + 150];  // the three tall windows in the back wall
+// moonbeams from those windows, slanting down to the floor
+const BEAMS = WIN_X.map((x, i) => ({ x, y: IN.y0 + 92, w: i === 1 ? 60 : 50, fx: x + 70, fy: iy(i === 1 ? 300 : 236), fw: i === 1 ? 150 : 120, ph: i * 2.1 }));
 const IN_GLASS = [
-  { x: IN.x0 + 15, y: IN.y0 + 300, c: '110,150,255' }, { x: IN.x0 + 15, y: IN.y0 + 470, c: '255,120,150' },
-  { x: IN.x1 - 15, y: IN.y0 + 300, c: '130,225,150' }, { x: IN.x1 - 15, y: IN.y0 + 470, c: '255,205,110' }
+  { x: IN.x0 + 15, y: iy(282), c: '110,150,255' }, { x: IN.x0 + 15, y: iy(476), c: '255,120,150' },
+  { x: IN.x1 - 15, y: iy(282), c: '130,225,150' }, { x: IN.x1 - 15, y: iy(476), c: '255,205,110' }
 ];
 function blockedIn(x, y) {
-  if (x < IN.x0 + 40 || x > IN.x1 - 40 || y < IN.y0 + 122 || y > IN.y1 - 24) return true;
+  if (x < IN.x0 + 40 || x > IN.x1 - 40 || y < iy(26) || y > IN.y1 - 24) return true;
   if (Math.abs(x - ALTAR.x) < ALTAR.w / 2 + 6 && y < ALTAR.y + 8) return true;
   if (Math.abs(x - RACK.x) < 44 && y > RACK.y - 24 && y < RACK.y + 8) return true;
   if (Math.abs(x - LECTERN.x) < 17 && y > LECTERN.y - 18 && y < LECTERN.y + 8) return true;
+  for (const c of CANDELABRA) if (dist(x, y, c.x, c.y) < 13) return true;
+  for (const c of COLUMNS) if (dist(x, y, c.x, c.y) < 22) return true;
+  for (const k of RUBBLE) if (dist(x, y, k.x, k.y) < k.r) return true;
   for (const p of PEWS) if (x > p.a - 4 && x < p.b + 4 && y > p.y - 18 && y < p.y + 16) return true;
   return false;
 }
@@ -1023,90 +1043,146 @@ function roseWindow(g, cx, cy, R, seed) {
   g.beginPath(); g.arc(cx, cy, R * 0.32, 0, Math.PI * 2); g.stroke();
 }
 
+// A tall pointed window with stone tracery: two lancets and a round light at the top.
+// glass: 'sky' (moonlit, seen from inside) or 'warm' (candlelit, seen from outside).
+function traceryWindow(g, cx, y, w, h, glass, seed) {
+  const r = mulberry(seed);
+  g.fillStyle = '#4f4943'; archPath(g, cx, y + 3, w + 10, h + 8); g.fill();
+  g.save(); archPath(g, cx, y, w, h); g.clip();
+  const gr = g.createLinearGradient(0, y - h, 0, y);
+  if (glass === 'sky') { gr.addColorStop(0, '#f3e7cf'); gr.addColorStop(0.45, '#d9c9cf'); gr.addColorStop(1, '#a9adc9'); }
+  else { gr.addColorStop(0, '#ffe3a0'); gr.addColorStop(1, '#d47a34'); }
+  g.fillStyle = gr; g.fillRect(cx - w / 2, y - h, w, h);
+  const cols = glass === 'sky' ? ['rgba(120,150,230,0.3)', 'rgba(230,140,160,0.25)', 'rgba(240,210,140,0.3)', 'rgba(150,200,170,0.25)'] : ['rgba(80,110,220,0.45)', 'rgba(200,60,80,0.4)', 'rgba(255,230,150,0.3)', 'rgba(60,150,100,0.35)'];
+  for (let yy = y - h; yy < y; yy += 9) for (let xx = cx - w / 2; xx < cx + w / 2; xx += 8) if (r() < 0.45) { g.fillStyle = cols[Math.floor(r() * cols.length)]; g.fillRect(xx, yy, 8, 9); }
+  g.strokeStyle = 'rgba(40,32,30,0.45)'; g.lineWidth = 1;
+  for (let yy = y - h + 9; yy < y; yy += 9) { g.beginPath(); g.moveTo(cx - w / 2, yy); g.lineTo(cx + w / 2, yy); g.stroke(); }
+  g.restore();
+  // tracery
+  const lw = Math.max(2, w * 0.07);
+  g.strokeStyle = '#5c554e'; g.lineWidth = lw; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(cx, y); g.lineTo(cx, y - h * 0.5); g.stroke();
+  archPath(g, cx - w / 4, y, w / 2 - lw, h * 0.62); g.stroke();
+  archPath(g, cx + w / 4, y, w / 2 - lw, h * 0.62); g.stroke();
+  const oy = y - h * 0.74, orr = w * 0.19;
+  g.beginPath(); g.arc(cx, oy, orr, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = lw * 0.6;
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; g.beginPath(); g.arc(cx + Math.cos(a) * orr * 0.45, oy + Math.sin(a) * orr * 0.45, orr * 0.42, 0, Math.PI * 2); g.stroke(); }
+  g.lineWidth = lw * 1.3; g.strokeStyle = '#6b645c'; archPath(g, cx, y, w, h); g.stroke();
+  g.fillStyle = '#6f685f'; g.fillRect(cx - w / 2 - 6, y, w + 12, 5);
+}
+
 // ===== Inside the church (pre-painted once) =====
 const chapelBg = document.createElement('canvas');
 chapelBg.width = IN.w; chapelBg.height = IN.h;
 (function paintChapel() {
-  const g = chapelBg.getContext('2d'), r = mulberry(55), w = IN.w, h = IN.h, cx = w / 2;
-  // worn stone floor
-  g.fillStyle = '#4e463f'; g.fillRect(0, 0, w, h);
-  for (let y = 96, row = 0; y < h; y += 28, row++) for (let x = -20; x < w; x += 40) {
-    const v = r(), off = row % 2 ? 20 : 0;
-    g.fillStyle = `rgb(${108 + v * 20 | 0},${97 + v * 16 | 0},${84 + v * 12 | 0})`;
-    g.fillRect(x + off + 1, y + 1, 38, 26);
+  const g = chapelBg.getContext('2d'), r = mulberry(55), w = IN.w, h = IN.h, cx = w / 2, F = WALL;
+  // worn checkered marble floor
+  g.fillStyle = '#2f2925'; g.fillRect(0, 0, w, h);
+  for (let y = F, row = 0; y < h; y += 30, row++) for (let x = 0, col = 0; x < w; x += 40, col++) {
+    const light = (row + col) % 2 === 0, v = r();
+    if (r() < 0.035) continue; // a missing tile
+    g.fillStyle = light ? `rgb(${172 + v * 20 | 0},${156 + v * 16 | 0},${128 + v * 14 | 0})` : `rgb(${58 + v * 14 | 0},${50 + v * 10 | 0},${46 + v * 8 | 0})`;
+    g.fillRect(x + 0.5, y + 0.5, 39, 29);
+    g.fillStyle = light ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'; g.fillRect(x + 2, y + 2, 36, 3);
   }
-  g.strokeStyle = 'rgba(40,32,26,0.5)'; g.lineWidth = 1;
-  for (let i = 0; i < 26; i++) { let x = 40 + r() * (w - 80), y = 120 + r() * (h - 180); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (r() - 0.5) * 22; y += (r() - 0.3) * 14; g.lineTo(x, y); } g.stroke(); }
-  // moss creeping in along the walls
-  for (let i = 0; i < 90; i++) {
-    const side = r() < 0.5, x = side ? 30 + r() * 30 : w - 30 - r() * 30, y = 110 + r() * (h - 140);
-    g.fillStyle = `rgba(${70 + r() * 30 | 0},${110 + r() * 30 | 0},${70 + r() * 20 | 0},0.5)`;
-    g.beginPath(); g.ellipse(x, y, 4 + r() * 9, 3 + r() * 5, r() * 3, 0, Math.PI * 2); g.fill();
+  // grime, dust drifts and cracks
+  for (let i = 0; i < 70; i++) {
+    const x = r() * w, y = F + r() * (h - F);
+    const gg = g.createRadialGradient(x, y, 0, x, y, 20 + r() * 40);
+    gg.addColorStop(0, `rgba(${60 + r() * 30 | 0},${48 + r() * 20 | 0},${36 + r() * 16 | 0},${0.25 + r() * 0.2})`); gg.addColorStop(1, 'rgba(60,48,36,0)');
+    g.fillStyle = gg; g.fillRect(x - 60, y - 60, 120, 120);
   }
-  // altar platform with two steps
-  g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(104, 238, w - 208, 6);
-  g.fillStyle = '#8b8073'; g.fillRect(104, 96, w - 208, 142);
-  g.fillStyle = '#978c7e'; g.fillRect(112, 96, w - 224, 126);
-  g.strokeStyle = 'rgba(50,40,32,0.35)';
-  for (let x = 112; x < w - 112; x += 36) { g.beginPath(); g.moveTo(x, 96); g.lineTo(x, 222); g.stroke(); }
-  g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(104, 222, w - 208, 2); g.fillRect(104, 236, w - 208, 2);
-  // faded red runner up the aisle, frayed, with a couple of moth holes
-  g.fillStyle = '#6a2a2c'; g.fillRect(cx - 27, 236, 54, h - 260);
-  g.fillStyle = '#7d3434'; g.fillRect(cx - 21, 236, 42, h - 260);
-  g.fillStyle = '#c99a4a'; g.fillRect(cx - 24, 236, 2, h - 260); g.fillRect(cx + 22, 236, 2, h - 260);
-  for (const [hx, hy, hr] of [[cx - 8, 380, 7], [cx + 12, 560, 5], [cx - 14, 640, 6]]) { g.fillStyle = '#6f655a'; g.beginPath(); g.ellipse(hx, hy, hr, hr * 0.7, 0.4, 0, Math.PI * 2); g.fill(); }
-  // back wall, seen face on: big stone blocks, rose window and two tall windows
-  g.fillStyle = '#4b4440'; g.fillRect(0, 0, w, 98);
-  for (let y = 0, row = 0; y < 96; y += 16, row++) for (let x = -24; x < w; x += 48) {
-    const v = r(); g.fillStyle = `rgb(${84 + v * 18 | 0},${77 + v * 15 | 0},${72 + v * 12 | 0})`;
-    g.fillRect(x + (row % 2 ? 24 : 0) + 1, y + 1, 46, 14);
+  g.strokeStyle = 'rgba(30,24,20,0.6)'; g.lineWidth = 1;
+  for (let i = 0; i < 34; i++) { let x = 40 + r() * (w - 80), y = F + 20 + r() * (h - F - 60); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (r() - 0.5) * 24; y += (r() - 0.3) * 14; g.lineTo(x, y); } g.stroke(); }
+  // the sanctuary: a raised floor of pale stone, two steps down to the nave
+  const P0 = 104, P1 = w - 104, PB = F + 142;
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(P0, PB, P1 - P0, 7);
+  g.fillStyle = '#8f8576'; g.fillRect(P0, F, P1 - P0, PB - F);
+  for (let y = F, row = 0; y < PB - 14; y += 24, row++) for (let x = P0, col = 0; x < P1; x += 32, col++) {
+    const v = r(); g.fillStyle = (row + col) % 2 ? `rgb(${150 + v * 14 | 0},${138 + v * 12 | 0},${116 + v * 10 | 0})` : `rgb(${112 + v * 12 | 0},${102 + v * 10 | 0},${88 + v * 8 | 0})`;
+    g.fillRect(x + 0.5, y + 0.5, 31, 23);
   }
-  g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(0, 92, w, 6);
-  stainedGlass(g, 160, 86, 30, 66, 11); stainedGlass(g, w - 160, 86, 30, 66, 12);
-  roseWindow(g, cx, 44, 30, 13);
-  // side walls (we see their tops): thick stone with slit windows
+  g.fillStyle = '#8c826f'; g.fillRect(P0, PB - 14, P1 - P0, 7); g.fillStyle = '#7a705f'; g.fillRect(P0, PB - 7, P1 - P0, 7);
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(P0, PB - 14, P1 - P0, 1.5); g.fillRect(P0, PB - 7, P1 - P0, 1.5);
+  // a long carpet down the aisle: faded blue, gold borders, worn through in places
+  const ax = cx - 30, aw = 60, aTop = PB - 4, aBot = h - 24;
+  g.fillStyle = '#2c3556'; g.fillRect(ax, aTop, aw, aBot - aTop);
+  for (let y = aTop; y < aBot; y += 4) { g.fillStyle = `rgba(${70 + r() * 30 | 0},${86 + r() * 30 | 0},${130 + r() * 30 | 0},0.5)`; g.fillRect(ax + 6, y, aw - 12, 4); }
+  g.fillStyle = '#b8923f'; g.fillRect(ax + 3, aTop, 3, aBot - aTop); g.fillRect(ax + aw - 6, aTop, 3, aBot - aTop);
+  g.strokeStyle = 'rgba(200,160,80,0.35)'; g.lineWidth = 1;
+  for (let y = aTop + 20; y < aBot; y += 40) { g.beginPath(); g.moveTo(cx - 10, y); g.lineTo(cx, y - 8); g.lineTo(cx + 10, y); g.lineTo(cx, y + 8); g.closePath(); g.stroke(); }
+  for (const [hx, hy, hw, hh] of [[cx - 22, F + 286, 18, 12], [cx + 6, F + 430, 22, 10], [cx - 16, F + 520, 14, 9]]) { g.fillStyle = '#8c8170'; g.beginPath(); g.ellipse(hx + hw / 2, hy, hw / 2, hh / 2, 0.3, 0, Math.PI * 2); g.fill(); }
+  for (let y = aTop; y < aBot; y += 3) { if (r() < 0.3) { g.fillStyle = '#2c3556'; g.fillRect(ax - 1 - r() * 2, y, 2, 2); g.fillRect(ax + aw - 1 + r() * 2, y, 2, 2); } }
+  // ---- the back wall: three tall pointed bays with moonlit windows, pillars between ----
+  g.fillStyle = '#38332f'; g.fillRect(0, 0, w, F + 2);
+  for (let y = 0, row = 0; y < F; y += 15, row++) for (let x = -22; x < w; x += 44) {
+    const v = r(); g.fillStyle = `rgb(${66 + v * 16 | 0},${60 + v * 13 | 0},${56 + v * 11 | 0})`;
+    g.fillRect(x + (row % 2 ? 22 : 0) + 1, y + 1, 42, 13);
+  }
+  for (const [i, bx] of WIN_X.map((x, i) => [i, x - IN.x0])) {
+    const big = i === 1;
+    g.fillStyle = 'rgba(0,0,0,0.38)'; archPath(g, bx, F, 122, F - 4); g.fill();
+    g.fillStyle = '#2f2b28'; archPath(g, bx, F, 108, F - 16); g.fill();
+    g.strokeStyle = '#7a7268'; g.lineWidth = 5; archPath(g, bx, F, 116, F - 9); g.stroke();
+    g.strokeStyle = '#5a534c'; g.lineWidth = 2; archPath(g, bx, F, 104, F - 20); g.stroke();
+    traceryWindow(g, bx, F - 36, big ? 66 : 56, big ? 128 : 116, 'sky', 60 + i);
+    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1.2;
+    for (let k = -3; k <= 3; k++) { archPath(g, bx + k * 13, F - 4, 10, 22); g.stroke(); }
+  }
+  for (const px of [cx - 225, cx - 75, cx + 75, cx + 225]) {
+    const sg = g.createLinearGradient(px - 13, 0, px + 13, 0);
+    sg.addColorStop(0, '#5e574f'); sg.addColorStop(0.35, '#a39a8c'); sg.addColorStop(1, '#4a443e');
+    g.fillStyle = sg; g.fillRect(px - 13, 14, 26, F - 26);
+    g.strokeStyle = 'rgba(0,0,0,0.18)'; g.lineWidth = 1;
+    for (const dx of [-6, 0, 6]) { g.beginPath(); g.moveTo(px + dx, 30); g.lineTo(px + dx, F - 16); g.stroke(); }
+    g.fillStyle = '#7d756a'; g.fillRect(px - 18, 22, 36, 10); g.fillStyle = '#958c7f'; g.fillRect(px - 18, 22, 36, 3);
+    g.fillStyle = '#6f685f'; g.fillRect(px - 17, F - 16, 34, 14); g.fillStyle = '#857d71'; g.fillRect(px - 17, F - 16, 34, 3);
+  }
+  g.fillStyle = '#221f1c'; g.fillRect(0, 0, w, 12); g.fillStyle = '#4a443e'; g.fillRect(0, 12, w, 4);
+  g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, F - 3, w, 6);
+  // ---- side walls (we see their tops) with slit windows ----
   for (const x0 of [0, w - 30]) {
-    g.fillStyle = '#3d3734'; g.fillRect(x0, 0, 30, h);
-    g.fillStyle = '#57504a'; g.fillRect(x0 + 3, 0, 24, h);
-    for (let y = 0; y < h; y += 22) { g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(x0 + 3, y, 24, 2); }
+    g.fillStyle = '#2e2a27'; g.fillRect(x0, 0, 30, h);
+    g.fillStyle = '#4b4540'; g.fillRect(x0 + 3, 0, 24, h);
+    for (let y = 0; y < h; y += 22) { g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(x0 + 3, y, 24, 2); }
   }
   for (const s of IN_GLASS) {
     const lx = s.x - IN.x0, ly = s.y - IN.y0;
     g.fillStyle = `rgb(${s.c})`; g.fillRect(lx - 5, ly - 26, 10, 52);
     g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(lx - 1, ly - 26, 2, 52);
   }
-  // ivy over the walls
-  for (let i = 0; i < 160; i++) {
-    const zone = r(), x = zone < 0.35 ? r() * 34 : zone < 0.7 ? w - r() * 34 : r() * w, y = zone < 0.7 ? r() * h : r() * 90;
-    if (zone >= 0.7 && Math.abs(x - cx) < 40) continue;
-    g.fillStyle = r() < 0.5 ? '#2f5a35' : '#3f7341';
+  // ivy finding its way in
+  for (let i = 0; i < 150; i++) {
+    const zone = r() * 0.85, x = zone < 0.33 ? r() * 34 : zone < 0.66 ? w - r() * 34 : r() * w, y = zone < 0.66 ? r() * h : r() * (F - 30);
+    if (zone >= 0.66 && WIN_X.some(wx => Math.abs(x - (wx - IN.x0)) < 40) && y > 40) continue;
+    g.fillStyle = r() < 0.5 ? '#2c5233' : '#3c6b3e';
     g.beginPath(); g.ellipse(x, y, 4, 2.6, r() * 3, 0, Math.PI * 2); g.fill();
   }
-  // near wall: a low strip with the doorway open to the night
-  g.fillStyle = '#3d3734'; g.fillRect(0, h - 24, w, 24);
-  g.fillStyle = '#57504a'; g.fillRect(0, h - 24, w, 4);
+  // the near wall: a low strip, the doorway open to the night
+  g.fillStyle = '#2e2a27'; g.fillRect(0, h - 24, w, 24);
+  g.fillStyle = '#4b4540'; g.fillRect(0, h - 24, w, 4);
   const dg = g.createLinearGradient(0, h - 24, 0, h);
   dg.addColorStop(0, '#2c3a33'); dg.addColorStop(1, '#141c22');
   g.fillStyle = dg; g.fillRect(cx - 36, h - 24, 72, 24);
   g.fillStyle = '#8e877c'; g.fillRect(cx - 40, h - 28, 80, 5);
-  // moonlit patch under the broken roof: grass and little flowers growing through the floor
+  // moonlit patch under the broken roof: grass and little flowers growing between the tiles
   {
     const mx = MOON.x - IN.x0, my = MOON.y - IN.y0;
-    g.fillStyle = 'rgba(72,104,62,0.85)'; g.beginPath(); g.ellipse(mx, my, 62, 30, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = 'rgba(90,130,76,0.9)'; g.beginPath(); g.ellipse(mx + 6, my - 2, 44, 20, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(66,96,58,0.85)'; g.beginPath(); g.ellipse(mx, my, 62, 30, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(86,124,72,0.9)'; g.beginPath(); g.ellipse(mx + 6, my - 2, 44, 20, 0, 0, Math.PI * 2); g.fill();
     g.strokeStyle = 'rgba(140,190,120,0.8)'; g.lineWidth = 1.3;
     for (let i = 0; i < 60; i++) { const x = mx + (r() - 0.5) * 110, y = my + (r() - 0.5) * 48; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y - 7); g.moveTo(x + 2, y); g.lineTo(x + 3, y - 6); g.stroke(); }
     for (let i = 0; i < 16; i++) { g.fillStyle = ['#e9e2d0', '#c9d6ff', '#f2d16b'][i % 3]; g.beginPath(); g.arc(mx + (r() - 0.5) * 90, my + (r() - 0.5) * 38, 2.4, 0, Math.PI * 2); g.fill(); }
-    // broken roof slates that fell in
-    for (let i = 0; i < 7; i++) { g.fillStyle = '#3d3a44'; g.save(); g.translate(mx + 70 + r() * 40, my - 30 + r() * 60); g.rotate(r() * 3); g.fillRect(-6, -3, 12, 6); g.restore(); }
   }
   // a roof beam that came down in the corner
-  g.save(); g.translate(w - 90, h - 92); g.rotate(-0.62);
-  g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(-60, 4, 120, 12);
-  g.fillStyle = '#5e4330'; g.fillRect(-62, -6, 124, 14); g.fillStyle = '#74533b'; g.fillRect(-62, -6, 124, 4);
+  g.save(); g.translate(w - 92, h - 96); g.rotate(-0.62);
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-60, 4, 120, 12);
+  g.fillStyle = '#4e3828'; g.fillRect(-62, -6, 124, 14); g.fillStyle = '#6a4c35'; g.fillRect(-62, -6, 124, 4);
   g.restore();
-  // dry leaves blown in through the door
-  for (let i = 0; i < 40; i++) { g.fillStyle = ['#9a6a35', '#b58a45', '#7a5a2c'][i % 3]; g.save(); g.translate(cx + (r() - 0.5) * 200, h - 40 - r() * 130); g.rotate(r() * 6); g.beginPath(); g.ellipse(0, 0, 3.5, 2, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+  // stone chips, dry leaves blown in through the door
+  for (let i = 0; i < 60; i++) { g.fillStyle = r() < 0.5 ? '#8a8276' : '#6f685e'; g.fillRect(40 + r() * (w - 80), F + 10 + r() * (h - F - 40), 2 + r() * 3, 2 + r() * 2); }
+  for (let i = 0; i < 46; i++) { g.fillStyle = ['#9a6a35', '#b58a45', '#7a5a2c'][i % 3]; g.save(); g.translate(cx + (r() - 0.5) * 240, h - 40 - r() * 170); g.rotate(r() * 6); g.beginPath(); g.ellipse(0, 0, 3.5, 2, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
 })();
 
 // ===== Avatar drawing =====
@@ -1926,7 +2002,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.6';
+const VERSION = 'v0.6.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -2826,7 +2902,15 @@ const CP_MASKS = Array.from({ length: 9 }, (_, i) => {
 const CP_FIRST = CP_ALL ^ CP_MASKS[1] ^ CP_MASKS[3] ^ CP_MASKS[5] ^ CP_MASKS[7];
 let chapel = { v: 0, id: 'first', st: CP_FIRST, lit: CP_FIRST, mv: 0, sol: 0, by: '' };
 const church = { visited: false, spotted: false, fadeAt: -1e9, glowAt: -1e9, open: false, granted: '', got: '', hintI: -1, hintAt: 0, motes: [] };
-for (let i = 0; i < 44; i++) church.motes.push({ x: IN.x0 + 40 + Math.random() * (IN.w - 80), y: IN.y0 + 110 + Math.random() * (IN.h - 150), p: Math.random() * 10, s: 0.3 + Math.random() * 0.6 });
+// Dust drifting in the moonbeams: each mote lives in one beam (u along it, v across it).
+// Beam BEAMS.length is the shaft falling through the hole in the roof.
+for (let i = 0; i < 90; i++) church.motes.push({ b: i % (BEAMS.length + 1), u: Math.random(), v: Math.random() * 2 - 1, p: Math.random() * 10, s: 0.4 + Math.random() * 0.8 });
+function beamGeom(b) {
+  if (b >= BEAMS.length) return { tx: MOON.x + 64, ty: MOON.y - 330, tw: 30, bx: MOON.x, by: MOON.y + 4, bw: 56 };
+  const m = BEAMS[b];
+  return { tx: m.x, ty: m.y, tw: m.w / 2, bx: m.fx, by: m.fy, bw: m.fw / 2 };
+}
+function chandelierPos(t) { return [CHANDELIER.x + Math.sin(t * 0.55) * 2.5, CHANDELIER.y - CHANDELIER.h]; }
 const popcount = n => { let c = 0; while (n) { c += n & 1; n >>= 1; } return c; };
 
 function talismanSvg(size) {
@@ -2910,6 +2994,14 @@ function standPew() {
   sentDirty = true; pushPresence(true);
 }
 function readBook() { openModal('bookModal'); }
+// What the action button does inside the church right now: 'rack', 'book', 'exit', a pew seat index, or null.
+function churchAction() {
+  const pw = nearestFreePew(64), pd = pw >= 0 ? dist(me.x, me.y, PEW_SEATS[pw].x, PEW_SEATS[pw].y - 30) : 1e9;
+  if (nearRack() && dist(me.x, me.y, RACK.x, RACK.y + 26) <= pd) return 'rack';
+  if (nearBook()) return 'book';
+  if (nearExit()) return 'exit';
+  return pw >= 0 ? pw : null;
+}
 
 // ---- candle puzzle ----
 function cpRandomStart() {
@@ -3114,8 +3206,8 @@ function chapelTick(dt) {
     if (chAudio.bellT <= 0) { chAudio.bellT = 6 + Math.random() * 8; bellTone(rnd(CH_NOTES), 0.028, 3.5, chAudio.inp); }
   }
   for (const m of church.motes) {
-    m.p += dt * m.s; m.x += Math.cos(m.p * 1.3) * 5 * dt; m.y -= (2 + m.s * 3) * dt;
-    if (m.y < IN.y0 + 100) { m.y = IN.y1 - 40; m.x = IN.x0 + 40 + Math.random() * (IN.w - 80); }
+    m.p += dt * m.s; m.u += dt * 0.014 * m.s; m.v = clamp(m.v + Math.sin(m.p * 1.7) * dt * 0.12, -1, 1);
+    if (m.u > 1) { m.u = 0; m.v = Math.random() * 2 - 1; }
   }
   if (church.open && !nearRack()) cpShow(false);
   if (church.open && church.hintI >= 0 && performance.now() - church.hintAt > 6000) { church.hintI = -1; renderCp(); }
@@ -3123,88 +3215,104 @@ function chapelTick(dt) {
 
 // ---- drawing: outside ----
 function drawChurch(g, t) {
-  const r = mulberry(91), W2 = 100, FH = 100, GH = 70, RD = 74, E = W2 + 12;
+  const r = mulberry(91), W2 = 118, FH = 108, GH = 78, RD = 78, E = W2 + 12;
   // a point on one roof slope: s = side, f = 0 at the eave → 1 at the ridge, d = how far back
   const sp = (s, f, d) => [s * E * (1 - f), -FH + 4 - (GH + 8) * f - d];
+  const poly = pts => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
   g.save(); g.translate(CHURCH.x, CHURCH.y);
-  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(0, 4, 130, 18, 0, 0, Math.PI * 2); g.fill();
-  // roof slopes running back from the gable, slate rows, moss, and a hole or two
+  g.fillStyle = 'rgba(0,0,0,0.32)'; g.beginPath(); g.ellipse(0, 4, 150, 20, 0, 0, Math.PI * 2); g.fill();
+  // roof slopes running back from the gable: slate rows, moss, a couple of holes
   for (const s of [-1, 1]) {
-    const q = [sp(s, 0, 0), sp(s, 1, 0), sp(s, 1, RD), sp(s, 0, RD)];
-    g.fillStyle = s < 0 ? '#3a3742' : '#46434f';
-    g.beginPath(); q.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
-    g.strokeStyle = 'rgba(0,0,0,0.28)'; g.lineWidth = 1;
-    for (let k = 1; k < 8; k++) { const [x0, y0] = sp(s, k / 8, 0); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0, y0 - RD); g.stroke(); }
-    for (let k = 0; k < 7; k++) { const [x, y] = sp(s, 0.1 + r() * 0.8, 6 + r() * (RD - 12)); g.fillStyle = r() < 0.5 ? 'rgba(80,120,70,0.75)' : 'rgba(100,140,80,0.6)'; g.beginPath(); g.ellipse(x, y, 6 + r() * 6, 3 + r() * 3, 0, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = s < 0 ? '#34313b' : '#403d48';
+    poly([sp(s, 0, 0), sp(s, 1, 0), sp(s, 1, RD), sp(s, 0, RD)]); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,0.3)'; g.lineWidth = 1;
+    for (let k = 1; k < 9; k++) { const [x0, y0] = sp(s, k / 9, 0); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0, y0 - RD); g.stroke(); }
+    for (let k = 0; k < 8; k++) { const [x, y] = sp(s, 0.1 + r() * 0.8, 6 + r() * (RD - 12)); g.fillStyle = r() < 0.5 ? 'rgba(80,120,70,0.75)' : 'rgba(100,140,80,0.6)'; g.beginPath(); g.ellipse(x, y, 6 + r() * 7, 3 + r() * 3, 0, 0, Math.PI * 2); g.fill(); }
   }
-  const hole = [sp(-1, 0.34, 18), sp(-1, 0.6, 22), sp(-1, 0.58, 50), sp(-1, 0.36, 46)];
-  g.fillStyle = '#17161c'; g.beginPath(); hole.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
-  g.strokeStyle = '#5a3d28'; g.lineWidth = 3;
-  for (const f of [0.42, 0.52]) { const [x0, y0] = sp(-1, f, 14), [x1, y1] = sp(-1, f, 54); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
-  // bell tower on the ridge, with a weathered cross on the spire
-  const ty = -FH - GH - 18;
-  g.fillStyle = '#7a7166'; g.fillRect(-15, ty - 54, 30, 58);
-  g.fillStyle = '#665e55'; g.fillRect(7, ty - 54, 8, 58);
-  g.fillStyle = '#17161c'; archPath(g, -1, ty - 20, 14, 26); g.fill();
-  g.fillStyle = '#b88a3a'; g.beginPath(); g.moveTo(-6, ty - 24); g.quadraticCurveTo(-6, ty - 36, -1, ty - 37); g.quadraticCurveTo(4, ty - 36, 4, ty - 24); g.closePath(); g.fill();
-  g.fillStyle = '#3a3742'; g.beginPath(); g.moveTo(-19, ty - 54); g.lineTo(0, ty - 106); g.lineTo(0, ty - 54); g.closePath(); g.fill();
-  g.fillStyle = '#46434f'; g.beginPath(); g.moveTo(0, ty - 54); g.lineTo(0, ty - 106); g.lineTo(19, ty - 54); g.closePath(); g.fill();
+  for (const [s, f0, f1, d0, d1] of [[-1, 0.32, 0.58, 16, 50], [1, 0.5, 0.7, 34, 60]]) {
+    g.fillStyle = '#141318'; poly([sp(s, f0, d0), sp(s, f1, d0 + 4), sp(s, f1 - 0.02, d1), sp(s, f0 + 0.02, d1 - 4)]); g.fill();
+    g.strokeStyle = '#4e3626'; g.lineWidth = 3;
+    for (const f of [f0 + (f1 - f0) * 0.35, f0 + (f1 - f0) * 0.7]) { const [x0, y0] = sp(s, f, d0 - 4), [x1, y1] = sp(s, f, d1 + 4); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+  }
+  // bell tower on the ridge, pinnacles at its corners, a spire and a weathered cross
+  const ty = -FH - GH - 22;
+  g.fillStyle = '#787064'; g.fillRect(-20, ty - 60, 40, 64);
+  g.fillStyle = '#625b52'; g.fillRect(9, ty - 60, 11, 64);
+  g.fillStyle = '#8a8276'; g.fillRect(-23, ty - 62, 46, 5);
+  for (const dx of [-8, 8]) { g.fillStyle = '#141318'; archPath(g, dx, ty - 14, 10, 30); g.fill(); }
+  g.fillStyle = '#b88a3a'; g.beginPath(); g.moveTo(-12, ty - 20); g.quadraticCurveTo(-12, ty - 30, -8, ty - 31); g.quadraticCurveTo(-4, ty - 30, -4, ty - 20); g.closePath(); g.fill();
+  for (const dx of [-21, 21]) { g.fillStyle = '#6e665c'; g.beginPath(); g.moveTo(dx - 4, ty - 62); g.lineTo(dx, ty - 78); g.lineTo(dx + 4, ty - 62); g.closePath(); g.fill(); }
+  g.fillStyle = '#34313b'; g.beginPath(); g.moveTo(-19, ty - 62); g.lineTo(0, ty - 118); g.lineTo(0, ty - 62); g.closePath(); g.fill();
+  g.fillStyle = '#403d48'; g.beginPath(); g.moveTo(0, ty - 62); g.lineTo(0, ty - 118); g.lineTo(19, ty - 62); g.closePath(); g.fill();
   g.strokeStyle = '#4a3527'; g.lineWidth = 3.5; g.lineCap = 'round';
-  g.beginPath(); g.moveTo(0, ty - 106); g.lineTo(0, ty - 130); g.moveTo(-8, ty - 121); g.lineTo(8, ty - 121); g.stroke();
-  // front wall with its gable
-  const front = () => { g.beginPath(); g.moveTo(-W2, 0); g.lineTo(-W2, -FH); g.lineTo(0, -FH - GH); g.lineTo(W2, -FH); g.lineTo(W2, 0); g.closePath(); };
-  g.fillStyle = '#80776b'; front(); g.fill();
-  g.save(); front(); g.clip();
+  g.beginPath(); g.moveTo(0, ty - 118); g.lineTo(0, ty - 140); g.moveTo(-7, ty - 132); g.lineTo(7, ty - 132); g.stroke();
+  // the front wall with its gable; the top of the right side has crumbled away
+  const G = f => [W2 * f, -FH - GH + GH * f];
+  const front = [[-W2, 0], [-W2, -FH], [0, -FH - GH], G(0.24), [G(0.26)[0] + 2, G(0.26)[1] + 14], [G(0.34)[0], G(0.34)[1] + 9], [G(0.4)[0] + 3, G(0.4)[1] + 20], G(0.47), [W2, -FH], [W2, 0]];
+  g.fillStyle = '#7c7367'; poly(front); g.fill();
+  g.save(); poly(front); g.clip();
   for (let y = 0, row = 0; y > -FH - GH; y -= 13, row++) for (let x = -W2 - 20; x < W2; x += 30) {
-    const v = r(); g.fillStyle = `rgb(${118 + v * 22 | 0},${109 + v * 18 | 0},${98 + v * 14 | 0})`;
+    const v = r(); g.fillStyle = `rgb(${116 + v * 22 | 0},${107 + v * 18 | 0},${96 + v * 14 | 0})`;
     g.fillRect(x + (row % 2 ? 15 : 0) + 1, y - 12, 28, 11);
   }
   g.fillStyle = 'rgba(70,110,64,0.55)'; g.fillRect(-W2, -10, W2 * 2, 10);
+  g.fillStyle = '#8f8678'; g.fillRect(-W2, -FH + 2, W2 * 2, 6); g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(-W2, -FH + 8, W2 * 2, 2);
   g.restore();
   g.strokeStyle = 'rgba(40,32,28,0.55)'; g.lineWidth = 1.2;
-  g.beginPath(); g.moveTo(34, -96); g.lineTo(28, -80); g.lineTo(36, -66); g.lineTo(31, -52); g.moveTo(-84, -40); g.lineTo(-76, -30); g.lineTo(-80, -18); g.stroke();
-  // buttresses at the corners
-  for (const s of [-1, 1]) {
-    g.fillStyle = '#6e665c'; g.beginPath(); g.moveTo(s * W2 - 9, 0); g.lineTo(s * W2 - 9, -74); g.lineTo(s * W2, -86); g.lineTo(s * W2 + 9, -74); g.lineTo(s * W2 + 9, 0); g.closePath(); g.fill();
-    g.fillStyle = 'rgba(0,0,0,0.15)'; g.fillRect(s * W2 + (s < 0 ? 2 : -9), -74, 7, 74);
+  g.beginPath(); g.moveTo(36, -104); g.lineTo(30, -86); g.lineTo(38, -70); g.lineTo(33, -56); g.moveTo(-104, -44); g.lineTo(-96, -32); g.lineTo(-100, -18); g.stroke();
+  // buttresses with little pinnacles
+  for (const [bx, top, bw] of [[-W2, -84, 10], [W2, -84, 10], [-46, -64, 7], [46, -64, 7]]) {
+    g.fillStyle = '#6e665c'; poly([[bx - bw, 0], [bx - bw, top], [bx, top - 12], [bx + bw, top], [bx + bw, 0]]); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.16)'; g.fillRect(bx + 1, top, bw - 1, -top);
+    g.fillStyle = '#857c70'; g.fillRect(bx - bw - 1, top * 0.5, bw * 2 + 2, 4);
+    if (Math.abs(bx) === W2) { g.fillStyle = '#6e665c'; g.beginPath(); g.moveTo(bx - 5, -FH - 2); g.lineTo(bx, -FH - 26); g.lineTo(bx + 5, -FH - 2); g.closePath(); g.fill(); }
   }
-  // bargeboards along the gable
-  g.strokeStyle = '#4a3527'; g.lineWidth = 6; g.lineCap = 'round'; g.lineJoin = 'round';
-  g.beginPath(); g.moveTo(-E, -FH + 4); g.lineTo(0, -FH - GH - 6); g.lineTo(E, -FH + 4); g.stroke();
-  // windows: two tall stained glass windows and a round one up in the gable
-  stainedGlass(g, -56, -30, 24, 54, 21); stainedGlass(g, 56, -30, 24, 54, 22);
-  roseWindow(g, 0, -FH - 24, 15, 23);
-  // the door, left open a crack, with candlelight inside
-  g.fillStyle = '#3d342d'; archPath(g, 0, 0, 44, 66); g.fill();
-  const dg = g.createLinearGradient(0, -58, 0, 0);
+  // bargeboards along the gable; the right one broke and hangs loose
+  g.strokeStyle = '#43301f'; g.lineWidth = 6; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(-E, -FH + 4); g.lineTo(0, -FH - GH - 6); g.lineTo(E * 0.22, -FH - GH - 6 + (GH + 10) * 0.22); g.stroke();
+  g.beginPath(); g.moveTo(E * 0.5, -FH - GH - 6 + (GH + 10) * 0.5); g.lineTo(E, -FH + 4); g.stroke();
+  g.lineWidth = 4; g.beginPath(); g.moveTo(E * 0.5, -FH - GH - 4 + (GH + 10) * 0.5); g.lineTo(E * 0.43, -FH - GH + 30); g.stroke();
+  // tall traced windows, glowing with candlelight from inside, and a round window up in the gable
+  traceryWindow(g, -80, -26, 32, 70, 'warm', 21); traceryWindow(g, 80, -26, 32, 70, 'warm', 22);
+  roseWindow(g, 0, -FH - 30, 18, 23);
+  g.strokeStyle = '#6b645c'; g.lineWidth = 3; g.beginPath(); g.arc(0, -FH - 30, 21, 0, Math.PI * 2); g.stroke();
+  // the doorway: three stepped pointed arches, double doors, one left ajar
+  g.fillStyle = '#a2988a'; archPath(g, 0, 0, 66, 90); g.fill();
+  g.fillStyle = '#7f776b'; archPath(g, 0, 0, 56, 82); g.fill();
+  g.fillStyle = '#9a9083'; archPath(g, 0, 0, 48, 75); g.fill();
+  const dg = g.createLinearGradient(0, -66, 0, 0);
   dg.addColorStop(0, '#ffdc8a'); dg.addColorStop(1, '#c46d2c');
-  g.fillStyle = dg; archPath(g, 0, 0, 34, 58); g.fill();
-  g.fillStyle = '#5b3f2a'; g.fillRect(-17, -46, 7, 46);
-  g.save(); archPath(g, 0, 0, 34, 58); g.clip();
-  g.fillStyle = '#6b4a31'; g.fillRect(-1, -60, 18, 60);
-  g.strokeStyle = 'rgba(30,18,10,0.45)'; g.lineWidth = 1; for (let x = 4; x < 17; x += 5) { g.beginPath(); g.moveTo(x, -60); g.lineTo(x, 0); g.stroke(); }
+  g.fillStyle = dg; archPath(g, 0, 0, 38, 67); g.fill();
+  g.save(); archPath(g, 0, 0, 38, 67); g.clip();
+  g.fillStyle = '#5b3a26'; g.fillRect(-1, -70, 20, 70);
+  g.fillStyle = '#4a2f1f'; g.fillRect(-19, -70, 6, 70);
+  g.strokeStyle = 'rgba(30,18,10,0.5)'; g.lineWidth = 1; for (let x = 4; x < 19; x += 5) { g.beginPath(); g.moveTo(x, -70); g.lineTo(x, 0); g.stroke(); }
+  g.strokeStyle = '#2a2420'; g.lineWidth = 2; for (const y of [-48, -18]) { g.beginPath(); g.moveTo(0, y); g.lineTo(18, y); g.stroke(); }
   g.restore();
-  g.fillStyle = '#c9a24a'; g.beginPath(); g.arc(4, -26, 1.8, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#958d81'; g.fillRect(-26, -2, 52, 6);
+  g.fillStyle = '#c9a24a'; g.beginPath(); g.arc(5, -30, 2, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#958d81'; g.fillRect(-34, -2, 68, 6); g.fillStyle = '#857d71'; g.fillRect(-40, 4, 80, 5);
+  // fallen stones under the broken gable
+  for (let i = 0; i < 9; i++) { const x = 60 + r() * 60, y = -2 + r() * 12, w = 7 + r() * 9, h = 5 + r() * 5; g.fillStyle = '#7d7568'; g.fillRect(x, y - h, w, h); g.fillStyle = '#9a9184'; g.fillRect(x, y - h, w, 2); }
   // ivy climbing the front
-  for (const [cx, cy, n, sp2] of [[-92, -30, 46, 46], [-70, -96, 22, 26], [88, -20, 30, 30], [-30, -128, 12, 16]]) {
+  for (const [cx, cy, n, sp2] of [[-104, -34, 50, 46], [-80, -100, 22, 26], [100, -24, 30, 30], [-36, -140, 14, 16]]) {
     for (let i = 0; i < n; i++) { g.fillStyle = r() < 0.5 ? '#2f5a35' : '#3f7341'; g.beginPath(); g.ellipse(cx + (r() - 0.5) * sp2, cy + (r() - 0.5) * sp2 * 1.4, 4, 2.6, r() * 3, 0, Math.PI * 2); g.fill(); }
   }
   g.restore();
 }
 function drawChurchGlow(g, t) {
   const f = 1 + Math.sin(t * 7) * 0.05 + Math.sin(t * 17) * 0.03;
-  const glow = (x, y, R, rgb, a) => {
-    const [sx, sy] = w2s(CHURCH.x + x, CHURCH.y + y), rr = R * ZOOM;
-    const gr = g.createRadialGradient(sx, sy, 0, sx, sy, rr);
+  const glow = (x, y, R, rgb, a, sy = 1) => {
+    const [sx, sy0] = w2s(CHURCH.x + x, CHURCH.y + y), rr = R * ZOOM;
+    g.save(); g.translate(sx, sy0); g.scale(1, sy);
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, rr);
     gr.addColorStop(0, `rgba(${rgb},${a})`); gr.addColorStop(1, `rgba(${rgb},0)`);
-    g.fillStyle = gr; g.fillRect(sx - rr, sy - rr, rr * 2, rr * 2);
+    g.fillStyle = gr; g.fillRect(-rr, -rr, rr * 2, rr * 2);
+    g.restore();
   };
-  glow(-5, -24, 46 * f, '255,190,100', 0.4);
-  glow(-5, 22, 60 * f, '255,170,80', 0.22);
-  glow(-56, -56, 30, '120,140,255', 0.22 * f);
-  glow(56, -56, 30, '255,120,120', 0.2 * f);
-  glow(0, -124, 26, '220,180,255', 0.22 * f);
+  glow(-4, -30, 50 * f, '255,190,100', 0.42);
+  glow(-4, 26, 70 * f, '255,170,80', 0.25, 0.5);
+  for (const s of [-1, 1]) { glow(s * 80, -62, 40 * f, '255,180,100', 0.28); glow(s * 80, 22, 46, '255,180,100', 0.14, 0.45); }
+  glow(0, -138, 30, '220,180,255', 0.24 * f);
 }
 function drawGrave(g, s) {
   g.save(); g.translate(s.x, s.y);
@@ -3220,13 +3328,13 @@ function drawSign(g) {
   g.save(); g.translate(SIGN.x, SIGN.y);
   g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(0, 2, 10, 3.5, 0, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#5a3d28'; g.fillRect(-2.5, -42, 5, 43);
-  // a board shaped like an arrow, pointing down the trail, with a little church painted on it
+  // a board shaped like an arrow pointing east down the trail, with a little church painted on it
   g.fillStyle = '#8a6a47'; g.strokeStyle = '#4a3322'; g.lineWidth = 1.5;
-  g.beginPath(); g.moveTo(-34, -38); g.lineTo(-25, -47); g.lineTo(14, -47); g.lineTo(14, -29); g.lineTo(-25, -29); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(34, -38); g.lineTo(25, -47); g.lineTo(-14, -47); g.lineTo(-14, -29); g.lineTo(25, -29); g.closePath(); g.fill(); g.stroke();
   g.fillStyle = '#f3e6c8';
-  g.beginPath(); g.moveTo(-11, -32); g.lineTo(-11, -38); g.lineTo(-5, -43); g.lineTo(1, -38); g.lineTo(1, -32); g.closePath(); g.fill();
-  g.strokeStyle = '#f3e6c8'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-5, -43); g.lineTo(-5, -46.5); g.moveTo(-6.6, -45.2); g.lineTo(-3.4, -45.2); g.stroke();
-  g.fillStyle = '#4a3322'; g.fillRect(-6.5, -36, 3, 4);
+  g.beginPath(); g.moveTo(11, -32); g.lineTo(11, -38); g.lineTo(5, -43); g.lineTo(-1, -38); g.lineTo(-1, -32); g.closePath(); g.fill();
+  g.strokeStyle = '#f3e6c8'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(5, -43); g.lineTo(5, -46.5); g.moveTo(3.4, -45.2); g.lineTo(6.6, -45.2); g.stroke();
+  g.fillStyle = '#4a3322'; g.fillRect(3.5, -36, 3, 4);
   g.restore();
 }
 
@@ -3234,30 +3342,41 @@ function drawSign(g) {
 function drawPew(g, p, back) {
   const len = p.b - p.a;
   if (p.broken) {
-    // this one gave up long ago: tipped over and split in two
+    // this one gave way long ago: tipped over and split in two
     g.save(); g.translate(p.a + len * 0.3, p.y + 4); g.rotate(-0.08);
-    g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(-len * 0.3 + 2, 6, len * 0.55, 8);
-    g.fillStyle = '#5e4029'; roundRect(g, -len * 0.3, -8, len * 0.55, 16, 3); g.fill();
-    g.fillStyle = '#6e4b31'; g.fillRect(-len * 0.3 + 2, -8, len * 0.55 - 4, 3);
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-len * 0.3 + 2, 6, len * 0.55, 8);
+    g.fillStyle = '#4a2519'; roundRect(g, -len * 0.3, -8, len * 0.55, 16, 3); g.fill();
+    g.fillStyle = '#6a3a28'; g.fillRect(-len * 0.3 + 2, -8, len * 0.55 - 4, 3);
     g.restore();
     g.save(); g.translate(p.a + len * 0.76, p.y + 2); g.rotate(0.32);
-    g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(-len * 0.2, 6, len * 0.42, 8);
-    g.fillStyle = '#54391f'; roundRect(g, -len * 0.2, -10, len * 0.42, 18, 3); g.fill();
-    g.fillStyle = '#7a5434'; g.fillRect(-len * 0.2 + 2, -10, len * 0.42 - 4, 4);
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-len * 0.2, 6, len * 0.42, 8);
+    g.fillStyle = '#41200f'; roundRect(g, -len * 0.2, -10, len * 0.42, 18, 3); g.fill();
+    g.fillStyle = '#6a3a28'; g.fillRect(-len * 0.2 + 2, -10, len * 0.42 - 4, 4);
     g.restore();
     return;
   }
+  g.save(); g.translate(p.a + len / 2, p.y); g.rotate(p.rot || 0); g.translate(-(p.a + len / 2), -p.y);
   if (!back) {
-    g.fillStyle = '#7a5434'; roundRect(g, p.a, p.y - 18, len, 11, 3); g.fill();
-    g.fillStyle = '#8c6440'; g.fillRect(p.a + 3, p.y - 17, len - 6, 3);
+    g.fillStyle = '#6a3a28'; roundRect(g, p.a, p.y - 18, len, 11, 3); g.fill();
+    g.fillStyle = '#82503a'; g.fillRect(p.a + 3, p.y - 17, len - 6, 3);
+    g.restore();
     return;
   }
-  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(p.a + len / 2, p.y + 13, len / 2 + 6, 5, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#5e4029'; roundRect(g, p.a, p.y - 10, len, 22, 3); g.fill();
-  g.fillStyle = '#76513a'; g.fillRect(p.a + 2, p.y - 10, len - 4, 4);
-  g.strokeStyle = 'rgba(30,18,10,0.3)'; g.lineWidth = 1;
-  g.beginPath(); g.moveTo(p.a + 4, p.y + 2); g.lineTo(p.b - 4, p.y + 2); g.stroke();
-  for (const ex of [p.a - 4, p.b - 4]) { g.fillStyle = '#4e341d'; roundRect(g, ex, p.y - 20, 8, 34, 4); g.fill(); }
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(p.a + len / 2, p.y + 13, len / 2 + 8, 5, 0, 0, Math.PI * 2); g.fill();
+  // carved back: dark red-brown wood with sunken panels
+  const wg = g.createLinearGradient(0, p.y - 12, 0, p.y + 12);
+  wg.addColorStop(0, '#6e3c29'); wg.addColorStop(1, '#3f1f14');
+  g.fillStyle = wg; roundRect(g, p.a, p.y - 11, len, 23, 3); g.fill();
+  g.fillStyle = '#8a5238'; g.fillRect(p.a + 2, p.y - 11, len - 4, 3);
+  g.strokeStyle = 'rgba(20,8,4,0.45)'; g.lineWidth = 1;
+  for (let x = p.a + 10; x < p.b - 20; x += 34) { roundRect(g, x, p.y - 5, 26, 12, 2); g.stroke(); }
+  // scrolled ends
+  for (const ex of [p.a - 5, p.b - 5]) {
+    g.fillStyle = '#3a1c11'; roundRect(g, ex, p.y - 22, 10, 36, 3); g.fill();
+    g.fillStyle = '#7a4630'; g.beginPath(); g.arc(ex + 5, p.y - 22, 6, Math.PI, 0); g.fill();
+    g.fillStyle = '#3a1c11'; g.beginPath(); g.arc(ex + 5, p.y - 22, 2.5, 0, Math.PI * 2); g.fill();
+  }
+  g.restore();
 }
 function drawCandle(g, x, y, h, t, seed) {
   g.fillStyle = '#c9a24a'; g.beginPath(); g.ellipse(x, y, 7, 2.6, 0, 0, Math.PI * 2); g.fill();
@@ -3265,29 +3384,117 @@ function drawCandle(g, x, y, h, t, seed) {
   g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(x + 1, y - h, 2, h);
   drawFlames(g, x, y - h + 1, 7, 13, t + seed, 1);
 }
+function goldGrad(g, x0, x1) {
+  const gr = g.createLinearGradient(x0, 0, x1, 0);
+  gr.addColorStop(0, '#8a6424'); gr.addColorStop(0.4, '#f2d27a'); gr.addColorStop(1, '#7a5520');
+  return gr;
+}
+// A tall golden candelabra with three candles.
+function drawCandelabra(g, c, t) {
+  const { x, y } = c;
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y + 2, 14, 4, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = goldGrad(g, x - 10, x + 10);
+  g.beginPath(); g.moveTo(x - 11, y + 1); g.lineTo(x - 3, y - 8); g.lineTo(x + 3, y - 8); g.lineTo(x + 11, y + 1); g.closePath(); g.fill();
+  g.fillRect(x - 2, y - 62, 4, 56);
+  for (const ky of [-14, -32, -50]) { g.beginPath(); g.ellipse(x, y + ky, 4.5, 3, 0, 0, Math.PI * 2); g.fill(); }
+  g.strokeStyle = '#d9b45c'; g.lineWidth = 2.6; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x - 16, y - 70); g.quadraticCurveTo(x - 16, y - 58, x, y - 58); g.quadraticCurveTo(x + 16, y - 58, x + 16, y - 70); g.stroke();
+  for (const dx of [-16, 0, 16]) {
+    const cy = dx ? y - 70 : y - 74;
+    g.fillStyle = '#e0bd62'; g.beginPath(); g.ellipse(x + dx, cy, 5, 2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f2e8d2'; g.fillRect(x + dx - 2.2, cy - 12, 4.4, 12);
+    drawFlames(g, x + dx, cy - 11, 6, 11, t + dx * 0.3 + x, 1);
+  }
+}
+function drawFloorCandle(g, c, t) {
+  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(c.x, c.y + 1, 6, 2.2, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = goldGrad(g, c.x - 5, c.x + 5); g.beginPath(); g.ellipse(c.x, c.y, 5, 2, 0, 0, Math.PI * 2); g.fill();
+  g.fillRect(c.x - 1.5, c.y - 8, 3, 8);
+  g.fillStyle = '#f2e8d2'; g.fillRect(c.x - 2, c.y - 16, 4, 8);
+  drawFlames(g, c.x, c.y - 15, 5, 9, t + c.y, 1);
+}
+// A tall stone column against the side wall.
+function drawColumn(g, c) {
+  const { x, y } = c, H = 176, R = 13;
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y + 3, 24, 7, 0, 0, Math.PI * 2); g.fill();
+  const sg = g.createLinearGradient(x - R, 0, x + R, 0);
+  sg.addColorStop(0, '#4c4640'); sg.addColorStop(0.35, '#a0978a'); sg.addColorStop(1, '#3f3a35');
+  g.fillStyle = sg; g.fillRect(x - R, y - H, R * 2, H - 10);
+  g.strokeStyle = 'rgba(0,0,0,0.2)'; g.lineWidth = 1;
+  for (const dx of [-6, 0, 6]) { g.beginPath(); g.moveTo(x + dx, y - H + 14); g.lineTo(x + dx, y - 16); g.stroke(); }
+  g.fillStyle = '#6f685f'; g.fillRect(x - 18, y - 16, 36, 18); g.fillStyle = '#8b8377'; g.fillRect(x - 18, y - 16, 36, 4);
+  g.fillStyle = '#7d756a'; g.fillRect(x - 19, y - H - 6, 38, 12); g.fillStyle = '#9a9184'; g.fillRect(x - 19, y - H - 6, 38, 3);
+  const r = mulberry(Math.round(x + y));
+  for (let i = 0; i < 9; i++) { g.fillStyle = r() < 0.5 ? '#2c5233' : '#3c6b3e'; g.beginPath(); g.ellipse(x + (r() - 0.5) * 22, y - 30 - r() * 90, 4, 2.6, r() * 3, 0, Math.PI * 2); g.fill(); }
+}
+// A heap of fallen stone.
+function drawRubble(g, k) {
+  const r = mulberry(Math.round(k.x * 7 + k.y));
+  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(k.x, k.y + 3, k.r * 1.7, k.r * 0.6, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = 'rgba(120,110,96,0.22)'; g.beginPath(); g.ellipse(k.x, k.y, k.r * 1.5, k.r * 0.5, 0, 0, Math.PI * 2); g.fill();
+  const blocks = [];
+  for (let i = 0; i < k.n; i++) blocks.push({ x: k.x + (r() - 0.5) * k.r * 2.4, y: k.y + (r() - 0.5) * k.r * 0.9 - (i > k.n * 0.6 ? 8 : 0), w: 8 + r() * 12, h: 6 + r() * 7, a: (r() - 0.5) * 0.8, v: r() });
+  blocks.sort((a, b) => a.y - b.y);
+  for (const b of blocks) {
+    g.save(); g.translate(b.x, b.y); g.rotate(b.a);
+    g.fillStyle = `rgb(${110 + b.v * 30 | 0},${102 + b.v * 26 | 0},${92 + b.v * 22 | 0})`; g.fillRect(-b.w / 2, -b.h, b.w, b.h);
+    g.fillStyle = `rgb(${150 + b.v * 30 | 0},${140 + b.v * 26 | 0},${126 + b.v * 22 | 0})`; g.fillRect(-b.w / 2, -b.h, b.w, 3);
+    g.restore();
+  }
+}
+// The iron chandelier, hanging high over the aisle (drawn above everything).
+function drawChandelier(g, t, people) {
+  const [x, y] = chandelierPos(t), R = 56, RY = 17;
+  // see-through while someone walks underneath, so nobody gets lost behind it
+  const under = (people || []).some(p => Math.abs(p.x - x) < R + 12 && p.y - 50 < y + 26 && p.y > y - 30);
+  g.save(); g.globalAlpha = under ? 0.4 : 1;
+  const cg = g.createLinearGradient(0, y - 46, 0, y - 190);
+  cg.addColorStop(0, 'rgba(30,26,23,1)'); cg.addColorStop(1, 'rgba(30,26,23,0)');
+  g.strokeStyle = cg; g.lineWidth = 3; g.setLineDash([5, 3]);
+  g.beginPath(); g.moveTo(x, y - 46); g.lineTo(x - 1, y - 190); g.stroke();
+  g.strokeStyle = '#1e1a17'; g.lineWidth = 1.6;
+  for (const a of [0.4, 2.0, 3.6, 5.1]) { g.beginPath(); g.moveTo(x, y - 44); g.lineTo(x + Math.cos(a) * R, y + Math.sin(a) * RY); g.stroke(); }
+  g.setLineDash([]);
+  g.fillStyle = '#2a241f'; g.beginPath(); g.arc(x, y - 46, 4, 0, Math.PI * 2); g.fill();
+  const cups = [];
+  for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2 + 0.2; cups.push({ x: x + Math.cos(a) * R, y: y + Math.sin(a) * RY, back: Math.sin(a) < 0, lit: i !== 3 && i !== 7, i }); }
+  const cup = c => {
+    g.fillStyle = '#3a2f26'; g.beginPath(); g.ellipse(c.x, c.y, 5, 2.2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#efe5cf'; g.fillRect(c.x - 2, c.y - 10, 4, 10);
+    if (c.lit) drawFlames(g, c.x, c.y - 9, 5.5, 10, t * 1.1 + c.i, 1);
+  };
+  for (const c of cups) if (c.back) cup(c);
+  g.strokeStyle = '#2b241e'; g.lineWidth = 6; g.beginPath(); g.ellipse(x, y, R, RY, 0, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = '#5a4a3a'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(x, y - 1.5, R, RY, 0, Math.PI * 0.05, Math.PI * 0.95); g.stroke();
+  for (const c of cups) if (!c.back) cup(c);
+  g.fillStyle = '#2b241e'; g.beginPath(); g.moveTo(x - 6, y + 2); g.lineTo(x + 6, y + 2); g.lineTo(x, y + 22); g.closePath(); g.fill();
+  g.restore();
+}
 function drawAltar(g, t) {
   const { x, y, w } = ALTAR, now = performance.now();
-  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(x, y + 2, w / 2 + 14, 7, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#968b7c'; g.fillRect(x - w / 2, y - 34, w, 34);
-  g.fillStyle = '#b3a896'; g.fillRect(x - w / 2 - 4, y - 48, w + 8, 15);
-  g.fillStyle = '#e6dcc4'; g.fillRect(x - w / 2 + 12, y - 48, w - 24, 13);
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y + 2, w / 2 + 14, 7, 0, 0, Math.PI * 2); g.fill();
+  // stone altar with a carved front of little pointed arches
+  g.fillStyle = '#9a8f80'; g.fillRect(x - w / 2, y - 34, w, 34);
+  g.strokeStyle = 'rgba(40,32,26,0.4)'; g.lineWidth = 1.2;
+  for (let k = -3; k <= 3; k++) { archPath(g, x + k * 20, y - 4, 13, 24); g.stroke(); }
+  g.fillStyle = '#b8ad9b'; g.fillRect(x - w / 2 - 5, y - 49, w + 10, 16);
+  g.fillStyle = '#ece3cc'; g.fillRect(x - w / 2 + 12, y - 49, w - 24, 13);
   // cloth draped over the front, gold trim, a bit moth-eaten at the hem
   g.beginPath(); g.moveTo(x - 34, y - 35);
   for (let i = 0; i <= 12; i++) g.lineTo(x - 34 + i * (68 / 12), y - 12 - (i % 2 ? 3 : 0));
   g.lineTo(x + 34, y - 35); g.closePath(); g.fill();
   g.fillStyle = '#c9a24a'; g.fillRect(x - 34, y - 36, 68, 3); g.fillRect(x - 3, y - 33, 6, 18);
-  // two tall candles that never seem to go out
-  drawCandle(g, x - 54, y - 40, 26, t, 0.3); drawCandle(g, x + 54, y - 40, 26, t, 1.7);
-  // little wooden reliquary box; it opens and the talisman rises out when the candles are lit
+  drawCandle(g, x - 58, y - 41, 16, t, 0.3); drawCandle(g, x + 58, y - 41, 16, t, 1.7);
+  // a little golden reliquary; it opens and the talisman rises out when the candles are lit
   const ge = (now - church.glowAt) / 1000, open = ge < 12;
-  g.fillStyle = '#6e4b31'; g.fillRect(x - 13, y - 52, 26, 12);
-  g.fillStyle = '#c9a24a'; g.fillRect(x - 13, y - 47, 26, 2);
-  g.fillStyle = '#7d5639';
-  if (open) { g.save(); g.translate(x - 13, y - 52); g.rotate(-0.5); g.fillRect(0, -6, 26, 6); g.restore(); }
-  else g.fillRect(x - 14, y - 56, 28, 5);
+  g.fillStyle = goldGrad(g, x - 13, x + 13); g.fillRect(x - 13, y - 53, 26, 13);
+  g.fillStyle = '#7a5520'; g.fillRect(x - 13, y - 47, 26, 1.5);
+  g.fillStyle = '#e0bd62';
+  if (open) { g.save(); g.translate(x - 13, y - 53); g.rotate(-0.5); g.fillRect(0, -6, 26, 6); g.restore(); }
+  else { g.beginPath(); g.moveTo(x - 15, y - 53); g.lineTo(x, y - 61); g.lineTo(x + 15, y - 53); g.closePath(); g.fill(); }
   if (open && ge < 5) {
     const k = Math.min(1, ge / 2.2), e = 1 - Math.pow(1 - k, 3), a = ge < 3.5 ? 1 : 1 - (ge - 3.5) / 1.5;
-    const ty = y - 60 - 34 * e;
+    const ty = y - 62 - 34 * e;
     g.save(); g.globalAlpha = clamp(a, 0, 1);
     const gl = g.createRadialGradient(x, ty, 0, x, ty, 26);
     gl.addColorStop(0, 'rgba(255,220,140,0.8)'); gl.addColorStop(1, 'rgba(255,200,100,0)');
@@ -3352,17 +3559,23 @@ function lightChapel(t, people) {
   const now = performance.now(), ge = (now - church.glowAt) / 1000;
   const glow = ge < 10 ? (ge < 1.5 ? ge / 1.5 : ge < 6 ? 1 : 1 - (ge - 6) / 4) : 0;
   const litN = popcount(chapel.lit), flick = 1 + Math.sin(t * 8) * 0.04 + Math.sin(t * 19) * 0.03;
-  darkPass(`rgba(14,12,30,${0.5 - 0.24 * glow})`, hole => {
-    hole(ALTAR.x, ALTAR.y - 60, 175 * flick, 1);
+  const [chx, chy] = chandelierPos(t);
+  darkPass(`rgba(22,11,16,${0.6 - 0.26 * glow})`, hole => {
+    for (const x of WIN_X) hole(x, IN.y0 + 100, 100, 0.9);
+    for (const b of BEAMS) hole(b.fx, b.fy, b.fw * 0.62, 0.62);
+    hole(ALTAR.x, ALTAR.y - 50, 118 * flick, 0.85);
+    for (const c of CANDELABRA) hole(c.x, c.y - 66, 96 * flick, 0.8);
+    hole(chx, chy, 150 * flick, 0.7);
+    hole(chx, CHANDELIER.y, 120, 0.38);
+    for (const c of FLOOR_CANDLES) hole(c.x, c.y - 12, 46, 0.5);
     hole(RACK.x, RACK.y - 30, 46 + litN * 11, 0.95);
-    hole(MOON.x, MOON.y - 14, 125, 0.9);
+    hole(MOON.x, MOON.y - 14, 125, 0.85);
     for (const s of IN_GLASS) hole(s.x + (s.x < IN.cx ? 52 : -52), s.y + 14, 74, 0.38);
     hole(IN.cx, IN.y1 - 8, 90, 0.55);
-    hole(IN.cx, IN.y0 + 44, 70, 0.75);
     hole(LECTERN.x, LECTERN.y - 30, 60, 0.4);
     for (const p of people) hole(p.x, p.y - 20, 80, 0.55);
-    if (glow) hole(IN.cx, IN.y0 + 380, 460, glow * 0.65);
-  });
+    if (glow) hole(IN.cx, iy(260), 480, glow * 0.65);
+  }, true);
   const radial = (x, y, R, rgb, a, sx2 = 1, sy2 = 1) => {
     const [sx, sy] = w2s(x, y), rr = R * ZOOM;
     ctx.save(); ctx.translate(sx, sy); ctx.scale(sx2, sy2);
@@ -3372,28 +3585,41 @@ function lightChapel(t, people) {
     ctx.restore();
   };
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  radial(ALTAR.x - 54, ALTAR.y - 66, 70 * flick, '255,170,80', 0.26);
-  radial(ALTAR.x + 54, ALTAR.y - 66, 70 * flick, '255,170,80', 0.26);
+  // moonbeams streaming down from the tall windows (and through the hole in the roof)
+  for (let b = 0; b <= BEAMS.length; b++) {
+    const B = beamGeom(b), [tx, ty] = w2s(B.tx, B.ty), [bx, by] = w2s(B.bx, B.by);
+    const pulse = 0.82 + 0.18 * Math.sin(t * 0.45 + b * 2.1);
+    const a = (b < BEAMS.length ? 0.11 : 0.09) * pulse;
+    for (const k of [1, 0.5]) {
+      const lg = ctx.createLinearGradient(tx, ty, bx, by);
+      lg.addColorStop(0, `rgba(255,240,214,${a})`); lg.addColorStop(0.7, `rgba(255,236,206,${a * 0.75})`); lg.addColorStop(1, `rgba(255,232,200,${a * 0.25})`);
+      ctx.fillStyle = lg;
+      ctx.beginPath(); ctx.moveTo(tx - B.tw * k * ZOOM, ty); ctx.lineTo(tx + B.tw * k * ZOOM, ty);
+      ctx.lineTo(bx + B.bw * k * ZOOM, by); ctx.lineTo(bx - B.bw * k * ZOOM, by); ctx.closePath(); ctx.fill();
+    }
+    radial(B.bx, B.by, B.bw * 1.1, '255,236,206', 0.16 * pulse, 1.3, 0.55);
+  }
+  // the windows themselves glow
+  for (const x of WIN_X) radial(x, IN.y0 + 96, 70, '235,225,255', 0.2, 0.8, 1.3);
+  // warm candlelight
+  radial(ALTAR.x - 58, ALTAR.y - 58, 60 * flick, '255,170,80', 0.24);
+  radial(ALTAR.x + 58, ALTAR.y - 58, 60 * flick, '255,170,80', 0.24);
+  for (const c of CANDELABRA) radial(c.x, c.y - 74, 90 * flick, '255,170,80', 0.3);
+  radial(chx, chy - 6, 130 * flick, '255,175,90', 0.28);
+  radial(chx, CHANDELIER.y, 90, '255,170,80', 0.12, 1.4, 0.5);
+  for (const c of FLOOR_CANDLES) radial(c.x, c.y - 14, 34 * flick, '255,170,80', 0.22);
   radial(RACK.x, RACK.y - 32, 34 + litN * 6, '255,160,70', 0.04 + litN * 0.03);
   for (const s of IN_GLASS) {
     const fx = s.x + (s.x < IN.cx ? 56 : -56);
-    radial(fx, s.y + 14, 64, s.c, 0.3, 1.5, 0.7);
-    radial(fx - (s.x < IN.cx ? 18 : -18), s.y + 4, 30, s.c, 0.22, 1.2, 0.8);
+    radial(fx, s.y + 14, 64, s.c, 0.28, 1.5, 0.7);
   }
-  radial(IN.cx, IN.y0 + 44, 50, '200,170,255', 0.22);
-  // moonbeam through the hole in the roof
-  {
-    const top = w2s(MOON.x + 64, MOON.y - 300), bl = w2s(MOON.x - 52, MOON.y + 6), br = w2s(MOON.x + 52, MOON.y + 6), half = 34 * ZOOM;
-    const lg = ctx.createLinearGradient(0, top[1], 0, bl[1]);
-    lg.addColorStop(0, 'rgba(190,210,255,0)'); lg.addColorStop(1, 'rgba(190,210,255,0.13)');
-    ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(top[0] - half, top[1]); ctx.lineTo(top[0] + half, top[1]); ctx.lineTo(br[0], br[1]); ctx.lineTo(bl[0], bl[1]); ctx.closePath(); ctx.fill();
-    radial(MOON.x, MOON.y - 4, 80, '190,210,255', 0.14, 1.3, 0.6);
-  }
-  // dust drifting in the light
+  radial(MOON.x, MOON.y - 4, 80, '210,220,255', 0.16, 1.3, 0.6);
+  // dust drifting through the beams
   for (const m of church.motes) {
-    const [sx, sy] = w2s(m.x, m.y);
-    const a = (Math.sin(m.p * 2) * 0.5 + 0.5) * 0.5;
-    ctx.fillStyle = `rgba(255,240,210,${a})`; ctx.fillRect(sx - 1, sy - 1, 2, 2);
+    const B = beamGeom(m.b), hw = B.tw + (B.bw - B.tw) * m.u;
+    const [sx, sy] = w2s(B.tx + (B.bx - B.tx) * m.u + m.v * hw, B.ty + (B.by - B.ty) * m.u);
+    const a = Math.sin(m.u * Math.PI) * (1 - Math.abs(m.v) * 0.7) * (0.5 + 0.5 * Math.sin(m.p * 3));
+    ctx.fillStyle = `rgba(255,244,220,${a * 0.85})`; ctx.beginPath(); ctx.arc(sx, sy, 1.3 * ZOOM, 0, Math.PI * 2); ctx.fill();
   }
   // golden motes rising off the altar when the last candle catches
   if (glow > 0) {
@@ -3404,6 +3630,39 @@ function lightChapel(t, people) {
     }
   }
   ctx.restore();
+  finishChapel();
+}
+// A soft blur along the top and bottom of the screen (like looking at a little model),
+// so the eye settles on the middle of the room. (The darker corners are painted in darkPass.)
+// It only copies those two strips, at a quarter size, to stay light on phones.
+const tsCv = document.createElement('canvas'), tsCtx = tsCv.getContext('2d');
+const TS_FILTER = 'filter' in tsCtx;
+const TS_TOP = 0.2, TS_BOT = 0.7; // the strips that get blurred (fractions of the screen height)
+// If a device can't keep up inside the church, the blur quietly switches itself off.
+const tiltShift = { on: true, slow: 0 };
+function tiltShiftWatch(dt) {
+  tiltShift.slow = dt > 0.026 ? tiltShift.slow + dt : Math.max(0, tiltShift.slow - dt);
+  if (tiltShift.on && tiltShift.slow > 3) tiltShift.on = false;
+}
+function finishChapel() {
+  if (!tiltShift.on) return;
+  const cw = cv.width, ch = cv.height;
+  const w = Math.max(2, Math.round(VW / 4)), h = Math.max(4, Math.round(VH / 4));
+  if (tsCv.width !== w || tsCv.height !== h) { tsCv.width = w; tsCv.height = h; }
+  const ht = Math.round(h * TS_TOP), hb = Math.round(h * TS_BOT);
+  tsCtx.clearRect(0, 0, w, h);
+  tsCtx.imageSmoothingQuality = 'high';
+  if (TS_FILTER) tsCtx.filter = 'blur(1.6px)';
+  tsCtx.drawImage(cv, 0, 0, cw, Math.round(ch * TS_TOP), 0, 0, w, ht);
+  tsCtx.drawImage(cv, 0, Math.round(ch * TS_BOT), cw, ch - Math.round(ch * TS_BOT), 0, hb, w, h - hb);
+  if (TS_FILTER) tsCtx.filter = 'none';
+  tsCtx.globalCompositeOperation = 'destination-in';
+  const m = tsCtx.createLinearGradient(0, 0, 0, h);
+  m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(TS_TOP * 0.85, 'rgba(0,0,0,0)'); m.addColorStop(TS_BOT + 0.04, 'rgba(0,0,0,0)'); m.addColorStop(1, 'rgba(0,0,0,1)');
+  tsCtx.fillStyle = m; tsCtx.fillRect(0, 0, w, h);
+  tsCtx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(tsCv, 0, 0, w, ht, 0, 0, VW, VH * ht / h);
+  ctx.drawImage(tsCv, 0, hb, w, h - hb, 0, VH * hb / h, VW, VH * (h - hb) / h);
 }
 window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: me.tal, open: church.open, chapel: Object.assign({}, chapel), solution: cpSolution(chapel.lit) });
 
@@ -3515,10 +3774,11 @@ function doAction() {
   if (me.sit >= 0) { stand(); return; }
   if (me.pew >= 0) { standPew(); return; }
   if (inChurch(me.x)) {
-    if (nearRack()) cpShow(!church.open);
-    else if (nearBook()) readBook();
-    else if (nearExit()) exitChurch();
-    else { const p = nearestFreePew(64); if (p >= 0) sitPew(p); }
+    const a = churchAction();
+    if (a === 'rack') cpShow(!church.open);
+    else if (a === 'book') readBook();
+    else if (a === 'exit') exitChurch();
+    else if (typeof a === 'number') sitPew(a);
     return;
   }
   if (nearChurchDoor()) { enterChurch(); return; }
@@ -3556,10 +3816,11 @@ function updateActionBtn() {
   else if (atDock()) label = 'Cast a line';
   else if (nearChurchDoor()) label = 'Enter the church';
   else if (inChurch(me.x)) {
-    if (nearRack()) label = church.open ? null : (chapel.sol ? 'Look at the candles' : 'Light the candles');
-    else if (nearBook()) label = 'Read the old book';
-    else if (nearExit()) label = 'Leave the church';
-    else if (nearestFreePew(64) >= 0) label = 'Sit on the pew';
+    const a = churchAction();
+    if (a === 'rack') label = church.open ? null : (chapel.sol ? 'Look at the candles' : 'Light the candles');
+    else if (a === 'book') label = 'Read the old book';
+    else if (a === 'exit') label = 'Leave the church';
+    else if (typeof a === 'number') label = 'Sit on the pew';
   }
   if (smHoldsStick()) label = null;
   if (label === null) b.hidden = true; else { b.hidden = false; if (b.textContent !== label) b.textContent = label; }
@@ -3657,8 +3918,10 @@ function camTarget() {
     const ty = bottom - top <= viewH ? top + viewH / 2 : clamp(me.y - 20, top + viewH / 2, bottom - viewH / 2);
     return [tx, ty];
   }
+  // near the church, look a little higher so its tall front and spire stay in view
+  const lift = 20 + 90 * clamp(1 - dist(me.x, me.y, CHURCH.x, CHURCH.y) / 320, 0, 1);
   const tx = clamp(me.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
-  const ty = clamp(me.y - 20, Math.min(viewH / 2, H / 2), Math.max(H - viewH / 2, H / 2));
+  const ty = clamp(me.y - lift, Math.min(viewH / 2, H / 2), Math.max(H - viewH / 2, H / 2));
   return [tx, ty];
 }
 function snapCam() { const [x, y] = camTarget(); cam.x = x; cam.y = y; }
@@ -3818,7 +4081,7 @@ function drawPerson(p, t) {
   if (p.sm) drawRoastStick(ctx, p, t);
 }
 // Night over the scene, with soft holes cut where light falls.
-function darkPass(fill, holes) {
+function darkPass(fill, holes, vignette) {
   const dw = dark.width, dh = dark.height, sc = dw / VW;
   dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
@@ -3830,6 +4093,13 @@ function darkPass(fill, holes) {
     gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(0.55, `rgba(0,0,0,${a * 0.6})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
     dctx.fillStyle = gr; dctx.fillRect(sx * sc - rr, sy * sc - rr, rr * 2, rr * 2);
   });
+  // optional darker corners, painted into this half-size layer so they cost almost nothing
+  if (vignette) {
+    dctx.globalCompositeOperation = 'source-over';
+    const v = dctx.createRadialGradient(dw / 2, dh * 0.46, Math.min(dw, dh) * 0.28, dw / 2, dh * 0.46, Math.max(dw, dh) * 0.78);
+    v.addColorStop(0, 'rgba(40,20,10,0)'); v.addColorStop(0.6, 'rgba(30,14,8,0.25)'); v.addColorStop(1, 'rgba(12,6,10,0.72)');
+    dctx.fillStyle = v; dctx.fillRect(0, 0, dw, dh);
+  }
   ctx.drawImage(dark, 0, 0, VW, VH);
 }
 function render(t) {
@@ -3842,6 +4112,8 @@ function render(t) {
   const items = [];
   if (inside) {
     ctx.drawImage(chapelBg, IN.x0, IN.y0);
+    // the chandelier's shadow on the floor, far below it
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(chandelierPos(t)[0], CHANDELIER.y, 60, 16, 0, 0, Math.PI * 2); ctx.fill();
     for (const p of PEWS) {
       if (!p.broken) items.push({ y: p.y - 18, d: () => drawPew(ctx, p, false) });
       items.push({ y: p.y + 14, d: () => drawPew(ctx, p, true) });
@@ -3850,6 +4122,11 @@ function render(t) {
     items.push({ y: RACK.y, d: () => drawRack(ctx, t) });
     items.push({ y: LECTERN.y, d: () => drawLectern(ctx) });
     items.push({ y: CAT.y, d: () => drawCat(ctx, t) });
+    for (const c of CANDELABRA) items.push({ y: c.y, d: () => drawCandelabra(ctx, c, t) });
+    for (const c of COLUMNS) items.push({ y: c.y + 2, d: () => drawColumn(ctx, c) });
+    for (const c of FLOOR_CANDLES) items.push({ y: c.y, d: () => drawFloorCandle(ctx, c, t) });
+    for (const k of RUBBLE) items.push({ y: k.y, d: () => drawRubble(ctx, k) });
+    items.push({ y: 1e9, d: () => drawChandelier(ctx, t, people) });
   } else {
     ctx.drawImage(ground, 0, 0);
     // lake shimmer
@@ -3968,6 +4245,7 @@ let storyTick = 0, voiceAcc = 0;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   const t = now / 1000;
+  if (joined && inChurch(me.x)) tiltShiftWatch(dt);
   if (!joined) {
     // idle camera drift on join screen
     cam.x = FIRE.x + Math.sin(t * 0.1) * 60; cam.y = FIRE.y + 80;
