@@ -1,6 +1,6 @@
 # Campfire
 
-A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, and see who can roast the best s'more.
+A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, see who can roast the best s'more, and find the old church hidden in the forest.
 
 Friends join from a link or QR code. No accounts, no app install: it runs in any modern browser on phones and computers.
 
@@ -49,7 +49,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | --- | --- | --- |
 | Walk | WASD or arrow keys, or click the ground | Drag anywhere (thumb joystick), or tap the ground |
 | Chat | Enter, type, Enter | Type in the bar at the bottom |
-| Sit, stand, fish | E or the button above the chat bar | The button above the chat bar |
+| Sit, stand, fish, go in or out of the church | E or the button above the chat bar | The button above the chat bar |
 | Voice | M or the mic button | The mic button, left of the chat bar |
 | Start or join a s'mores round | R, or click **Roast s'mores** / **Grab a stick!** | Tap **Roast s'mores** / **Grab a stick!** |
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
@@ -74,10 +74,20 @@ Closest to golden wins and gets a 👑 on their name tag until the next round. F
 
 Linger in the deep forest and glowing eyes start watching from the trees. Stay a few more seconds and something jumps out with a scream. It happens at most once every 90 seconds per player, and anyone can switch it off in the **?** panel (Forest scares: Off).
 
+## The old church
+
+West of the fire, a signpost points down an overgrown trail to an abandoned church in the middle of the forest. Walk up into the door (or tap the church) to go inside.
+
+Inside is a quiet room just for the people in there: friends inside see and hear each other, and the forest can't reach you. Sit on a pew, read the note in the old hymn book by the altar, or try the candle stand.
+
+**The candle puzzle:** light all nine candles. Touching a candle also flips the candles right above, below, left and right of it. **Hint** makes one helpful candle glow; **Start over** puts the candles back. Friends in the church share the same candle stand and can solve it together. When the last candle catches, everyone inside gets a **talisman**. Tap **Snuff them and play again** for a new pattern.
+
+**The talisman** turns the forest devil away 3 times: instead of the jump scare, a flash of warm light drives it back. You can see the talisman on your avatar and in the top bar (tap it to see how many wards are left), and it's remembered on your device. Solve the candles again to recharge it.
+
 ## Versions
 
 See `CHANGELOG.md`. Every version is saved as a `release-vX.Y` branch, so you can always go back.
 
 ## How multiplayer works
 
-Each player sends their position, avatar, last few chat lines and the story-circle state to the server. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot.
+Each player sends their position, avatar, last few chat lines, the story-circle state and the church candle stand to the server. The inside of the church is a separate room placed off the edge of the map, so the server needs nothing special for it. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot.
