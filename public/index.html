@@ -857,34 +857,21 @@ const yardPad = (x, y, k) => { const u = (x - YARD.x) / (YARD.rx * k), v = (y - 
 const frontLawn = (x, y) => Math.abs(x - CHURCH.x) < 110 && y > CHURCH.y && y < CHURCH.y + 160;
 for (let i = TREES.length - 1; i >= 0; i--) { const t = TREES[i]; if (yardPad(t.x, t.y, 1.06) || frontLawn(t.x, t.y)) TREES.splice(i, 1); }
 for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (yardPad(k.x, k.y, 1)) ROCKS.splice(i, 1); }
-// The deep woods past the old eastern tree line: thick, dark, and easy to get lost in.
+// The deep woods past the old eastern tree line: as many trees per area as the woods
+// around the camp, just darker, with the church tucked away in the far corner.
 {
   const r3 = mulberry(77);
-  for (let tries = 0, n = 0; n < 185 && tries < 12000; tries++) {
+  for (let tries = 0, n = 0; n < 34 && tries < 12000; tries++) {
     const x = W0 - 60 + r3() * (W - W0 + 40), y = 40 + r3() * (H - 60);
     const s = 0.85 + r3() * 0.6, pine = r3() < 0.72, hue = r3();
     if (x > W - 18 || yardPad(x, y, 1.04) || frontLawn(x, y) || inLake(x, y, 1.7)) continue;
-    if (TREES.some(t => dist(x, y, t.x, t.y) < 50)) continue;
+    if (TREES.some(t => dist(x, y, t.x, t.y) < 58)) continue;
     TREES.push({ x, y, s, pine, hue });
     n++;
   }
   for (let i = 0; i < 14; i++) {
     const x = W0 + r3() * (W - W0 - 40), y = 80 + r3() * (H - 160), rr = 6 + r3() * 9;
     if (!yardPad(x, y, 1.1)) ROCKS.push({ x, y, r: rr, flower: false });
-  }
-}
-{
-  const r2 = mulberry(31);
-  for (let tries = 0, n = 0; n < 26 && tries < 4000; tries++) {
-    const a = r2() * Math.PI * 2, k = 1.1 + r2() * 0.85;
-    const x = YARD.x + Math.cos(a) * YARD.rx * k, y = YARD.y + Math.sin(a) * YARD.ry * k;
-    const s = 0.8 + r2() * 0.55, pine = r2() < 0.65, hue = r2();
-    if (x < 30 || x > W - 30 || y < 150 || y > H - 30) continue;
-    if (dist(x, y, FIRE.x, FIRE.y) < 330 || nearPath(x, y, 60) || frontLawn(x, y)) continue;
-    if (TENTS.some(t => dist(x, y, t.x, t.y) < 110)) continue;
-    if (TREES.some(t => dist(x, y, t.x, t.y) < 56)) continue;
-    TREES.push({ x, y, s, pine, hue });
-    n++;
   }
 }
 const LIGHTS = [
@@ -2013,7 +2000,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.6.2';
+const VERSION = 'v0.6.3';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
