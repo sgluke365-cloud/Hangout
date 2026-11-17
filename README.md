@@ -1,6 +1,6 @@
 # Campfire
 
-A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, see who can roast the best s'more, find the old church hidden in the forest, and wake the campfire spirit, a talking fire that tells stories and chats with everyone around it.
+A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, see who can roast the best s'more, find the old church hidden in the forest, wake the campfire spirit, a talking fire that tells stories and chats with everyone around it, and walk the circle of standing stones to open a door in the fire.
 
 Friends join from a link or QR code. No accounts, no app install: it runs in any modern browser on phones and computers.
 
@@ -50,7 +50,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | --- | --- | --- |
 | Walk | WASD or arrow keys, or click the ground | Drag anywhere (thumb joystick), or tap the ground |
 | Chat | Enter, type, Enter | Type in the bar at the bottom |
-| Sit, stand, fish, go in or out of the church | E or the button above the chat bar | The button above the chat bar |
+| Sit, stand, fish, go in or out of the church, step into the door in the fire | E or the button above the chat bar | The button above the chat bar |
 | Voice | M or the mic button | The mic button, left of the chat bar |
 | Start or join a s'mores round | R, or click **Roast s'mores** / **Grab a stick!** | Tap **Roast s'mores** / **Grab a stick!** |
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
@@ -102,6 +102,18 @@ The key stays on the server; players' browsers never see it. If Ember still soun
 
 **Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead.
 
+## The Circle of Seven
+
+Seven old standing stones ring the campfire clearing, each carved with a rune. Walk **sunwise (clockwise)** around the fire, inside the stones, **seven times** without stopping. Each lap wakes a stone: Memory, Laughter, Courage, Longing, Wonder, Truth and Kinship. The fire takes on each stone's colour, a low hum builds, and you leave a trail of light that everyone at the campsite can see.
+
+The circle breaks if you stand still for 8 seconds, wander out past the stones (or step into the fire) for more than a moment, or turn back. Cutting through the middle doesn't count.
+
+When the seventh stone wakes, every stone beams into the fire, a pillar of light goes up, and the fire becomes a **door**. It stays open for about a minute, and anyone at the campsite can walk into it, tap it, or press E (**Step into the door**) near the fire. After it closes, the stones rest for 20 seconds before the circle can be walked again.
+
+**The Otherwhere** is a little island floating under strange stars and aurora. Its fire burns downward. Friends who come through see and hear each other, and a shared story card asks for stories from the life you didn't live ("In another life, you said yes to the thing you turned down. How is that life going?"). Tap **Turn another card** for a new one. The orange **Home** rift at the top of the island always takes you back to the campfire, even after the door has closed.
+
+The old hymn book in the church has a hint about the stones.
+
 ## Forest scares
 
 Linger in the deep forest and glowing eyes start watching from the trees. Stay a few more seconds and something jumps out with a scream. It happens at most once every 90 seconds per player, and anyone can switch it off in the **?** panel (Forest scares: Off).
@@ -124,4 +136,4 @@ See `CHANGELOG.md`. Every version is saved as a `release-vX.Y` branch, so you ca
 
 ## How multiplayer works
 
-Each player sends their position, avatar, last few chat lines, the story-circle state, the church candle stand and the campfire spirit's state to the server. The inside of the church is a separate room placed off the edge of the map, so the server needs nothing special for it. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot. When someone asks Ember something, their browser asks the server (which asks Claude), and passes Ember's words to everyone else as they arrive, so the whole fire hears the same answer.
+Each player sends their position, avatar, last few chat lines, the story-circle state, the church candle stand and the campfire spirit's state to the server. The inside of the church and the Otherwhere are separate rooms placed off the edges of the map, so the server needs nothing special for them. Ritual laps, the door in the fire and the Otherwhere story card travel the same way as the story circle: every player carries the newest version they know. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot. When someone asks Ember something, their browser asks the server (which asks Claude), and passes Ember's words to everyone else as they arrive, so the whole fire hears the same answer.
