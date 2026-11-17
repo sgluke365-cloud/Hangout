@@ -426,6 +426,44 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .cp-done p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--cream); }
 .cp-done svg { filter: drop-shadow(0 0 14px rgba(255,207,107,0.75)); animation: talRise 1.4s ease-out; }
 @keyframes talRise { from { opacity: 0; transform: translateY(14px) scale(0.7); } to { opacity: 1; transform: none; } }
+/* ---------- pipe organ keyboard ---------- */
+#orgPanel {
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  width: min(680px, calc(100vw - 14px)); box-sizing: border-box;
+  background: rgba(30, 22, 18, 0.93); border: 1px solid rgba(255,207,107,0.35); border-radius: 18px;
+  padding: 10px 10px 12px; display: grid; gap: 8px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 40px rgba(255,190,90,0.1);
+}
+.org-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.org-stops { display: flex; gap: 4px; }
+.org-stops button, .org-oct button {
+  border: 1px solid rgba(246,236,216,0.22); background: rgba(246,236,216,0.06); color: var(--cream);
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.org-stops button[aria-pressed="true"] { background: var(--ember-hot); color: #2a1a10; border-color: var(--ember-hot); }
+.org-oct { display: flex; align-items: center; gap: 6px; color: var(--cream); font-size: 13px; font-variant-numeric: tabular-nums; }
+.org-oct button { padding: 6px 11px; }
+.org-keys {
+  position: relative; height: 138px; display: flex; touch-action: none; user-select: none; -webkit-user-select: none;
+  background: #120c08; border-radius: 8px; padding: 4px 2px 3px; -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 560px) { .org-keys { height: 150px; } }
+.org-w {
+  flex: 1; margin: 0 1px; position: relative; display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(#f7f0e1, #e0d3b8); border: 1px solid #8a7a60; border-top: 0; border-radius: 0 0 6px 6px;
+  color: #7a6748; font-size: 11px; font-weight: 700; padding-bottom: 6px; box-shadow: inset 0 -5px 0 rgba(0,0,0,0.08);
+}
+.org-w.on { background: linear-gradient(#ffe2a8, #f2b765); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12), 0 0 14px rgba(255,190,90,0.6); }
+.org-b {
+  position: absolute; top: 4px; height: 58%; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(#3e2c20, #110b07); border: 1px solid #000; border-top: 0; border-radius: 0 0 4px 4px;
+  color: #d8c8a8; font-size: 10px; font-weight: 700; padding-bottom: 4px; box-sizing: border-box;
+}
+.org-b.on { background: linear-gradient(#8a5424, #3e2410); box-shadow: 0 0 12px rgba(255,170,80,0.6); }
+.org-k-lbl { pointer-events: none; }
+.org-hint { margin: 0; font-size: 12px; color: var(--muted); text-align: center; }
+@media (hover: none), (pointer: coarse) { .org-k-lbl, .org-hint { display: none; } }
 #bookModal .modal-box { background: #2b2420; border-color: rgba(243,230,200,0.2); }
 .book-page { background: var(--paper); color: var(--ink); border-radius: 10px; padding: 14px 16px; font-family: var(--font-card); font-size: 18px; line-height: 1.35; box-shadow: 0 2px 0 #c9b48a; transform: rotate(0.6deg); }
 .book-page p { margin: 0 0 8px; color: var(--ink) !important; font-size: 18px !important; line-height: 1.35 !important; }
@@ -560,6 +598,19 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   </div>
 </div>
 
+<div class="hud" id="orgPanel" hidden>
+  <div class="story-head">
+    <h2>Pipe organ</h2>
+    <button class="btn-ghost small" id="orgClose" type="button">Stand up</button>
+  </div>
+  <div class="org-bar">
+    <div class="org-stops" id="orgStops" role="group" aria-label="Sound"></div>
+    <div class="org-oct"><button id="orgDown" type="button" aria-label="Lower octave">◀</button><span id="orgOctLbl">C4</span><button id="orgUp" type="button" aria-label="Higher octave">▶</button></div>
+  </div>
+  <div class="org-keys" id="orgKeys" role="group" aria-label="Keyboard"></div>
+  <p class="org-hint">Keys A S D F G H J K L ; ' play the white notes, W E T Y U O P the black ones · Z / X change octave · Esc or the arrow keys to stand up</p>
+</div>
+
 <div class="hud" id="bottombar" hidden>
   <div class="action-row" id="actionRow">
     <button id="actionBtn" type="button" hidden>Sit by the fire</button>
@@ -616,7 +667,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
-    <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
+    <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -1423,7 +1474,7 @@ const me = {
   face: 1, moving: false, sit: -1, target: null,
   msgId: 0, msgs: [], emo: null, emoId: 0,
   fish: null,
-  pew: -1, arrive: null, via: [],                          // pew seat in the church; what to do on reaching a tapped spot; waypoints
+  pew: -1, arrive: null, via: [], organ: false,                          // pew seat in the church; what to do on reaching a tapped spot; waypoints
   tal: clamp(Math.round(num(load('campfire.talisman'), 0)), 0, 3) // talisman wards left (kept on this device)
 };
 function randomAvatar() { return { s: rnd(SKINS), hc: rnd(HAIRC), hs: rnd(HAIRS.slice(0, 4)), sh: rnd(SHIRTS), h: rnd(HATS) }; }
@@ -1663,6 +1714,7 @@ function onPeers(change) {
   resolveStory();
   resolveSm(freshPeers);
   resolveChapel();
+  resolveOrgan();
   updateStatus();
   manageVoice();
 }
@@ -1712,7 +1764,8 @@ function pushPresence(force) {
     mic: voice.micOn ? 1 : 0,
     story,
     sm: smRound, smp: me.smp, ch: me.champ,
-    pw: me.pew, tal: me.tal, cp: chapel
+    pw: me.pew, tal: me.tal, cp: chapel,
+    org: me.organ ? { st: organ.stop, h: [...organ.voices.keys()], k: organ.ev } : null
   }).catch(() => { });
 }
 
@@ -2170,7 +2223,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.6.4';
+const VERSION = 'v0.6.5';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -3132,6 +3185,7 @@ function enterChurch() {
 function exitChurch() {
   if (!inChurch(me.x)) return;
   me.pew = -1;
+  stopOrgan();
   cpShow(false);
   Object.assign(me, { x: CHURCH.x, y: CHURCH.y + 30, face: 0, target: null, arrive: null, via: [], moving: false });
   snapCam();
@@ -3167,6 +3221,7 @@ function churchAction() {
   const pw = nearestFreePew(64), pd = pw >= 0 ? dist(me.x, me.y, PEW_SEATS[pw].x, PEW_SEATS[pw].y - 30) : 1e9;
   if (nearRack() && dist(me.x, me.y, RACK.x, RACK.y + 26) <= pd) return 'rack';
   if (nearBook()) return 'book';
+  if (nearOrgan()) return 'organ';
   if (nearExit()) return 'exit';
   return pw >= 0 ? pw : null;
 }
@@ -3367,6 +3422,231 @@ function solveSound() {
   [587.33, 739.99, 880, 1174.66, 1479.98].forEach((f, i) => setTimeout(() => bellTone(f, 0.06, 3.2, chAudio.inp || envOut()), i * 160));
 }
 
+// ---- the pipe organ ----
+// Sit at the console in the right transept and play. Your notes go out in presence (the
+// notes you're holding, plus a short list of recent key presses so quick taps aren't lost),
+// so friends in the church hear you through its echo, and anyone in the woods nearby hears
+// it faintly, muffled by the walls.
+const ORG_STOPS = [
+  { name: 'Organ', parts: [[1, 1], [2, 0.55], [3, 0.25], [4, 0.2], [6, 0.08], [8, 0.05]], vol: 0.075 },
+  { name: 'Flute', parts: [[1, 1], [2, 0.16], [3, 0.05]], vol: 0.08 },
+  { name: 'Piano', parts: [[1, 1], [2, 0.5], [3, 0.28], [4, 0.14], [5, 0.08], [6, 0.04]], vol: 0.12, struck: true }
+];
+const NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const BLACK = [1, 3, 6, 8, 10];
+// computer keys → semitones above the lowest key shown
+const ORG_CODES = { KeyA: 0, KeyW: 1, KeyS: 2, KeyE: 3, KeyD: 4, KeyF: 5, KeyT: 6, KeyG: 7, KeyY: 8, KeyH: 9, KeyU: 10, KeyJ: 11, KeyK: 12, KeyO: 13, KeyL: 14, KeyP: 15, Semicolon: 16, Quote: 17 };
+const ORG_CODE_LBL = { KeyA: 'A', KeyW: 'W', KeyS: 'S', KeyE: 'E', KeyD: 'D', KeyF: 'F', KeyT: 'T', KeyG: 'G', KeyY: 'Y', KeyH: 'H', KeyU: 'U', KeyJ: 'J', KeyK: 'K', KeyO: 'O', KeyL: 'L', KeyP: 'P', Semicolon: ';', Quote: "'" };
+const organ = { playing: false, base: 60, stop: 0, count: new Map(), voices: new Map(), evId: 0, ev: [], glow: 0, glyphs: [], codes: new Map(), heard: false, heardNotes: 0 };
+const orgRemote = new Map();   // peer -> { last event id, voices: Map(midi -> { v, at }) }
+const orgAudio = { inp: null, lp: null, toChapel: null, outside: null, linked: false };
+
+function orgGraph() {
+  const ac = getAC();
+  if (!ac) return null;
+  if (!orgAudio.inp) {
+    try {
+      const inp = ac.createGain();
+      const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.2;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 16000;
+      const toChapel = ac.createGain(), outside = ac.createGain(); outside.gain.value = 0;
+      inp.connect(comp).connect(lp); lp.connect(toChapel); lp.connect(outside); outside.connect(envOut());
+      Object.assign(orgAudio, { inp, lp, toChapel, outside });
+    } catch (e) { return null; }
+  }
+  if (!orgAudio.linked && chAudio.inp) { orgAudio.toChapel.connect(chAudio.inp); orgAudio.linked = true; }
+  return orgAudio.inp;
+}
+// Inside, the organ fills the church; outside, it's faint and muffled, fading with distance.
+function orgRoute() {
+  if (!orgAudio.inp || !audio) return;
+  const inside = inChurch(me.x), d = inside ? 0 : dist(me.x, me.y, CHURCH.x, CHURCH.y - 60), t = audio.currentTime;
+  orgAudio.toChapel.gain.setTargetAtTime(inside ? 1 : 0, t, 0.1);
+  orgAudio.outside.gain.setTargetAtTime(inside ? 0 : 0.6 * clamp(1 - d / 800, 0, 1), t, 0.1);
+  orgAudio.lp.frequency.setTargetAtTime(inside ? 16000 : 650, t, 0.1);
+}
+function organVoice(midi, stopIdx, dest) {
+  const ac = audio;
+  if (!ac || !dest) return null;
+  try {
+    const S = ORG_STOPS[stopIdx] || ORG_STOPS[0], f = 440 * Math.pow(2, (midi - 69) / 12), t0 = ac.currentTime;
+    const peak = S.vol * 1.6 / S.parts.reduce((a, p) => a + p[1], 0);
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.connect(dest);
+    if (S.struck) {
+      // a struck string: quick attack, then a long fade that's shorter for higher notes
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.006);
+      g.gain.setTargetAtTime(0.0001, t0 + 0.01, 1.1 * Math.pow(0.8, (midi - 60) / 12));
+    } else g.gain.setTargetAtTime(peak, t0, 0.02);
+    const oscs = [];
+    S.parts.forEach(([m, a], i) => {
+      if (f * m > 11000) return;
+      const o = ac.createOscillator(), og = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f * m; o.detune.value = (Math.random() - 0.5) * (S.struck ? 2 : 6);
+      og.gain.value = a;
+      if (S.struck && i > 0) og.gain.setTargetAtTime(0, t0, 0.35 / m);
+      o.connect(og).connect(g); o.start(t0); oscs.push(o);
+    });
+    let done = false;
+    return {
+      stop() {
+        if (done) return; done = true;
+        const t = ac.currentTime;
+        try { if (g.gain.cancelAndHoldAtTime) g.gain.cancelAndHoldAtTime(t); else { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); } } catch (e) { }
+        g.gain.setTargetAtTime(0.0001, t, S.struck ? 0.12 : 0.07);
+        oscs.forEach(o => { try { o.stop(t + 0.8); } catch (e) { } });
+      }
+    };
+  } catch (e) { return null; }
+}
+function orgSparkle() {
+  organ.glow = Math.min(1.8, organ.glow + 0.35);
+  organ.glyphs.push({ x: ORGAN.x + (Math.random() - 0.5) * 170, y: iy(310) - Math.random() * 50, at: performance.now(), ph: Math.random() * 6, ch: Math.random() < 0.5 ? '♪' : '♫' });
+  if (organ.glyphs.length > 24) organ.glyphs.shift();
+}
+function orgKeyEl(m) { return $('orgKeys').querySelector(`[data-midi="${m}"]`); }
+function orgNoteOn(m) {
+  if (!organ.playing) return;
+  const c = (organ.count.get(m) || 0) + 1;
+  organ.count.set(m, c);
+  if (c === 1) {
+    const v = organVoice(m, organ.stop, orgGraph());
+    if (v) organ.voices.set(m, v);
+    organ.evId += 1; organ.ev = organ.ev.concat([[organ.evId, m]]).slice(-10);
+    orgSparkle();
+    sentDirty = true; pushPresence(true);
+  }
+  const k = orgKeyEl(m); if (k) k.classList.add('on');
+}
+function orgNoteOff(m) {
+  const c = (organ.count.get(m) || 0) - 1;
+  if (c > 0) { organ.count.set(m, c); return; }
+  organ.count.delete(m);
+  const v = organ.voices.get(m); if (v) v.stop();
+  organ.voices.delete(m);
+  const k = orgKeyEl(m); if (k) k.classList.remove('on');
+  sentDirty = true; pushPresence(true);
+}
+function orgAllOff() {
+  for (const v of organ.voices.values()) v.stop();
+  organ.voices.clear(); organ.count.clear(); organ.codes.clear(); orgPointers.clear();
+  $('orgKeys').querySelectorAll('.on').forEach(k => k.classList.remove('on'));
+}
+function organTaken() { for (const o of others.values()) if (o.p && o.p.n && o.p.org && inChurch(num(o.p.x, 0))) return true; return false; }
+function nearOrgan() { return inChurch(me.x) && dist(me.x, me.y, ORGAN.x, ORGAN.y + 46) < 56; }
+function startOrgan() {
+  if (organ.playing || !inChurch(me.x)) return;
+  if (organTaken()) { showToast('Someone is already playing the organ. Find a pew and listen!', 4000); return; }
+  getAC(); orgGraph();
+  cpShow(false);
+  Object.assign(me, { x: ORGAN.x, y: ORGAN.y + 18, face: 1, target: null, arrive: null, via: [], moving: false });
+  me.organ = true; organ.playing = true;
+  $('orgPanel').hidden = false; renderOrgKeys();
+  sentDirty = true; pushPresence(true);
+}
+function stopOrgan() {
+  if (!organ.playing) return;
+  orgAllOff();
+  organ.playing = false; me.organ = false;
+  $('orgPanel').hidden = true;
+  me.y = ORGAN.y + 46;
+  sentDirty = true; pushPresence(true);
+}
+// The keyboard: two octaves on wide screens, a bit over one on phones.
+function renderOrgKeys() {
+  const el = $('orgKeys'), wide = window.innerWidth >= 560, span = wide ? 24 : 16;
+  const whites = [];
+  for (let k = 0; k <= span; k++) if (!BLACK.includes((organ.base + k) % 12)) whites.push(organ.base + k);
+  const lbl = {}; for (const [code, off] of Object.entries(ORG_CODES)) lbl[organ.base + off] = ORG_CODE_LBL[code];
+  const name = m => NOTE_NAMES[m % 12] + (Math.floor(m / 12) - 1);
+  let html = '';
+  whites.forEach(m => { html += `<div class="org-w" data-midi="${m}" role="button" aria-label="${name(m)}"><span class="org-k-lbl">${lbl[m] || ''}</span></div>`; });
+  const ww = 100 / whites.length;
+  whites.forEach((m, i) => {
+    if (i === whites.length - 1 || !BLACK.includes((m + 1) % 12)) return;
+    html += `<div class="org-b" data-midi="${m + 1}" role="button" aria-label="${name(m + 1)}" style="left:calc(${(i + 1) * ww}% - ${ww * 0.31}%);width:${ww * 0.62}%"><span class="org-k-lbl">${lbl[m + 1] || ''}</span></div>`;
+  });
+  el.innerHTML = html;
+  for (const m of organ.voices.keys()) { const k = orgKeyEl(m); if (k) k.classList.add('on'); }
+  $('orgOctLbl').textContent = name(organ.base);
+  $('orgDown').disabled = organ.base <= 36; $('orgUp').disabled = organ.base >= 72;
+  $('orgStops').querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === organ.stop)));
+}
+function orgShift(d) { const nb = clamp(organ.base + d * 12, 36, 72); if (nb === organ.base) return; orgAllOff(); organ.base = nb; renderOrgKeys(); sentDirty = true; pushPresence(true); }
+ORG_STOPS.forEach((S, i) => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = S.name;
+  b.addEventListener('click', () => { organ.stop = i; renderOrgKeys(); sentDirty = true; pushPresence(true); });
+  $('orgStops').appendChild(b);
+});
+$('orgDown').addEventListener('click', () => orgShift(-1));
+$('orgUp').addEventListener('click', () => orgShift(1));
+$('orgClose').addEventListener('click', stopOrgan);
+window.addEventListener('resize', () => { if (organ.playing) renderOrgKeys(); });
+// touch and mouse: press, hold, and slide across the keys
+const orgPointers = new Map();
+const orgKeyAt = e => { const el = document.elementFromPoint(e.clientX, e.clientY), k = el && el.closest && el.closest('[data-midi]'); return k && $('orgKeys').contains(k) ? +k.dataset.midi : null; };
+$('orgKeys').addEventListener('pointerdown', e => {
+  e.preventDefault(); getAC();
+  try { $('orgKeys').setPointerCapture(e.pointerId); } catch (err) { }
+  const m = orgKeyAt(e); orgPointers.set(e.pointerId, m); if (m != null) orgNoteOn(m);
+});
+$('orgKeys').addEventListener('pointermove', e => {
+  if (!orgPointers.has(e.pointerId)) return;
+  const m = orgKeyAt(e), old = orgPointers.get(e.pointerId);
+  if (m === old) return;
+  if (old != null) orgNoteOff(old);
+  if (m != null) orgNoteOn(m);
+  orgPointers.set(e.pointerId, m);
+});
+const orgUp = e => { if (!orgPointers.has(e.pointerId)) return; const old = orgPointers.get(e.pointerId); orgPointers.delete(e.pointerId); if (old != null) orgNoteOff(old); };
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => $('orgKeys').addEventListener(t, orgUp));
+// computer keys: while you're at the organ the letter keys play notes instead of walking
+window.addEventListener('keydown', e => {
+  if (!organ.playing) return;
+  const typing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape') { stopOrgan(); e.preventDefault(); e.stopPropagation(); return; }
+  if (e.code === 'KeyZ' || e.code === 'KeyX') { if (!e.repeat) orgShift(e.code === 'KeyZ' ? -1 : 1); e.preventDefault(); e.stopPropagation(); return; }
+  if (e.code in ORG_CODES) {
+    e.preventDefault(); e.stopPropagation();
+    if (e.repeat || organ.codes.has(e.code)) return;
+    getAC();
+    const m = organ.base + ORG_CODES[e.code];
+    organ.codes.set(e.code, m); orgNoteOn(m);
+  }
+}, true);
+window.addEventListener('keyup', e => {
+  if (!organ.codes.has(e.code)) return;
+  const m = organ.codes.get(e.code); organ.codes.delete(e.code); orgNoteOff(m);
+  e.stopPropagation();
+}, true);
+window.addEventListener('blur', () => { if (organ.playing) { for (const m of organ.codes.values()) orgNoteOff(m); organ.codes.clear(); } });
+// friends playing: start the notes they pressed, let go of the ones they've released
+function resolveOrgan() {
+  const seen = new Set();
+  for (const o of others.values()) {
+    const s = o.p && o.p.org;
+    if (!s || typeof s !== 'object' || !inChurch(num(o.p.x, 0))) continue;
+    seen.add(o.peer);
+    const k = (Array.isArray(s.k) ? s.k : []).filter(e => Array.isArray(e) && Number.isFinite(e[0]) && Number.isFinite(e[1])).slice(-12);
+    let st = orgRemote.get(o.peer);
+    if (!st) { st = { last: k.length ? k[k.length - 1][0] : 0, voices: new Map() }; orgRemote.set(o.peer, st); }
+    const held = new Set((Array.isArray(s.h) ? s.h : []).filter(Number.isFinite).slice(0, 16).map(m => clamp(Math.round(m), 24, 108)));
+    const stop = clamp(Math.round(num(s.st, 0)), 0, ORG_STOPS.length - 1);
+    for (const [id, m0] of k) {
+      if (id <= st.last) continue;
+      st.last = id;
+      const m = clamp(Math.round(m0), 24, 108), prev = st.voices.get(m);
+      if (prev) prev.v.stop();
+      const v = organVoice(m, stop, orgGraph());
+      if (v) st.voices.set(m, { v, at: performance.now() });
+      organ.heardNotes += 1;
+      if (joined && inChurch(me.x)) orgSparkle();
+    }
+    for (const [m, e] of st.voices) if (!held.has(m)) { setTimeout(() => e.v.stop(), Math.max(0, 140 - (performance.now() - e.at))); st.voices.delete(m); }
+  }
+  for (const [peer, st] of orgRemote) if (!seen.has(peer)) { for (const e of st.voices.values()) e.v.stop(); orgRemote.delete(peer); }
+}
+
 // ---- every frame while inside ----
 function chapelTick(dt) {
   if (chAudio.inp) {
@@ -3378,6 +3658,8 @@ function chapelTick(dt) {
     if (m.u > 1) { m.u = 0; m.v = Math.random() * 2 - 1; }
   }
   if (church.open && !nearRack()) cpShow(false);
+  organ.glow *= Math.exp(-dt * 1.4);
+  if (organ.glyphs.length && performance.now() - organ.glyphs[0].at > 2400) organ.glyphs.shift();
   if (church.open && church.hintI >= 0 && performance.now() - church.hintAt > 6000) { church.hintI = -1; renderCp(); }
 }
 
@@ -3882,6 +4164,17 @@ function lightChapel(t, people) {
   radial(RACK.x, RACK.y - 32, 34 + litN * 6, '255,160,70', 0.04 + litN * 0.03);
   for (const s of IN_GLASS) radial(s.x + (s.x < IN.cx ? 60 : -60), s.y + 14, 70, s.c, 0.28, 1.5, 0.7);
   radial(MOON.x, MOON.y - 4, 80, '210,220,255', 0.16, 1.3, 0.6);
+  // the organ pipes glow while someone plays, and little notes drift up from them
+  if (organ.glow > 0.02) { radial(ORGAN.x, iy(340), 120, '255,200,120', 0.22 * Math.min(1, organ.glow)); radial(ORGAN.x, iy(300), 60, '255,230,170', 0.2 * Math.min(1, organ.glow)); }
+  if (organ.glyphs.length) {
+    ctx.textAlign = 'center'; ctx.font = `700 ${Math.round(17 * ZOOM)}px "Atkinson Hyperlegible", sans-serif`;
+    for (const gl of organ.glyphs) {
+      const e = (now - gl.at) / 2200;
+      if (e > 1) continue;
+      const [sx, sy] = w2s(gl.x + Math.sin(e * 6 + gl.ph) * 8, gl.y - e * 80);
+      ctx.fillStyle = `rgba(255,214,140,${(1 - e) * 0.9})`; ctx.fillText(gl.ch, sx, sy);
+    }
+  }
   // dust drifting through the beams
   for (const m of church.motes) {
     const B = beamGeom(m.b), hwB = B.tw + (B.bw - B.tw) * m.u;
@@ -3934,7 +4227,7 @@ function finishChapel() {
   ctx.drawImage(tsCv, 0, 0, w, ht, 0, 0, VW, VH * ht / h);
   ctx.drawImage(tsCv, 0, hb, w, h - hb, 0, VH * hb / h, VW, VH * (h - hb) / h);
 }
-window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: me.tal, open: church.open, chapel: Object.assign({}, chapel), solution: cpSolution(chapel.lit) });
+window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: me.tal, open: church.open, organ: organ.playing, organHeld: [...organ.voices.keys()], organHeardNotes: organ.heardNotes, remoteOrgan: [...orgRemote.values()].map(s => [...s.voices.keys()]), chapel: Object.assign({}, chapel), solution: cpSolution(chapel.lit) });
 
 window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stale, in: sm.in, d: Math.round(sm.d * 100) / 100, T: Math.round(sm.T * 100) / 100, fire: sm.fire, burnt: sm.burnt, served: sm.served, round: smRound, players: smParticipants().map(p => ({ name: p.name, d: Math.round(p.d * 100) / 100, st: p.st })), results: sm.results && sm.results.list.map(p => ({ name: p.name, score: p.score })), champ: me.champ });
 
@@ -4003,6 +4296,8 @@ function tapInside(wx, wy) {
   }
   if (Math.abs(wx - RACK.x) < 46 && wy > RACK.y - 62 && wy < RACK.y + 12) { if (nearRack()) cpShow(true); else go(RACK.x, RACK.y + 28, 'rack'); return; }
   if (Math.abs(wx - LECTERN.x) < 26 && wy > LECTERN.y - 52 && wy < LECTERN.y + 12) { if (nearBook()) readBook(); else go(LECTERN.x, LECTERN.y + 26, 'book'); return; }
+  // the organ: its console, or the pipes up on the wall
+  if (Math.abs(wx - ORGAN.x) < 110 && wy > iy(250) && wy < ORGAN.y + 30) { if (nearOrgan()) startOrgan(); else go(ORGAN.x, ORGAN.y + 46, 'organ'); return; }
   if (Math.abs(wx - IN.cx) < 42 && wy > IN.y1 - 30) { if (me.y > IN.y1 - 50 && nearExit()) exitChurch(); else go(IN.cx, IN.y1 - 28, 'exit'); return; }
   walkTo(wx, wy);
 }
@@ -4047,6 +4342,7 @@ function doAction() {
     const a = churchAction();
     if (a === 'rack') cpShow(!church.open);
     else if (a === 'book') readBook();
+    else if (a === 'organ') startOrgan();
     else if (a === 'exit') exitChurch();
     else if (typeof a === 'number') sitPew(a);
     return;
@@ -4087,8 +4383,10 @@ function updateActionBtn() {
   else if (nearChurchDoor()) label = 'Enter the church';
   else if (inChurch(me.x)) {
     const a = churchAction();
-    if (a === 'rack') label = church.open ? null : (chapel.sol ? 'Look at the candles' : 'Light the candles');
+    if (me.organ) label = null;
+    else if (a === 'rack') label = church.open ? null : (chapel.sol ? 'Look at the candles' : 'Light the candles');
     else if (a === 'book') label = 'Read the old book';
+    else if (a === 'organ') label = organTaken() ? null : 'Play the organ';
     else if (a === 'exit') label = 'Leave the church';
     else if (typeof a === 'number') label = 'Sit on the pew';
   }
@@ -4134,6 +4432,7 @@ function step(dt, t) {
   if (l > 0.05) {
     if (me.sit >= 0) stand();
     if (me.pew >= 0) standPew();
+    if (me.organ) stopOrgan();
     if (me.fish) stopFishing();
     const n = Math.min(1, l);
     vx = vx / l * n; vy = vy / l * n;
@@ -4156,6 +4455,12 @@ function step(dt, t) {
   else if (!church.spotted && dist(me.x, me.y, CHURCH.x, CHURCH.y - 60) < 430) {
     church.spotted = true;
     addLog(null, 'Through the trees you spot an old church. Its windows are glowing.', true);
+  }
+  orgRoute();
+  // a friend playing the organ can be heard from the woods: a clue to where the church is
+  if (!insideNow && !organ.heard && joined && dist(me.x, me.y, CHURCH.x, CHURCH.y) < 800 && [...orgRemote.values()].some(st => st.voices.size)) {
+    organ.heard = true;
+    addLog(null, 'Somewhere in the woods, an organ is playing…', true);
   }
   // remote smoothing
   for (const o of others.values()) {
@@ -4216,6 +4521,7 @@ function arrived() {
   else if (a === 'exit' && nearExit()) exitChurch();
   else if (a === 'rack' && nearRack()) cpShow(true);
   else if (a === 'book' && nearBook()) readBook();
+  else if (a === 'organ' && nearOrgan()) startOrgan();
   else if (typeof a === 'number' && PEW_SEATS[a] && dist(me.x, me.y, PEW_SEATS[a].x, PEW_SEATS[a].y - 32) < 60) sitPew(a);
 }
 
@@ -4329,12 +4635,12 @@ function drawFloatCard(g, t) {
 function buildPeople(inside) {
   const people = [];
   const mySm = sm.in && !sm.served && SM_ACTIVE.includes(sm.phase) ? { d: sm.d, b: sm.burnt, st: smMyState(), h: sm.depth > 0.5 } : null;
-  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0 || me.pew >= 0, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn, champ: me.champ === 1, sm: mySm, tal: me.tal > 0 });
+  if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0 || me.pew >= 0 || me.organ, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn, champ: me.champ === 1, sm: mySm, tal: me.tal > 0 });
   for (const o of others.values()) {
     if (!o.p || !o.p.n || !o.p.av) continue;
     if (inChurch(o.rx) !== inside) continue;
     const av = sanitizeAv(o.p.av);
-    const sit = (typeof o.p.sit === 'number' && o.p.sit >= 0) || (inside && typeof o.p.pw === 'number' && o.p.pw >= 0);
+    const sit = (typeof o.p.sit === 'number' && o.p.sit >= 0) || (inside && ((typeof o.p.pw === 'number' && o.p.pw >= 0) || (o.p.org && typeof o.p.org === 'object')));
     people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer, mic: o.p.mic === 1, champ: o.p.ch === 1, sm: smOf(o), tal: num(o.p.tal, 0) > 0 });
   }
   return people;
