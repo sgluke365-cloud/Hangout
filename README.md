@@ -1,6 +1,6 @@
 # Campfire
 
-A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, see who can roast the best s'more, and find the old church hidden in the forest.
+A cozy online campsite for a group of friends. Walk around as an avatar, chat with whoever is nearby, fish at the lake, sit by the fire to share stories with prompt cards and a talking stick, see who can roast the best s'more, find the old church hidden in the forest, and wake the campfire spirit, a talking fire that tells stories and chats with everyone around it.
 
 Friends join from a link or QR code. No accounts, no app install: it runs in any modern browser on phones and computers.
 
@@ -9,7 +9,8 @@ Friends join from a link or QR code. No accounts, no app install: it runs in any
 | File | What it does |
 | --- | --- |
 | `public/index.html` | The whole game (graphics, controls, chat, story cards) |
-| `server.js` | Small Node.js server: serves the game, relays players between friends in the same campfire, and helps voice connections start |
+| `public/spirit-brain.js` | Ember, the campfire spirit: its personality, how it's asked things, and its storybook for when there's no AI |
+| `server.js` | Small Node.js server: serves the game, relays players between friends in the same campfire, helps voice connections start, and passes questions for Ember to Claude |
 | `package.json` | Tells Node what to install (`ws`, the WebSocket library) |
 | `render.yaml` | One-click settings for free hosting on Render |
 
@@ -54,6 +55,9 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Start or join a s'mores round | R, or click **Roast s'mores** / **Grab a stick!** | Tap **Roast s'mores** / **Grab a stick!** |
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
 | Serve | Click **Serve!**, or press F | Tap **Serve!** |
+| Wake the fire | Click **Wake the fire** at the fire | Tap **Wake the fire** |
+| Sing the fire's song | Click the stones, or press 1 to 5 | Tap the stones |
+| Talk to Ember | Type in Ember's panel, or start a chat message with "Ember,". Press T or click Ember's mic to speak | Type in Ember's panel, or tap Ember's mic and speak |
 
 ## Voice chat
 
@@ -69,6 +73,34 @@ Walk up to the fire and click or tap **Roast s'mores**. Everyone else at the fir
 - Click or tap **Serve!** (or press F) when it looks golden brown. Serving early or late both cost points.
 
 Closest to golden wins and gets a 👑 on their name tag until the next round. Friends watching can see everyone's sticks over the fire, and the whole campsite hears who caught fire and who won. Playing alone still works, with a personal best saved on your device.
+
+## The campfire spirit (Ember)
+
+The fire has a spirit, fast asleep in the coals (walk up and you'll see little z's drifting out of it). Anyone at the fire can try to wake it:
+
+1. **Find the sparks.** Click or tap **Wake the fire**. The fire dims and three of its sparks drift off around the campsite (by the tents, the lake, the meadows…). Everyone in the lobby can hunt for them; just walk over a spark to send it home. The **Sparks 1/3** counter in the top left gives hints when you tap it.
+2. **Sing the fire's song.** When all three are home, gather at the fire. It sings a short tune: each note flashes a colour through the flames and lights one of five stones (Ember, Sun, Moss, Lake, Moon). Tap the stones in the same order (or press 1 to 5). Anyone at the fire can tap, so you can sing it together. A wrong note makes the fire sputter and sing the verse again. There are four verses, each one note longer.
+3. **Ember wakes up.** The fire flares up in every colour, opens its eyes, and says hello.
+
+Then you can talk to it, by typing in its panel, by tapping its mic and speaking (or pressing T), or by starting a normal chat message with "Ember,". Ask it for a story (cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire) or tap **Ask us a question** for something for the circle to talk about. Ember answers out loud and in captions, and everyone near the fire hears it and sees the words above the flames. The speaker button in its panel mutes Ember's voice just for you; **Hush** stops it talking on your screen. **Let Ember sleep** puts it back to sleep for everyone. Like everything else, Ember falls asleep again when the lobby empties.
+
+### Let Ember really talk (optional)
+
+Out of the box Ember is in **storybook mode**: it tells a set of built-in stories, asks story-circle questions and gives simple answers. To let it hold real conversations, give the server an Anthropic API key:
+
+1. Get a key at [console.anthropic.com](https://console.anthropic.com) (Settings → API keys). Add a little credit to the account.
+2. On Render, open the campfire service, go to **Environment**, add `ANTHROPIC_API_KEY` with your key, and save. Render restarts the game in a minute or two.
+
+Ember then talks through Claude Haiku, the fastest and cheapest Claude model, and each answer costs a small fraction of a cent. To keep the bill small no matter who finds your link, the server only answers lobbies that have someone in them, limits how often each lobby and each person can ask, and stops at 400 answers a day (then Ember quietly goes back to its storybook until the next day). Optional settings, also under **Environment**:
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `SPIRIT_DAILY_LIMIT` | `400` | Most answers per day for the whole server. `0` means no limit |
+| `SPIRIT_MODEL` | `claude-haiku-5-5` | Which Claude model Ember uses |
+
+The key stays on the server; players' browsers never see it. If Ember still sounds like a storybook after you add the key, look in Render's **Logs** for a line starting with "Ember could not reach Claude": it says what went wrong (for example a mistyped key or no credit). Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
+
+**Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead.
 
 ## Forest scares
 
@@ -92,4 +124,4 @@ See `CHANGELOG.md`. Every version is saved as a `release-vX.Y` branch, so you ca
 
 ## How multiplayer works
 
-Each player sends their position, avatar, last few chat lines, the story-circle state and the church candle stand to the server. The inside of the church is a separate room placed off the edge of the map, so the server needs nothing special for it. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot.
+Each player sends their position, avatar, last few chat lines, the story-circle state, the church candle stand and the campfire spirit's state to the server. The inside of the church is a separate room placed off the edge of the map, so the server needs nothing special for it. The server forwards changes to everyone else with the same campfire code. Each player's browser decides what to show: chat text only appears for people within earshot. When someone asks Ember something, their browser asks the server (which asks Claude), and passes Ember's words to everyone else as they arrive, so the whole fire hears the same answer.

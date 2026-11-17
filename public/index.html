@@ -492,6 +492,92 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .book-page { background: var(--paper); color: var(--ink); border-radius: 10px; padding: 14px 16px; font-family: var(--font-card); font-size: 18px; line-height: 1.35; box-shadow: 0 2px 0 #c9b48a; transform: rotate(0.6deg); }
 .book-page p { margin: 0 0 8px; color: var(--ink) !important; font-size: 18px !important; line-height: 1.35 !important; }
 .book-page p:last-child { margin: 0; }
+/* ---------- Ember, the campfire spirit ---------- */
+.head-btns { display: flex; gap: 6px; align-items: center; }
+.wake-btn { background: linear-gradient(180deg, #ffe7b0, #ffb15c); color: #3a1a06; box-shadow: 0 4px 22px rgba(255,160,70,0.45), inset 0 -3px 0 rgba(0,0,0,0.12); }
+.sp-pill { color: var(--cream); padding: 4px 11px 4px 8px; gap: 5px; font-weight: 700; font-variant-numeric: tabular-nums; border-color: rgba(255,207,74,0.5); }
+.sp-pill svg { filter: drop-shadow(0 0 5px rgba(255,180,80,0.8)); }
+#spPanel {
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  width: min(340px, calc(100vw - 24px)); box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(48,24,26,0.93), rgba(22,24,44,0.92));
+  border: 1px solid rgba(255,150,70,0.55); border-radius: 18px;
+  padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 44px rgba(255,130,50,0.2);
+}
+.sp-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+@media (max-width: 640px) {
+  #spPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+}
+#spPanel.folded .sp-fold { display: none; }
+.sp-title { display: flex; align-items: center; gap: 7px; }
+.sp-title svg { flex: none; filter: drop-shadow(0 0 6px rgba(255,150,60,0.8)); }
+.sp-icon {
+  flex: none; width: 30px; height: 30px; border-radius: 999px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--muted);
+}
+.sp-icon[aria-pressed="true"] { color: var(--ember-hot); border-color: rgba(255,177,92,0.6); }
+.sp-icon[aria-pressed="false"] .w1, .sp-icon[aria-pressed="false"] .w2 { display: none; }
+.sp-icon[aria-pressed="true"] .x { display: none; }
+.sp-text { margin: 0; font-size: 14px; line-height: 1.4; color: var(--cream); }
+.sp-verses { display: flex; justify-content: center; align-items: center; gap: 6px; min-height: 12px; }
+.sp-pip { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.14); transition: background 0.2s, box-shadow 0.2s; }
+.sp-pip.verse { width: 22px; height: 6px; border-radius: 3px; }
+.sp-pip.verse.cur { background: rgba(255,207,107,0.45); }
+.sp-pip.done { background: var(--ember-hot); box-shadow: 0 0 8px rgba(255,177,92,0.8); }
+.sp-gap { width: 10px; }
+.sp-stones {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 14px 10px;
+  border-radius: 16px; background: radial-gradient(ellipse at 50% 130%, rgba(255,130,50,0.32), transparent 70%), #1b1520;
+  box-shadow: inset 0 0 0 1px rgba(246,236,216,0.08);
+}
+.sp-stone {
+  position: relative; aspect-ratio: 1; width: 100%; border-radius: 50%; border: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center; color: var(--c);
+  background: radial-gradient(circle at 38% 32%, rgba(var(--rgb),0.32), #2a2230 72%);
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.35), 0 0 0 1px rgba(var(--rgb),0.35), 0 0 12px rgba(var(--rgb),0.18);
+  transition: transform 0.1s, box-shadow 0.25s, background 0.25s; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.sp-stone svg { width: 54%; height: 54%; filter: drop-shadow(0 0 4px rgba(var(--rgb),0.7)); }
+.sp-stone:active:not(:disabled) { transform: scale(0.94); }
+.sp-stone:disabled { cursor: default; }
+.sp-stone.lit { color: #2a1606; background: radial-gradient(circle, #fffbe6 0%, var(--c) 55%, rgba(var(--rgb),0.7) 100%); box-shadow: 0 0 22px rgba(var(--rgb),0.95), 0 0 44px rgba(var(--rgb),0.6); transform: scale(1.1); }
+.sp-key { position: absolute; right: 0; bottom: -4px; font-size: 10px; font-weight: 700; color: var(--muted); }
+@media (pointer: coarse) { .sp-key { display: none; } }
+.sp-status { margin: 0; font-size: 14px; font-weight: 700; text-align: center; min-height: 20px; color: var(--ember-hot); }
+.sp-caption {
+  background: linear-gradient(180deg, rgba(90,38,14,0.5), rgba(34,18,16,0.5)); border: 1px solid rgba(255,170,90,0.25);
+  border-radius: 14px; padding: 10px 12px; max-height: min(28vh, 230px); overflow-y: auto; overscroll-behavior: contain;
+  touch-action: pan-y; -webkit-user-select: text; user-select: text;
+}
+.sp-asked { font-size: 12px; color: var(--muted); margin-bottom: 4px; overflow-wrap: anywhere; }
+#spSaid { margin: 0; font-family: var(--font-card); font-size: 18px; line-height: 1.38; color: #ffe7b8; overflow-wrap: anywhere; }
+.sp-think { display: inline-flex; gap: 4px; padding: 4px 0; }
+.sp-think span { width: 7px; height: 7px; border-radius: 50%; background: #ffb15c; animation: spDot 1s ease-in-out infinite; }
+.sp-think span:nth-child(2) { animation-delay: 0.15s; } .sp-think span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes spDot { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+.sp-genres { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.sp-genres .lbl { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.sp-genres .chip { font-size: 12px; padding: 4px 9px; }
+.sp-genres .chip:hover:not(:disabled), #spQuestion:hover:not(:disabled) { border-color: var(--ember); }
+.sp-genres .chip:disabled, #spPanel .btn-ghost:disabled { opacity: 0.45; cursor: default; }
+.sp-talk { display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.28); border: 1px solid var(--line); border-radius: 14px; padding: 5px; }
+.sp-talk input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--cream); font: inherit; font-size: 16px; padding: 7px 6px; outline: none; -webkit-user-select: text; user-select: text; }
+.sp-talk input::placeholder { color: #8c8678; }
+.sp-talk .send:disabled { opacity: 0.5; cursor: default; }
+.sp-mic {
+  flex: none; width: 38px; height: 38px; border-radius: 12px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,177,92,0.45); background: rgba(255,150,60,0.12); color: var(--ember-hot);
+}
+.sp-mic.on { background: #e2572b; border-color: #e2572b; color: #fff; animation: spListen 1s ease-in-out infinite alternate; }
+@keyframes spListen { from { box-shadow: 0 0 0 0 rgba(226,87,43,0.7); } to { box-shadow: 0 0 0 7px rgba(226,87,43,0); } }
+.sp-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .sp-think span, .sp-mic.on { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .card.flip, #actionBtn.bite, .sm-btn.pulse { animation: none; }
   .cp-c[aria-pressed="true"] .cp-flame, .cp-c.hint, .cp-done svg, .tal-pill.flash { animation: none; }
@@ -544,6 +630,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   <div class="top-left">
     <div class="pill" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Solo</span></div>
     <button class="pill tal-pill" id="talPill" type="button" hidden></button>
+    <button class="pill sp-pill" id="spPill" type="button" hidden aria-label="Sparks found. Tap for hints"></button>
   </div>
   <div class="top-actions">
     <div class="vol-wrap" id="volWrap">
@@ -567,7 +654,10 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 <div class="hud" id="story" hidden>
   <div class="story-head">
     <h2>Story circle</h2>
-    <button class="btn-ghost small" id="foldBtn" type="button" aria-expanded="true">Hide card</button>
+    <div class="head-btns">
+      <button class="btn-ghost small" id="emberTab" type="button" hidden>🔥 Ember</button>
+      <button class="btn-ghost small" id="foldBtn" type="button" aria-expanded="true">Hide card</button>
+    </div>
   </div>
   <div class="decks" id="deckChips"></div>
   <div class="card" id="card">
@@ -642,10 +732,51 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   <p class="org-hint">Keys A S D F G H J K L ; ' play the white notes, W E T Y U O P the black ones · Z / X change octave in free play · Esc or the arrow keys to stand up</p>
 </div>
 
+<div class="hud" id="spPanel" hidden>
+  <div class="story-head">
+    <h2 class="sp-title"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 1.5c4.4 5 7.4 8.6 7.4 13a7.4 7.4 0 0 1-14.8 0c0-2.9 1.4-5.2 3.1-6.7.1 2.5 1.2 4 2.6 4.3-1-3.9.2-7.4 1.7-10.6z" fill="#ff8a3d"/><path d="M12 9c2.4 2.7 4 4.6 4 6.8a4 4 0 0 1-8 0c0-2.2 1.6-4.1 4-6.8z" fill="#ffd36b"/><circle cx="10.2" cy="15" r="1" fill="#4a1606"/><circle cx="13.8" cy="15" r="1" fill="#4a1606"/><path d="M10.6 17.4a1.8 1.8 0 0 0 2.8 0" fill="none" stroke="#4a1606" stroke-width="1" stroke-linecap="round"/></svg><span id="spTitle">Ember</span></h2>
+    <div class="head-btns">
+      <button class="btn-ghost small" id="spStoryTab" type="button" hidden>Story cards</button>
+      <button class="sp-icon" id="spVoiceBtn" type="button" aria-pressed="true" aria-label="Mute Ember's voice" hidden><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="w2" d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <button class="btn-ghost small" id="spFold" type="button" aria-expanded="true">Hide</button>
+    </div>
+  </div>
+  <div id="spSong" hidden>
+    <div class="sp-body">
+      <p class="sp-text sp-fold" id="spSongText"></p>
+      <div class="sp-verses" id="spVerses" aria-hidden="true"></div>
+      <div class="sp-stones" id="spStones" role="group" aria-label="Song stones"></div>
+      <p class="sp-status" id="spSongStatus" aria-live="polite"></p>
+      <div class="story-row sp-fold"><button class="btn-ghost" id="spAgain" type="button">Hear it again</button></div>
+    </div>
+  </div>
+  <div id="spAwake" hidden>
+    <div class="sp-body">
+      <div class="sp-caption sp-fold" id="spCaption" aria-live="polite">
+        <div class="sp-asked" id="spAsked" hidden></div>
+        <div class="sp-think" id="spThink" hidden aria-label="Ember is thinking"><span></span><span></span><span></span></div>
+        <p id="spSaid"></p>
+      </div>
+      <div class="sp-genres sp-fold" id="spGenres"><span class="lbl">Tell a story:</span></div>
+      <div class="story-row sp-fold">
+        <button class="btn-ghost" id="spQuestion" type="button">Ask us a question</button>
+        <button class="btn-ghost" id="spHush" type="button" hidden>Hush</button>
+      </div>
+      <form class="sp-talk" id="spTalk" autocomplete="off">
+        <button class="sp-mic" id="spMic" type="button" aria-pressed="false" aria-label="Speak to Ember" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <input id="spInput" maxlength="140" enterkeyhint="send" placeholder="Say something to Ember" aria-label="Say something to Ember">
+        <button class="send" id="spSend" type="submit">Say</button>
+      </form>
+      <div class="sp-foot sp-fold"><span id="spMode"></span><button class="linkish" id="spSleep" type="button">Let Ember sleep</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="hud" id="bottombar" hidden>
   <div class="action-row" id="actionRow">
     <button id="actionBtn" type="button" hidden>Sit by the fire</button>
     <button class="sm-btn" id="smBtn" type="button" hidden>Roast s'mores</button>
+    <button class="sm-btn wake-btn" id="wakeBtn" type="button" hidden>Wake the fire</button>
     <button class="roast-btn" id="roastBtn" type="button" hidden>Hold to roast</button>
     <button class="serve-btn" id="serveBtn" type="button" hidden>Serve!</button>
   </div>
@@ -696,9 +827,12 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>R</kbd> / click</span><span>Start or join a s'mores round</span>
       <span>Hold <kbd>Space</kbd> / mouse</span><span>Roast your marshmallow</span>
       <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
+      <span><kbd>1</kbd> to <kbd>5</kbd></span><span>Sing the fire's song back to it</span>
+      <span><kbd>T</kbd> / Ember's mic</span><span>Talk to Ember out loud</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's). At the fire, tap <b>Wake the fire</b> and three of its sparks drift off around the campsite. Find all three (just walk over them; tap the Sparks counter for hints). Then sing the fire's song back to it: listen, and tap the glowing stones in the same order (or press 1 to 5). Sing all four verses together and Ember wakes up. Talk to it by typing, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -721,6 +855,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   </div>
 </div>
 
+<script src="spirit-brain.js"></script>
 <script>
 (() => {
 'use strict';
@@ -1732,6 +1867,13 @@ function onPeers(change) {
     const qst = q && q.id === sm.id && !sm.stale ? q.st : '';
     if (qst === 'fire' && o.smLast !== 'fire' && !o.fresh && joined && (sm.in || nearFire() || me.sit >= 0)) addLog(null, `${cleanText(pr.n, 16) || 'Someone'}'s marshmallow caught fire! 🔥`, true);
     o.smLast = qst;
+    // Ember's words, passed on by whoever asked it something
+    const k = pr.spk;
+    if (k && typeof k === 'object' && typeof k.i === 'number') {
+      const key = peer.peer + ':' + k.i;
+      if (o.fresh || !joined) o.spkOld = key; // said before we got here
+      else if (key !== o.spkOld) spFromPeer(o, k, key);
+    }
     if (o.fresh) freshPeers.add(peer.peer);
     o.fresh = false;
   }
@@ -1746,6 +1888,7 @@ function onPeers(change) {
   resolveSm(freshPeers);
   resolveChapel();
   resolveOrgan();
+  resolveSpirit(freshPeers);
   updateStatus();
   manageVoice();
 }
@@ -1779,6 +1922,12 @@ function receiveMsg(o, m) {
     bubbles.set(o.peer, { text: '✨ Begone!', at: performance.now(), far: false });
     return;
   }
+  if (m.k === 'e') {
+    // said to Ember, out loud at the fire
+    bubbles.set(o.peer, { text, at: performance.now(), far: !heard });
+    if (heard) addLog(name + ' → Ember', text, false, hashColor(name));
+    return;
+  }
   if (m.k === 'f') {
     addLog(null, `${name} caught ${text}.`, true);
     bubbles.set(o.peer, { text: `Caught ${text}!`, at: performance.now(), far: false });
@@ -1801,7 +1950,8 @@ function pushPresence(force) {
     story,
     sm: smRound, smp: me.smp, ch: me.champ,
     pw: me.pew, tal: me.tal, cp: chapel,
-    org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev } : null
+    org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev } : null,
+    sp: spirit, spk: me.spk, ew: me.ew
   }).catch(() => { });
 }
 
@@ -1861,7 +2011,7 @@ function seatedPeople() {
 function iHold() { return story.holder && (story.holder === myPeer || (story.holder === 'me' && !room)); }
 function renderStory(flip) {
   const box = $('story');
-  box.hidden = !(joined && me.sit >= 0) || sm.showing;
+  box.hidden = !(joined && me.sit >= 0) || sm.showing || ember.shown;
   if (box.hidden) return;
   deckBtns.forEach(b => b.setAttribute('aria-pressed', String(story.deck === b.dataset.deck)));
   $('cardDeck').textContent = DECKS[story.deck].name;
@@ -1931,6 +2081,7 @@ function say(text, kind) {
   me.msgs = me.msgs.concat([{ i: me.msgId, t: text, k: kind || 'c' }]).slice(-3);
   sentDirty = true; pushPresence(true);
   if (kind === 'f') { addLog(null, `You caught ${text}.`, true); bubbles.set('me', { text: `Caught ${text}!`, at: performance.now() }); }
+  else if (kind === 'e') { bubbles.set('me', { text, at: performance.now() }); addLog(me.name + ' → Ember', text, false, hashColor(me.name)); }
   else { bubbles.set('me', { text, at: performance.now() }); addLog(me.name, text, false, hashColor(me.name)); }
 }
 // Chat box grows upward line by line as you type (like WhatsApp), up to 5 lines, then scrolls.
@@ -1956,7 +2107,8 @@ $('chatForm').addEventListener('submit', e => {
   if (!v) return;
   chatInput.value = '';
   growChat();
-  say(v);
+  // "Ember, ..." at the awake fire goes to the spirit
+  if (spAddressed(v)) spSend(v); else say(v);
   chatInput.blur();
 });
 // Reactions live in one smiley button; tap it to open a small picker (like WhatsApp reactions).
@@ -2259,7 +2411,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.6.6';
+const VERSION = 'v0.7';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -4375,6 +4527,883 @@ window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: 
 
 window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stale, in: sm.in, d: Math.round(sm.d * 100) / 100, T: Math.round(sm.T * 100) / 100, fire: sm.fire, burnt: sm.burnt, served: sm.served, round: smRound, players: smParticipants().map(p => ({ name: p.name, d: Math.round(p.d * 100) / 100, st: p.st })), results: sm.results && sm.results.list.map(p => ({ name: p.name, score: p.score })), champ: me.champ });
 
+// ===== Ember, the campfire spirit =====
+// The fire has a spirit, asleep in the coals (watch for the little z's). Anyone at the
+// fire can try to wake it: three of its sparks drift off around the campsite. Find them,
+// then sing the fire's song back to it on five glowing stones, four verses, together.
+// Then Ember wakes up, opens its eyes in the flames and talks: type or speak to it, ask
+// for a story, or ask it for a question for the circle. Everyone at the fire hears it.
+// The ritual is shared like the candle stand (every player carries the newest version
+// they know in presence; the highest wins). Ember's words come from whoever asked: their
+// browser asks Claude (through this game's server, or through Claude itself when the page
+// runs inside Claude) and passes the words on in presence. With no AI it uses its storybook.
+const Brain = window.SpiritBrain || null;
+const SP_STONES = [
+  { name: 'Ember', c: '#ff7a3d', rgb: '255,122,61', f: 392.00 },
+  { name: 'Sun', c: '#ffcf4a', rgb: '255,207,74', f: 440.00 },
+  { name: 'Moss', c: '#7fdc8a', rgb: '127,220,138', f: 523.25 },
+  { name: 'Lake', c: '#5fc4ff', rgb: '95,196,255', f: 587.33 },
+  { name: 'Moon', c: '#c39bff', rgb: '195,155,255', f: 659.25 }
+];
+const SP_SPARK = [0, 2, 4];          // the three sparks wear the Ember, Moss and Moon colours
+const SP_VERSES = [3, 4, 5, 6];      // notes in each verse of the song
+const SP_PHASES = ['sleep', 'hunt', 'song', 'awake'];
+const SP_KINDS = ['talk', 'story', 'question', 'wake', 'bye'];
+const SP_SPOTS = [
+  { x: 1185, y: 1090, h: 'down by the lake shore' },
+  { x: 690, y: 320, h: 'behind the red tent' },
+  { x: 1120, y: 330, h: 'behind the yellow tent' },
+  { x: 1040, y: 930, h: 'near the dock' },
+  { x: 850, y: 1190, h: 'down the south path' },
+  { x: 1665, y: 810, h: 'on the far side of the lake' },
+  { x: 380, y: 640, h: 'out in the west meadow' },
+  { x: 1500, y: 560, h: 'in the east meadow' },
+  { x: 520, y: 980, h: 'among the rocks to the south-west' }
+];
+// Nudge each hiding place onto open ground where nothing hides it, and out of the deep forest.
+function spSpotOk(x, y) {
+  if (blocked(x, y) || inForest(x, y) || x > W0 - 60) return false;
+  return TREES.every(t => dist(x, y, t.x, t.y) > 34 && !(t.y > y && t.y - y < 120 && Math.abs(t.x - x) < 46));
+}
+for (const s of SP_SPOTS) {
+  if (spSpotOk(s.x, s.y)) continue;
+  let found = false;
+  for (let r = 12; r <= 180 && !found; r += 12) for (let a = 0; a < 16 && !found; a++) {
+    const x = s.x + Math.cos(a / 16 * Math.PI * 2) * r, y = s.y + Math.sin(a / 16 * Math.PI * 2) * r;
+    if (spSpotOk(x, y)) { s.x = Math.round(x); s.y = Math.round(y); found = true; }
+  }
+}
+let spirit = { v: 0, id: '', ph: 'sleep', got: 0, gn: ['', '', ''], r: 0, pos: 0, play: 0, tap: null, wk: [], by: '' };
+const ember = {
+  seedId: '', spots: [], seq: [], flying: [], flash: null, playing: null, heardKey: '', pendAt: 0, songDelay: 0,
+  wokeAt: -1e9, missAt: -1e9, verseAt: -1e9, tab: 'ember', folded: false, shown: false, uiAt: 0, fs: null, fsAt: -1,
+  ai: null, restUntil: 0, busy: false, ctrl: null, mySeq: 0, lastSpkPush: 0,
+  hist: [], chans: new Map(), cap: null, capText: '', lines: [], cur: null, lookKey: 'me',
+  voiceOn: load('campfire.emberVoice') !== false,
+  listen: { on: false, rec: null, base: '', final: '', heard: '' },
+  sleepArm: 0
+};
+me.spk = null;
+me.ew = load('campfire.emberWoke') ? 1 : 0; // has woken Ember on this device before
+function spAddName(list, n) { return list.includes(n) ? list : list.concat([n]).slice(-8); }
+function spHash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+// Each wake-up gets its own hiding places and its own song, the same on every screen.
+function spDerive(id) {
+  ember.seedId = id; ember.sparkSeen = 0;
+  const r = mulberry(spHash(id || 'x'));
+  const idx = SP_SPOTS.map((_, i) => i);
+  for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+  ember.spots = idx.slice(0, 3).map(i => SP_SPOTS[i]);
+  const seq = [], n = SP_VERSES[SP_VERSES.length - 1];
+  while (seq.length < n) {
+    const k = Math.floor(r() * 5), L = seq.length;
+    if (L && seq[L - 1] === k && (r() < 0.7 || (L > 1 && seq[L - 2] === k))) continue;
+    seq.push(k);
+  }
+  ember.seq = seq;
+}
+function spNear() { return joined && !inChurch(me.x) && (me.sit >= 0 || dist(me.x, me.y, FIRE.x, FIRE.y) < 230); }
+function spCanHear() { return joined && !inChurch(me.x) && dist(me.x, me.y, FIRE.x, FIRE.y) < 380; }
+function spSongKey() { return spirit.id + ':' + spirit.r + ':' + spirit.play; }
+
+// ---- the shared ritual ----
+function spSet(patch) {
+  const prev = spirit;
+  spirit = Object.assign({}, spirit, patch, { v: spirit.v + 1, by: me.name });
+  sentDirty = true; pushPresence(true);
+  spOnChange(prev, spirit, true, false);
+}
+function resolveSpirit(freshPeers) {
+  let best = null, bestPeer = '', bestFresh = false;
+  for (const o of others.values()) {
+    const s = o.p && o.p.sp;
+    if (!s || typeof s.v !== 'number' || !(s.v > 0)) continue;
+    if (!best || s.v > best.v || (s.v === best.v && String(o.peer) > bestPeer)) { best = s; bestPeer = String(o.peer); bestFresh = freshPeers.has(o.peer); }
+  }
+  if (!best) return;
+  if (spirit.v > best.v || (spirit.v === best.v && String(myPeer || '') >= bestPeer)) return;
+  const id = String(best.id || '').replace(/[^a-z0-9]/g, '').slice(0, 16);
+  const tap = best.tap && typeof best.tap === 'object' && typeof best.tap.i === 'number'
+    ? { i: Math.round(best.tap.i), k: clamp(Math.round(num(best.tap.k, 0)), 0, 4), ok: best.tap.ok === 1 ? 1 : 0, n: cleanText(best.tap.n, 16) } : null;
+  const next = {
+    v: best.v, id, ph: id && SP_PHASES.includes(best.ph) ? best.ph : 'sleep',
+    got: Math.round(num(best.got, 0)) & 7,
+    gn: [0, 1, 2].map(i => cleanText(Array.isArray(best.gn) ? best.gn[i] : '', 16)),
+    r: clamp(Math.round(num(best.r, 0)), 0, SP_VERSES.length - 1),
+    pos: clamp(Math.round(num(best.pos, 0)), 0, 9), play: clamp(Math.round(num(best.play, 0)), 0, 1e6),
+    tap, wk: (Array.isArray(best.wk) ? best.wk : []).slice(0, 8).map(n => cleanText(n, 16)).filter(Boolean),
+    by: cleanText(best.by, 16)
+  };
+  const prev = spirit;
+  spirit = next; sentDirty = true;
+  // two people grabbing different sparks at the same moment: keep both (a found spark never goes back)
+  const lost = prev.id === next.id && prev.ph === 'hunt' && next.ph === 'hunt' ? prev.got & ~next.got : 0;
+  spOnChange(prev, next, false, bestFresh || !joined);
+  if (lost && joined) {
+    const gn = next.gn.slice();
+    for (let k = 0; k < 3; k++) if (lost >> k & 1) gn[k] = prev.gn[k];
+    const got = next.got | lost, patch = { got, gn };
+    if (got === 7) Object.assign(patch, { ph: 'song', r: 0, pos: 0, play: 1, tap: null });
+    spSet(patch);
+  }
+}
+// React to the ritual moving on, whoever moved it. quiet = it happened before we arrived.
+function spOnChange(prev, next, mine, quiet) {
+  const now = performance.now();
+  if (next.id && next.id !== ember.seedId) spDerive(next.id);
+  const same = prev.id === next.id;
+  const loud = !quiet && joined;
+  if (next.ph === 'hunt' && (prev.ph !== 'hunt' || !same)) {
+    ember.flying = []; ember.tab = 'ember';
+    if (loud) {
+      const h = ember.spots.map(s => s.h);
+      addLog(null, `The fire sighs, and three sparks drift off into the night: one ${h[0]}, one ${h[1]}, one ${h[2]}. Find them!`, true);
+      if (!mine && !spNear()) showToast(`${next.by || 'Someone'} is waking the fire! Three sparks are hiding around the campsite.`, 5000);
+      smWhoosh(); [2, 1, 0].forEach((k, i) => setTimeout(() => spBell(SP_STONES[SP_SPARK[k]].f, 0.8, 0.07), 250 + i * 160));
+    }
+  }
+  // sparks found and flying home
+  const found = next.got & ~(same && SP_PHASES.indexOf(prev.ph) >= 1 ? prev.got : 0);
+  if (found && next.ph !== 'sleep') {
+    for (let k = 0; k < 3; k++) {
+      if (!(found >> k & 1) || !ember.spots[k] || (ember.sparkSeen >> k & 1)) continue;
+      ember.sparkSeen |= 1 << k;
+      if (loud) {
+        const s = ember.spots[k], n = popcount(next.got);
+        ember.flying.push({ k, x: s.x, y: s.y, at: now });
+        const who = next.gn[k];
+        addLog(null, who === me.name && mine ? `You found the spark ${s.h}! (${n} of 3)` : `${who || 'Someone'} found the spark ${s.h}. (${n} of 3)`, true);
+        [1, 1.5, 2].forEach((m, i) => setTimeout(() => spBell(SP_STONES[SP_SPARK[k]].f * m, 0.7, 0.06), i * 90));
+      }
+    }
+  }
+  if (next.ph === 'song' && (prev.ph !== 'song' || !same)) {
+    ember.heardKey = ''; ember.tab = 'ember';
+    ember.songDelay = now + (quiet ? 0 : 1800);
+    if (loud) {
+      addLog(null, 'All three sparks are home. The fire starts humming a tune… gather round and sing it back!', true);
+      if (!spNear()) showToast('All the sparks are home! Go to the fire and sing its song back to it.', 5000);
+    }
+  }
+  // someone touched a stone
+  if (next.ph !== 'sleep' && next.tap && (!prev.tap || next.tap.i !== prev.tap.i || !same) && loud) {
+    if (ember.playing && !mine) ember.playing = null; // the song moved on without us
+    if (spCanHear()) {
+      spFlash(next.tap.k);
+      if (next.tap.ok) spBell(SP_STONES[next.tap.k].f, 0.9, 0.11);
+      else { ember.missAt = now; ember.songDelay = now + 1300; spSputter(); }
+    }
+  }
+  if (next.ph === 'song' && prev.ph === 'song' && same && next.r > prev.r && loud) {
+    ember.verseAt = now; ember.songDelay = now + 1500;
+    if (spCanHear()) ember.seq.slice(0, SP_VERSES[prev.r]).forEach((k, i) => setTimeout(() => spBell(SP_STONES[k].f * 2, 0.6, 0.05), 250 + i * 85));
+  }
+  if (next.ph === 'awake' && prev.ph !== 'awake') {
+    ember.tab = 'ember'; ember.playing = null;
+    if (loud) {
+      ember.wokeAt = now;
+      if (spCanHear()) spWakeSound();
+      addLog(null, 'The fire roars up in every colour… two bright eyes blink open in the flames. Ember is awake!', true);
+      if (!spNear()) showToast('The campfire woke up! Walk over and say hello to Ember.', 6000);
+      if (spCanHear()) store('campfire.emberWoke', 1);
+    }
+    if (mine) setTimeout(() => spAsk('wake'), 2300);
+  }
+  if (next.ph === 'sleep' && prev.ph !== 'sleep' && loud) {
+    spHush(false);
+    if (prev.ph === 'awake') {
+      addLog(null, 'Ember yawns, closes its eyes and sinks back into the coals.', true);
+      if (spCanHear()) { ember.lines.push('Mmm… goodnight, friends. Wake me again soon.'); [4, 3, 2, 1, 0].forEach((k, i) => setTimeout(() => spBell(SP_STONES[k].f, 0.9, 0.05), i * 160)); }
+    }
+  }
+  spRenderPanel(true);
+  updateSpButtons();
+}
+function spStart() {
+  if (!joined || spirit.ph !== 'sleep' || inChurch(me.x)) return;
+  if (!(me.sit >= 0 || nearFire())) { showToast('Walk over to the fire first.'); return; }
+  getAC();
+  spSet({ id: Math.random().toString(36).slice(2, 10), ph: 'hunt', got: 0, gn: ['', '', ''], r: 0, pos: 0, play: 0, tap: null, wk: [me.name] });
+}
+function spCollect(k) {
+  const got = spirit.got | (1 << k);
+  const gn = spirit.gn.slice(); gn[k] = me.name;
+  const patch = { got, gn, wk: spAddName(spirit.wk, me.name) };
+  if (got === 7) Object.assign(patch, { ph: 'song', r: 0, pos: 0, play: 1, tap: null });
+  spSet(patch);
+}
+function spTap(k) {
+  if (spirit.ph !== 'song' || !spNear() || ember.playing) return;
+  getAC();
+  const len = SP_VERSES[spirit.r], ok = ember.seq[spirit.pos] === k;
+  const tap = { i: (spirit.tap ? spirit.tap.i : 0) + 1, k, ok: ok ? 1 : 0, n: me.name };
+  if (!ok) { spSet({ pos: 0, play: spirit.play + 1, tap }); return; }
+  const wk = spAddName(spirit.wk, me.name);
+  if (spirit.pos + 1 < len) spSet({ pos: spirit.pos + 1, tap, wk });
+  else if (spirit.r + 1 < SP_VERSES.length) spSet({ r: spirit.r + 1, pos: 0, play: spirit.play + 1, tap, wk });
+  else spSet({ ph: 'awake', pos: 0, tap, wk });
+}
+function spPlay() {
+  if (spirit.ph !== 'song') return;
+  getAC();
+  ember.heardKey = spSongKey(); ember.pendAt = 0;
+  ember.playing = { notes: ember.seq.slice(0, SP_VERSES[spirit.r]), start: performance.now() + 250, gap: Math.max(440, 650 - spirit.r * 55), idx: -1 };
+  spRenderPanel(true);
+}
+function spSongTick(now) {
+  const P = ember.playing;
+  if (P) {
+    const i = Math.floor((now - P.start) / P.gap);
+    if (now >= P.start && i > P.idx && i < P.notes.length) { P.idx = i; spFlash(P.notes[i]); spBell(SP_STONES[P.notes[i]].f, 0.9, 0.11); }
+    if (now > P.start + P.notes.length * P.gap + 150) { ember.playing = null; spRenderPanel(true); }
+    return;
+  }
+  // walking up to the fire (or a new verse): it sings to you once by itself
+  if (spNear() && ember.heardKey !== spSongKey() && spirit.pos === 0 && now >= ember.songDelay) {
+    if (!ember.pendAt) ember.pendAt = now + 900;
+    else if (now >= ember.pendAt) spPlay();
+  } else ember.pendAt = 0;
+}
+function spFlash(k) {
+  ember.flash = { k, at: performance.now() };
+  const b = spStoneBtns[k];
+  if (b) { b.classList.remove('lit'); void b.offsetWidth; b.classList.add('lit'); clearTimeout(b.litT); b.litT = setTimeout(() => b.classList.remove('lit'), 380); }
+}
+
+// ---- sounds (they follow the campsite volume slider) ----
+function spBell(f, dur, vol) {
+  const ac = audio; if (!ac) return;
+  try {
+    const t0 = ac.currentTime, g = ac.createGain(), g2 = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || 0.08, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    const o1 = ac.createOscillator(), o2 = ac.createOscillator();
+    o1.type = 'sine'; o1.frequency.value = f; o2.type = 'triangle'; o2.frequency.value = f * 2.005; g2.gain.value = 0.22;
+    o1.connect(g); o2.connect(g2).connect(g); g.connect(envOut());
+    o1.start(t0); o2.start(t0); o1.stop(t0 + dur + 0.05); o2.stop(t0 + dur + 0.05);
+  } catch (e) { }
+}
+function spSputter() { smBurst(0.5, 1400, 220, 0.2); smBlip(150, 0.45, 'sawtooth', 0.04, 60); }
+function spWakeSound() {
+  smWhoosh();
+  SP_STONES.forEach((s, i) => setTimeout(() => spBell(s.f * 2, 1.4, 0.07), 200 + i * 110));
+  setTimeout(() => { spBell(196, 2.8, 0.1); spBell(293.66, 2.8, 0.08); spBell(392, 2.8, 0.06); }, 850);
+}
+
+// ---- Ember's voice: captions, the bubble over the fire, and speech ----
+const WEB_TTS = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let claudeSample = null, claudeTts = null, claudeDict = null, webVoices = null;
+if (WEB_TTS) { try { speechSynthesis.addEventListener('voiceschanged', () => { webVoices = null; }); } catch (e) { } }
+// Phones only let a page talk after a tap; say nothing, quietly, on the first one.
+window.addEventListener('pointerdown', () => {
+  if (WEB_TTS && !IN_CLAUDE) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) { } }
+}, { once: true, capture: true });
+const SP_SCRIPTS = [[/[\u3040-\u30ff]/, 'ja'], [/[\uac00-\ud7af]/, 'ko'], [/[\u4e00-\u9fff]/, 'zh'], [/[\u0400-\u04ff]/, 'ru'], [/[\u0e00-\u0e7f]/, 'th'], [/[\u0600-\u06ff]/, 'ar'], [/[\u0900-\u097f]/, 'hi']];
+function spLangOf(text) { for (const [re, l] of SP_SCRIPTS) if (re.test(text)) return l; return 'en'; }
+// A warm, low storyteller voice if the device has one.
+function spVoiceFor(lang) {
+  if (!webVoices) { try { webVoices = speechSynthesis.getVoices() || []; } catch (e) { webVoices = []; } }
+  const pool = webVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang));
+  if (!pool.length) return null;
+  if (lang === 'en') {
+    for (const p of ['Google UK English Male', 'Daniel', 'Microsoft Ryan', 'Microsoft Guy', 'Microsoft Davis', 'Arthur', 'Microsoft George', 'Aaron', 'Rishi', 'Microsoft David', 'Alex', 'Google US English']) {
+      const v = pool.find(x => x.name.includes(p));
+      if (v) return v;
+    }
+  }
+  return pool.find(v => v.localService) || pool[0];
+}
+function spVoiceAvail() { return !!claudeTts || (WEB_TTS && !IN_CLAUDE); }
+function spSplit(text) { return (text.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean); }
+function spQueue(text) {
+  for (const s of spSplit(text)) ember.lines.push(s);
+  if (ember.lines.length > 60) ember.lines.splice(0, ember.lines.length - 60);
+}
+// One sentence at a time: shown over the fire, and spoken if Ember's voice is on.
+function spLineTick(now) {
+  const c = ember.cur;
+  if (c && (c.done || now > c.until)) ember.cur = null;
+  if (ember.cur || !ember.lines.length) return;
+  const text = ember.lines.shift();
+  const cur = { text, at: now, until: now + Math.max(1800, text.length * 62), done: false, voice: false, started: false };
+  ember.cur = cur;
+  if (!ember.voiceOn || !spVoiceAvail() || !spCanHear()) return;
+  cur.voice = true; cur.until = now + 5000 + text.length * 120; // in case the voice never says it's done
+  // If no voice actually came out (no voices on this device, or it refused), just show the words for a while.
+  const silent = () => { cur.voice = false; cur.until = cur.at + Math.max(1800, text.length * 62); };
+  const finish = () => { if (performance.now() - cur.at < text.length * 25) silent(); else cur.done = true; };
+  if (claudeTts) {
+    cur.started = true;
+    claudeTts.speak(text, { voice: 'rounded', rate: 0.95 }).then(finish, e => {
+      silent();
+      if (e && e.code === 'not_granted') { claudeTts = null; spRenderPanel(true); }
+    });
+    return;
+  }
+  try {
+    const lang = spLangOf(text), u = new SpeechSynthesisUtterance(text), v = spVoiceFor(lang);
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = lang === 'en' ? 'en-GB' : lang;
+    u.pitch = lang === 'en' ? 0.78 : 0.92; u.rate = 0.94;
+    u.volume = clamp(1 - Math.max(0, dist(me.x, me.y, FIRE.x, FIRE.y) - 160) / 260, 0.25, 1);
+    u.onstart = () => { cur.started = true; };
+    u.onend = finish; u.onerror = silent;
+    speechSynthesis.speak(u);
+  } catch (e) { silent(); }
+}
+// Stop Ember talking on this screen (and stop my own question being answered, if asked).
+function spHush(abort) {
+  ember.lines.length = 0;
+  if (ember.cur) ember.cur.done = true;
+  try { if (claudeTts) claudeTts.stop(); } catch (e) { }
+  try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { }
+  if (abort && ember.ctrl) { try { ember.ctrl.abort(); } catch (e) { } }
+}
+
+// ---- asking Ember ----
+// Every question or story is a "channel": the asker's browser writes Ember's words into
+// it as they arrive, and shares them in presence (me.spk) so everyone at the fire hears.
+const SP_LABEL = { cozy: 'a cozy story', spooky: 'a spooky story', funny: 'a funny story', legend: 'a legend', us: 'a story about everyone here' };
+function spChan(key, init) {
+  let ch = ember.chans.get(key);
+  if (!ch) {
+    ch = Object.assign({ key, t: '', d: 0, queued: 0, logged: false, announced: false, started: performance.now() }, init);
+    ember.chans.set(key, ch);
+    if (ember.chans.size > 30) ember.chans.delete(ember.chans.keys().next().value);
+  }
+  return ch;
+}
+function spLastBreak(t) { let i = 0, m; const re = /[.!?…]+["'”’)\]]*\s+/g; while ((m = re.exec(t))) i = m.index + m[0].length; return i; }
+function spHear(ch) {
+  const hear = spCanHear();
+  if (!ember.cap || ch.started >= ember.cap.started) ember.cap = ch;
+  const upto = ch.d ? ch.t.length : spLastBreak(ch.t);
+  if (upto > ch.queued) { if (hear) spQueue(ch.t.slice(ch.queued, upto)); ch.queued = upto; }
+  if (!ch.announced && ch.t && ch.k === 'story') { ch.announced = true; if (hear) addLog(null, `Ember begins ${ch.q} for ${ch.mine ? 'you' : ch.who}…`, true); }
+  if (ch.d && !ch.logged) {
+    ch.logged = true;
+    const asked = ch.k === 'talk' ? ch.q : ch.k === 'story' ? `(asks you for ${ch.q})` : ch.k === 'question' ? '(asks you for a question for the circle)' : '';
+    if (asked) ember.hist.push({ n: ch.who, t: asked });
+    if (ch.t) ember.hist.push({ n: 'Ember', t: ch.t.slice(0, 400) });
+    if (ember.hist.length > 16) ember.hist.splice(0, ember.hist.length - 16);
+    if (hear && ch.t && ch.k !== 'story') addLog('Ember', ch.t.length > 200 ? ch.t.slice(0, 197) + '…' : ch.t, false, '#ffb15c');
+  }
+  spRenderCaption();
+}
+function spFromPeer(o, k, key) {
+  const t = cleanText(k.t, 1600);
+  const ch = spChan(key, { who: cleanText(o.p.n, 16) || 'Someone', mine: false, peer: o.peer, k: SP_KINDS.includes(k.k) ? k.k : 'talk', g: Brain && Brain.GENRES[k.g] ? k.g : '', q: cleanText(k.q, 140) });
+  if (ch.d && ch.logged) return;
+  if (t.length >= ch.t.length) ch.t = t;
+  if (k.d === 1) ch.d = 1;
+  ember.lookKey = o.peer;
+  spHear(ch);
+}
+function spPeople() {
+  const list = [];
+  if (spCanHear()) list.push({ n: me.name, sit: me.sit >= 0, old: !!me.ew });
+  for (const o of others.values()) {
+    if (!o.p || !o.p.n || inChurch(o.rx) || dist(o.rx, o.ry, FIRE.x, FIRE.y) > 380) continue;
+    list.push({ n: cleanText(o.p.n, 16), sit: typeof o.p.sit === 'number' && o.p.sit >= 0, old: o.p.ew === 1 });
+  }
+  return list;
+}
+async function spAsk(kind, text, genre) {
+  if (!Brain) return;
+  if (ember.busy) { showToast('Ember is still answering. Give it a moment.', 2500); return; }
+  if (kind !== 'wake' && spirit.ph !== 'awake') return;
+  ember.busy = true;
+  const ctrl = new AbortController();
+  ember.ctrl = ctrl;
+  const q = kind === 'talk' ? cleanText(text, 140) : kind === 'story' ? (SP_LABEL[genre] || 'a story') : '';
+  ember.mySeq += 1;
+  me.spk = { i: ember.mySeq, k: kind, g: genre || '', q, t: '', d: 0 };
+  sentDirty = true; pushPresence(true);
+  const ch = spChan('me:' + ember.mySeq, { who: me.name, mine: true, k: kind, g: genre || '', q });
+  ember.lookKey = 'me';
+  spHear(ch); spRenderPanel(true);
+  const input = { kind, text: kind === 'talk' ? text : '', genre, who: me.name, people: spPeople(), history: ember.hist.slice(-10), hour: new Date().getHours(), wakers: spirit.wk };
+  let out = '';
+  const onText = full => {
+    if (typeof full !== 'string') return;
+    const clean = full.replace(/\*[^*\n]{1,60}\*/g, '').replace(/[#*_`]/g, '').replace(/\s*\n+\s*/g, ' ').replace(/^\s+/, '');
+    if (clean === out) return;
+    out = clean; ch.t = out.slice(0, 1600);
+    const now = performance.now();
+    if (now - ember.lastSpkPush > 300 || /[.!?…]\s*$/.test(out)) { ember.lastSpkPush = now; me.spk = Object.assign({}, me.spk, { t: ch.t }); sentDirty = true; }
+    spHear(ch);
+  };
+  try {
+    if (performance.now() < ember.restUntil) throw new Error('resting');
+    if (ember.ai === 'server') await spAskServer(input, onText, ctrl.signal);
+    else if (ember.ai === 'claude' && claudeSample) await spAskClaude(input, onText, ctrl.signal);
+    else throw new Error('storybook');
+    if (!out.trim()) throw new Error('empty');
+  } catch (e) {
+    if (!out.trim()) onText(ctrl.signal.aborted ? 'Mm. Another time, then.' : Brain.offline(input));
+  }
+  ch.d = 1;
+  me.spk = Object.assign({}, me.spk, { t: ch.t, d: 1 });
+  sentDirty = true; pushPresence(true);
+  spHear(ch);
+  ember.busy = false; ember.ctrl = null;
+  spRenderPanel(true);
+}
+async function spAskServer(input, onText, signal, retried) {
+  const r = await fetch('/spirit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ room: ROOM_CODE }, input)), signal });
+  if (r.status === 503) { ember.ai = 'book'; spRenderPanel(true); throw new Error('no_ai'); }
+  if (r.status === 429) {
+    let j = null; try { j = await r.json(); } catch (e) { }
+    const why = j && j.error;
+    if (why === 'busy' && !retried) { await new Promise(res => setTimeout(res, 1700)); return spAskServer(input, onText, signal, true); }
+    if (why === 'daily_limit' || why === 'limit') ember.restUntil = performance.now() + (why === 'daily_limit' ? 3600e3 : 120e3);
+    throw new Error('limit');
+  }
+  if (!r.ok || !r.body) throw new Error('http ' + r.status);
+  const rd = r.body.getReader(), dec = new TextDecoder();
+  let full = '';
+  for (;;) {
+    const { done, value } = await rd.read();
+    if (done) break;
+    full += dec.decode(value, { stream: true });
+    onText(full);
+  }
+}
+async function spAskClaude(input, onText, signal) {
+  const p = Brain.build(input);
+  try {
+    const res = await claudeSample(p.system + '\n\n---\n\n' + p.messages[0].content, {
+      onText: ({ text }) => { if (text && !/^Thinking(\.\.\.|…)?$/.test(text.trim())) onText(text); },
+      signal, modelTier: 'quick', cache: false
+    });
+    if (res && res.text) onText(res.text);
+  } catch (e) {
+    if (e && e.code === 'not_granted') { ember.ai = 'book'; claudeSample = null; spRenderPanel(true); }
+    if (e && e.code === 'rate_limited') ember.restUntil = performance.now() + 60e3;
+    throw e;
+  }
+}
+function spAddressed(v) { return spirit.ph === 'awake' && spCanHear() && /^\s*((hey|hi|hello|ok|okay|oh|dear|yo)[\s,!]+)?ember\b/i.test(v); }
+function spSend(text) {
+  const v = cleanText(text, 140);
+  if (!v || spirit.ph !== 'awake') return;
+  if (ember.busy) { showToast('Ember is still answering. Give it a moment.', 2500); return; }
+  say(v, 'e');
+  spAsk('talk', v);
+}
+// Which brain Ember has: Claude through this game's server, Claude inside Claude, or its storybook.
+if (IN_CLAUDE) {
+  window.claude.use('sample').then(s => { claudeSample = s || null; ember.ai = s ? 'claude' : 'book'; spRenderPanel(true); }, () => { ember.ai = 'book'; });
+  window.claude.use('tts').then(t => { claudeTts = t || null; spRenderPanel(true); }, () => { });
+  window.claude.use('dictation').then(d => { claudeDict = d || null; if (d) spWireDictation(d); spRenderPanel(true); }, () => { });
+} else if (HOSTED) {
+  fetch('/spirit-status', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { ember.ai = j && j.ai ? 'server' : 'book'; spRenderPanel(true); }, () => { ember.ai = 'book'; });
+} else ember.ai = 'book';
+
+// ---- talking to Ember out loud ----
+function spCanListen() { return !!claudeDict || (!!SR && !IN_CLAUDE); }
+function spMicUi() {
+  const b = $('spMic'), on = ember.listen.on;
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-pressed', String(on));
+  b.setAttribute('aria-label', on ? 'Stop listening and send' : 'Speak to Ember');
+  $('spInput').placeholder = on ? 'Listening… speak to Ember' : 'Say something to Ember';
+}
+function spListen() {
+  if (ember.listen.on) { spListenStop(); return; }
+  if (!spCanListen() || spirit.ph !== 'awake') { $('spInput').focus(); return; }
+  if (ember.busy) { showToast('Ember is still answering. Give it a moment.', 2500); return; }
+  getAC();
+  spHush(false); // so Ember doesn't hear itself
+  const inp = $('spInput');
+  ember.listen = { on: true, rec: null, base: cleanText(inp.value, 140), final: '', heard: '' };
+  spMicUi();
+  if (claudeDict) {
+    claudeDict.start().catch(e => {
+      ember.listen.on = false; spMicUi();
+      if (e && e.code === 'not_granted') { claudeDict = null; spRenderPanel(true); showToast('Ember can\'t hear you here. Type to it instead.', 4000); }
+    });
+    return;
+  }
+  const rec = new SR();
+  rec.lang = navigator.language || 'en-US'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onresult = e => {
+    let s = '';
+    for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
+    ember.listen.heard = s.trim();
+    inp.value = (ember.listen.base + ' ' + ember.listen.heard).trim().slice(0, 140);
+  };
+  rec.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showToast('Ember can\'t hear you: the microphone is blocked for this site. Allow it, or type instead.', 6000);
+    else if (e.error === 'no-speech') showToast('Ember didn\'t catch that. Tap the mic and speak.', 2500);
+    else if (e.error === 'network') showToast('Speech needs an internet connection. Type to Ember instead.', 4000);
+  };
+  rec.onend = () => spListenDone();
+  ember.listen.rec = rec;
+  try { rec.start(); } catch (e) { ember.listen.on = false; spMicUi(); }
+}
+function spListenStop() {
+  const L = ember.listen;
+  if (L.rec) { try { L.rec.stop(); } catch (e) { spListenDone(); } }
+  else if (claudeDict) claudeDict.stop().then(() => spListenDone(), () => spListenDone());
+  else spListenDone();
+}
+function spListenDone() {
+  if (!ember.listen.on) return;
+  const heard = ember.listen.heard;
+  ember.listen.on = false; ember.listen.rec = null;
+  spMicUi();
+  const v = cleanText($('spInput').value, 140);
+  if (heard && v) { $('spInput').value = ''; spSend(v); }
+}
+function spWireDictation(d) {
+  const show = extra => { $('spInput').value = [ember.listen.base, ember.listen.final, extra].filter(Boolean).join(' ').slice(0, 140); };
+  d.onPartial(({ text }) => { if (!ember.listen.on) return; ember.listen.heard = 'y'; show(text); });
+  d.onFinal(({ text }) => { if (!ember.listen.on) return; ember.listen.heard = 'y'; ember.listen.final = (ember.listen.final + ' ' + text).trim(); show(''); });
+  d.onState(({ state }) => { if (state === 'idle' && ember.listen.on) spListenDone(); });
+}
+
+// ---- the panel ----
+const SP_GLYPHS = [
+  '<path d="M12 2.5c3.6 4.2 6 7.3 6 11a6 6 0 0 1-12 0c0-2.4 1.2-4.3 2.6-5.6.1 2.1 1 3.3 2.2 3.6-.9-3.2.1-6.2 1.2-9z"/>',
+  '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+  '<path d="M4.5 19.5C4.5 10.8 10 5 19.5 4.5 19 14 13.2 19.5 4.5 19.5z"/><path d="M5 19l8-8" stroke="rgba(0,0,0,0.35)" stroke-width="1.6" stroke-linecap="round"/>',
+  '<path d="M12 2.8c3.4 4.9 6.2 8 6.2 11.4a6.2 6.2 0 0 1-12.4 0c0-3.4 2.8-6.5 6.2-11.4z"/>',
+  '<path d="M15.5 3a8.8 8.8 0 1 0 5.6 13.6A9.4 9.4 0 0 1 15.5 3z"/>'
+];
+const spStoneBtns = SP_STONES.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'sp-stone'; b.style.setProperty('--c', s.c); b.style.setProperty('--rgb', s.rgb);
+  b.setAttribute('aria-label', `${s.name} stone`);
+  b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${SP_GLYPHS[i]}</svg><span class="sp-key" aria-hidden="true">${i + 1}</span>`;
+  b.addEventListener('click', () => spTap(i));
+  $('spStones').appendChild(b);
+  return b;
+});
+if (Brain) for (const [g, d] of Object.entries(Brain.GENRES)) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip'; b.textContent = d.label; b.dataset.genre = g;
+  b.addEventListener('click', () => { getAC(); if (!ember.busy) addLog(null, `You asked Ember for ${SP_LABEL[g]}.`, true); spAsk('story', '', g); });
+  $('spGenres').appendChild(b);
+}
+$('spQuestion').addEventListener('click', () => { getAC(); spAsk('question'); });
+$('spHush').addEventListener('click', () => spHush(true));
+$('spMic').addEventListener('click', () => spListen());
+$('spTalk').addEventListener('submit', e => {
+  e.preventDefault();
+  if (ember.listen.on) { spListenStop(); return; }
+  const v = cleanText($('spInput').value, 140);
+  if (!v || ember.busy) return;
+  $('spInput').value = '';
+  spSend(v);
+});
+$('spAgain').addEventListener('click', () => { if (!ember.playing) spPlay(); });
+$('spVoiceBtn').addEventListener('click', () => {
+  getAC();
+  ember.voiceOn = !ember.voiceOn;
+  store('campfire.emberVoice', ember.voiceOn);
+  if (!ember.voiceOn) { try { if (claudeTts) claudeTts.stop(); } catch (e) { } try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { } }
+  spRenderPanel(true);
+});
+$('spFold').addEventListener('click', () => { ember.folded = !ember.folded; spRenderPanel(true); });
+$('spStoryTab').addEventListener('click', () => { ember.tab = 'story'; spRenderPanel(true); });
+$('emberTab').addEventListener('click', () => { ember.tab = 'ember'; spRenderPanel(true); });
+$('spSleep').addEventListener('click', () => {
+  const now = performance.now();
+  if (now - ember.sleepArm > 3500) { ember.sleepArm = now; $('spSleep').textContent = 'Sure? Tap again'; setTimeout(() => { if (performance.now() - ember.sleepArm >= 3400) $('spSleep').textContent = 'Let Ember sleep'; }, 3600); return; }
+  ember.sleepArm = 0; $('spSleep').textContent = 'Let Ember sleep';
+  spSet({ ph: 'sleep', tap: null });
+});
+$('wakeBtn').addEventListener('click', spStart);
+$('spPill').addEventListener('click', () => {
+  const left = ember.spots.filter((s, k) => !(spirit.got >> k & 1)).map(s => s.h);
+  if (left.length) showToast(left.length === 1 ? `One spark left, ${left[0]}.` : `Still out there: one ${left.slice(0, -1).join(', one ')} and one ${left[left.length - 1]}.`, 4500);
+});
+function spPanelWanted() { return joined && !sm.showing && (spirit.ph === 'song' || spirit.ph === 'awake') && spNear(); }
+function spRenderPanel(force) {
+  const want = spPanelWanted(), seated = me.sit >= 0;
+  const show = want && (!seated || ember.tab === 'ember');
+  $('emberTab').hidden = !(want && seated && !show);
+  if (show !== ember.shown) {
+    ember.shown = show; $('spPanel').hidden = !show; force = true;
+    if (!show && ember.listen.on) spListenStop();
+    renderStory(false);
+  }
+  if (!show) return;
+  const now = performance.now();
+  if (!force && now - ember.uiAt < 150) return;
+  ember.uiAt = now;
+  ember.panelBottom = $('spPanel').getBoundingClientRect().bottom;
+  const song = spirit.ph === 'song';
+  $('spPanel').classList.toggle('folded', ember.folded);
+  $('spFold').textContent = ember.folded ? 'Show' : 'Hide';
+  $('spFold').setAttribute('aria-expanded', String(!ember.folded));
+  $('spSong').hidden = !song; $('spAwake').hidden = song;
+  $('spStoryTab').hidden = !seated;
+  $('spTitle').textContent = song ? 'The fire\'s song' : 'Ember';
+  if (song) {
+    const len = SP_VERSES[spirit.r], key = spSongKey();
+    $('spSongText').textContent = `Verse ${spirit.r + 1} of ${SP_VERSES.length}. Listen to the fire, then tap the stones in the same order. Anyone at the fire can help.`;
+    const vp = $('spVerses');
+    if (vp.childElementCount !== SP_VERSES.length + 1 + 9) {
+      vp.textContent = '';
+      SP_VERSES.forEach(() => { const s = document.createElement('span'); s.className = 'sp-pip verse'; vp.appendChild(s); });
+      const gap = document.createElement('span'); gap.className = 'sp-gap'; vp.appendChild(gap);
+      for (let i = 0; i < 9; i++) { const s = document.createElement('span'); s.className = 'sp-pip note'; vp.appendChild(s); }
+    }
+    [...vp.querySelectorAll('.verse')].forEach((s, i) => { s.classList.toggle('done', i < spirit.r); s.classList.toggle('cur', i === spirit.r); });
+    [...vp.querySelectorAll('.note')].forEach((s, i) => { s.hidden = i >= len; s.classList.toggle('done', i < spirit.pos); });
+    spStoneBtns.forEach(b => { b.disabled = !!ember.playing; });
+    let st;
+    if (ember.playing) st = 'Listen…';
+    else if (now - ember.missAt < 1800) st = 'The fire sputters. Listen again…';
+    else if (now - ember.verseAt < 1500) st = `Verse ${spirit.r} sung! The fire grows brighter…`;
+    else if (ember.heardKey !== key && spirit.pos === 0) st = 'The fire is about to sing…';
+    else if (spirit.pos) st = `Keep going… ${spirit.pos} of ${len}`;
+    else st = `Your turn: tap the ${len} stones in the order the fire sang them.`;
+    if ($('spSongStatus').textContent !== st) $('spSongStatus').textContent = st;
+    $('spAgain').disabled = !!ember.playing;
+    return;
+  }
+  const busy = ember.busy;
+  $('spGenres').querySelectorAll('button').forEach(b => { b.disabled = busy; });
+  $('spQuestion').disabled = busy;
+  $('spSend').disabled = busy;
+  const talking = !!ember.cur || ember.lines.length > 0 || busy;
+  $('spHush').hidden = !talking;
+  const vb = $('spVoiceBtn');
+  vb.hidden = !spVoiceAvail();
+  vb.setAttribute('aria-pressed', String(ember.voiceOn));
+  vb.setAttribute('aria-label', ember.voiceOn ? 'Mute Ember\'s voice' : 'Hear Ember\'s voice');
+  vb.title = ember.voiceOn ? 'Ember speaks out loud. Tap to read only.' : 'Ember is muted. Tap to hear it.';
+  $('spMic').hidden = !spCanListen();
+  const mode = ember.ai === 'server' || ember.ai === 'claude' ? (now < ember.restUntil ? 'Ember is resting its voice: storybook for now' : 'Ember talks with Claude') : ember.ai === 'book' ? 'Storybook mode' : '';
+  if ($('spMode').textContent !== mode) $('spMode').textContent = mode;
+  spRenderCaption();
+}
+function spRenderCaption() {
+  if (!ember.shown || spirit.ph !== 'awake') return;
+  const ch = ember.cap;
+  let a = '', s = '';
+  if (!ch) s = 'Ember is listening. Say something, or ask for a story.';
+  else {
+    const who = ch.mine ? 'You' : ch.who;
+    if (ch.k === 'talk') a = `${who}: “${ch.q}”`;
+    else if (ch.k === 'story') a = `${who} asked for ${ch.q}`;
+    else if (ch.k === 'question') a = `${who} asked for a question`;
+    s = ch.t;
+  }
+  const asked = $('spAsked');
+  if (asked.textContent !== a) asked.textContent = a;
+  asked.hidden = !a;
+  const said = $('spSaid'), box = $('spCaption');
+  if (ember.capText !== s) {
+    const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 30;
+    said.textContent = s; ember.capText = s;
+    if (atEnd) box.scrollTop = box.scrollHeight;
+  }
+  $('spThink').hidden = !(ch && !ch.t && !ch.d);
+}
+function updateSpButtons() {
+  const show = joined && !inChurch(me.x) && spirit.ph === 'sleep' && (me.sit >= 0 || nearFire()) && (sm.phase === 'idle' || sm.phase === 'results') && !smHoldsStick();
+  setBtn($('wakeBtn'), show ? 'Wake the fire' : null, false, '');
+  const pill = $('spPill'), hunt = joined && spirit.ph === 'hunt';
+  if (pill.hidden === hunt) pill.hidden = !hunt;
+  if (hunt) {
+    const txt = `Sparks ${popcount(spirit.got)}/3`;
+    if (pill.dataset.t !== txt) { pill.dataset.t = txt; pill.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="#ffcf4a" aria-hidden="true">' + SP_GLYPHS[0] + '</svg>'; pill.appendChild(document.createTextNode(txt)); }
+  }
+}
+// every frame (while joined)
+function spiritTick(now) {
+  if (spirit.ph === 'hunt' && !inChurch(me.x) && ember.spots.length === 3) {
+    for (let k = 0; k < 3; k++) {
+      if (spirit.got >> k & 1) continue;
+      const s = ember.spots[k];
+      if (dist(me.x, me.y, s.x, s.y) < 40) { spCollect(k); break; }
+    }
+  }
+  if (spirit.ph === 'song') spSongTick(now);
+  else if (ember.playing) ember.playing = null;
+  if (ember.flying.length && now - ember.flying[0].at > 1500) ember.flying = ember.flying.filter(f => now - f.at < 1500);
+  spLineTick(now);
+  spRenderPanel(false);
+}
+
+// ---- drawing ----
+// How the fire looks right now: size, a colour washing through it, and the face.
+function spFireState(now, t) {
+  if (ember.fsAt === now && ember.fs) return ember.fs;
+  const st = { s: 1, tint: null, tintA: 0, face: 0, mode: 'sleep', talk: false, think: false };
+  if (spirit.ph === 'hunt') st.s = 0.72 + 0.08 * popcount(spirit.got);
+  else if (spirit.ph === 'song') { st.s = 0.95 + 0.05 * spirit.r; st.mode = ember.playing ? 'hum' : 'sleep'; }
+  else if (spirit.ph === 'awake') {
+    st.s = 1.28; st.face = 1; st.mode = 'awake';
+    const e = (now - ember.wokeAt) / 1000;
+    if (e < 3) {
+      st.s = 1.28 + 0.85 * Math.sin(Math.PI * clamp(e / 1.7, 0, 1));
+      st.face = clamp((e - 1.3) / 0.9, 0, 1);
+      st.tint = SP_STONES[Math.floor(e * 7) % 5].c; st.tintA = clamp(1 - e / 2.3, 0, 1) * 0.8;
+    }
+    const c = ember.cur;
+    st.talk = !!(c && !c.done && (!c.voice || c.started));
+    if (!st.talk) for (const ch of ember.chans.values()) if (!ch.d && !ch.t && now - ch.started < 30000) { st.think = true; break; }
+  }
+  const f = ember.flash;
+  if (f && now - f.at < 520) { const a = 1 - (now - f.at) / 520; st.tint = SP_STONES[f.k].c; st.tintA = Math.max(st.tintA, a * 0.85); st.s *= 1 + 0.22 * a; }
+  if (now - ember.missAt < 700) st.s *= 0.72 + 0.28 * ((now - ember.missAt) / 700);
+  ember.fs = st; ember.fsAt = now;
+  return st;
+}
+// Where Ember looks: at whoever is talking to it, otherwise at you.
+function spLook() {
+  let tx = me.x, ty = me.y;
+  const o = ember.lookKey !== 'me' && others.get(ember.lookKey);
+  if (o && o.p) { tx = o.rx; ty = o.ry; }
+  const dx = tx - FIRE.x, dy = ty - (FIRE.y - 30), l = Math.hypot(dx, dy) || 1;
+  return [dx / l, dy / l];
+}
+function drawSpiritFace(g, t, st) {
+  const s = Math.min(st.s, 1.5), ey = -30 * s, ex = 8.5 * s;
+  g.save();
+  g.lineCap = 'round';
+  if (st.mode !== 'awake') {
+    // asleep (or humming): closed eyes, faint in the flames
+    g.globalAlpha = st.mode === 'hum' ? 0.85 : 0.7;
+    g.strokeStyle = '#7a2a0c'; g.lineWidth = 1.6 * s;
+    for (const side of [-1, 1]) { g.beginPath(); g.arc(side * ex, ey + 1 * s, 3.2 * s, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); }
+    g.fillStyle = '#7a2a0c';
+    if (st.mode === 'hum') { g.beginPath(); g.ellipse(0, -17 * s, 2 * s, (1.6 + Math.abs(Math.sin(t * 6)) * 1.4) * s, 0, 0, Math.PI * 2); g.fill(); }
+    g.restore();
+    return;
+  }
+  g.globalAlpha = st.face;
+  const L = spLook(), blink = (t % 4.7) < 0.13 || ((t + 1.7) % 9.1) < 0.12;
+  for (const side of [-1, 1]) {
+    const x = side * ex;
+    g.fillStyle = 'rgba(255,80,50,0.35)';
+    g.beginPath(); g.ellipse(x + side * 2.8 * s, ey + 7.5 * s, 3 * s, 1.7 * s, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#fffbe6';
+    g.beginPath(); g.ellipse(x, ey, 3.7 * s, blink ? 0.7 : 4.7 * s, 0, 0, Math.PI * 2); g.fill();
+    if (!blink) {
+      const px = x + L[0] * 1.3 * s, py = ey + (st.think ? -1.9 : L[1] * 1.4) * s;
+      g.fillStyle = '#4a1606'; g.beginPath(); g.arc(px, py, 2.1 * s, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.95)'; g.beginPath(); g.arc(px - 0.7 * s, py - 0.8 * s, 0.7 * s, 0, Math.PI * 2); g.fill();
+    }
+  }
+  const my = -17 * s;
+  g.fillStyle = '#4a1606'; g.strokeStyle = '#4a1606'; g.lineWidth = 1.6 * s;
+  if (st.talk) {
+    const o = 0.3 + 0.7 * Math.abs(Math.sin(t * 13) * Math.sin(t * 5.3 + 1));
+    g.beginPath(); g.ellipse(0, my, 3.4 * s, (0.8 + 3 * o) * s, 0, 0, Math.PI * 2); g.fill();
+  } else if (st.think) { g.beginPath(); g.arc(0, my, 1.4 * s, 0, Math.PI * 2); g.fill(); }
+  else { g.beginPath(); g.arc(0, my - 2.6 * s, 4 * s, 0.22 * Math.PI, 0.78 * Math.PI); g.stroke(); }
+  g.restore();
+}
+// A spark waiting to be found: a little flame of its own, bobbing, with motes circling it.
+function drawSpark(g, x, y, k, t) {
+  const c = SP_STONES[SP_SPARK[k]], by = y - 24 + Math.sin(t * 2.2 + k * 2) * 5, p = 1 + Math.sin(t * 9 + k) * 0.08;
+  g.save();
+  g.fillStyle = `rgba(${c.rgb},0.25)`; g.beginPath(); g.ellipse(x, y, 20, 6, 0, 0, Math.PI * 2); g.fill();
+  g.translate(x, by); g.scale(1.45, 1.45);
+  g.fillStyle = c.c;
+  g.beginPath(); g.moveTo(0, -13 * p); g.quadraticCurveTo(8, -2, 6, 3); g.quadraticCurveTo(0, 9, -6, 3); g.quadraticCurveTo(-8, -2, 0, -13 * p); g.fill();
+  g.fillStyle = '#fffbe6';
+  g.beginPath(); g.moveTo(0, -6 * p); g.quadraticCurveTo(3.5, 0, 2.6, 2.6); g.quadraticCurveTo(0, 5, -2.6, 2.6); g.quadraticCurveTo(-3.5, 0, 0, -6 * p); g.fill();
+  for (let i = 0; i < 3; i++) {
+    const a = t * 2.4 + i * 2.09 + k;
+    g.fillStyle = `rgba(${c.rgb},0.9)`; g.fillRect(Math.cos(a) * 13 - 1.2, Math.sin(a) * 5 - 1.2, 2.4, 2.4);
+  }
+  g.restore();
+}
+function spSparkPos(f, now) {
+  const u = clamp((now - f.at) / 1100, 0, 1), e = u * u * (3 - 2 * u);
+  return [f.x + (FIRE.x - f.x) * e, f.y - 24 + (FIRE.y - 30 - (f.y - 24)) * e - Math.sin(Math.PI * e) * 140, u];
+}
+// Light: the sparks shine through the dark, and the waking fire throws a ring of colour.
+function spLightHoles(hole) {
+  if (spirit.ph === 'hunt') for (let k = 0; k < 3; k++) if (!(spirit.got >> k & 1) && ember.spots[k]) hole(ember.spots[k].x, ember.spots[k].y - 20, 95, 0.6);
+}
+function spLightGlow(g, t, now) {
+  if (spirit.ph === 'hunt') {
+    for (let k = 0; k < 3; k++) {
+      if (spirit.got >> k & 1 || !ember.spots[k]) continue;
+      const s = ember.spots[k], c = SP_STONES[SP_SPARK[k]], [sx, sy] = w2s(s.x, s.y - 24 + Math.sin(t * 2.2 + k * 2) * 5), R = (58 + Math.sin(t * 3 + k) * 8) * ZOOM;
+      const gr = g.createRadialGradient(sx, sy, 0, sx, sy, R);
+      gr.addColorStop(0, `rgba(${c.rgb},0.55)`); gr.addColorStop(1, `rgba(${c.rgb},0)`);
+      g.fillStyle = gr; g.fillRect(sx - R, sy - R, R * 2, R * 2);
+    }
+  }
+  for (const f of ember.flying) {
+    const c = SP_STONES[SP_SPARK[f.k]];
+    for (let i = 5; i >= 0; i--) {
+      const [x, y, u] = spSparkPos({ x: f.x, y: f.y, at: f.at + i * 45 }, now);
+      if (u >= 1 && i > 0) continue;
+      const [sx, sy] = w2s(x, y), R = (i ? 9 - i : 22) * ZOOM;
+      const gr = g.createRadialGradient(sx, sy, 0, sx, sy, R);
+      gr.addColorStop(0, `rgba(${c.rgb},${i ? 0.5 - i * 0.07 : 0.95})`); gr.addColorStop(1, `rgba(${c.rgb},0)`);
+      g.fillStyle = gr; g.fillRect(sx - R, sy - R, R * 2, R * 2);
+    }
+  }
+  const st = spFireState(now, t);
+  if (st.tintA > 0 && st.tint) {
+    const [fx, fy] = w2s(FIRE.x, FIRE.y - 30), R = 170 * ZOOM * st.s;
+    const rgb = SP_STONES.find(x => x.c === st.tint).rgb;
+    const gr = g.createRadialGradient(fx, fy, 0, fx, fy, R);
+    gr.addColorStop(0, `rgba(${rgb},${0.45 * st.tintA})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = gr; g.fillRect(fx - R, fy - R, R * 2, R * 2);
+  }
+  const e = (now - ember.wokeAt) / 1000;
+  if (e >= 0 && e < 2.2) {
+    const [fx, fy] = w2s(FIRE.x, FIRE.y - 20), R = (40 + 460 * (1 - Math.pow(1 - Math.min(1, e / 1.4), 3))) * ZOOM, a = clamp(1 - e / 2.2, 0, 1);
+    const rgb = SP_STONES[Math.floor(e * 5) % 5].rgb;
+    g.strokeStyle = `rgba(${rgb},${0.7 * a})`; g.lineWidth = 10 * ZOOM * a + 2;
+    g.beginPath(); g.ellipse(fx, fy, R, R * 0.62, 0, 0, Math.PI * 2); g.stroke();
+  }
+}
+// Over the fire: sleepy z's, a thinking "…", or the words Ember is saying right now.
+function drawEmberBubble(g, sx, sy, text, alpha) {
+  g.save(); g.globalAlpha = alpha;
+  g.font = `600 14px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  const lines = wrapText(g, text, 230);
+  const w = Math.max(...lines.map(l => g.measureText(l).width)) + 24, h = lines.length * 18 + 14;
+  const x = sx - w / 2, y = sy - h - 12;
+  g.shadowColor = 'rgba(255,140,60,0.55)'; g.shadowBlur = 16;
+  g.fillStyle = 'rgba(58,24,10,0.93)'; roundRect(g, x, y, w, h, 12); g.fill();
+  g.beginPath(); g.moveTo(sx - 7, y + h); g.lineTo(sx, y + h + 9); g.lineTo(sx + 7, y + h); g.fill();
+  g.shadowBlur = 0;
+  g.strokeStyle = 'rgba(255,177,92,0.6)'; g.lineWidth = 1; roundRect(g, x + 0.5, y + 0.5, w - 1, h - 1, 12); g.stroke();
+  g.fillStyle = '#ffe7b8'; g.textAlign = 'center'; g.textBaseline = 'top';
+  lines.forEach((l, i) => g.fillText(l, sx, y + 8 + i * 18));
+  g.restore();
+}
+function drawSpiritOverlay(t, now) {
+  const d = dist(me.x, me.y, FIRE.x, FIRE.y);
+  if (d > 430) return;
+  if (spirit.ph === 'sleep') {
+    ctx.save(); ctx.fillStyle = '#ffe7b8'; ctx.textAlign = 'center';
+    for (let i = 0; i < 3; i++) {
+      const p = (t * 0.32 + i / 3) % 1, [sx, sy] = w2s(FIRE.x + 12 + p * 22 + Math.sin(p * 6 + i) * 4, FIRE.y - 66 - p * 60);
+      ctx.globalAlpha = Math.sin(Math.PI * p) * 0.8;
+      ctx.font = `800 ${Math.round((12 + p * 12) * ZOOM)}px "Grandstander", system-ui, sans-serif`;
+      ctx.fillText('z', sx, sy);
+    }
+    ctx.restore();
+    return;
+  }
+  if (spirit.ph !== 'awake') return;
+  const st = spFireState(now, t), [sx, sy] = w2s(FIRE.x, FIRE.y - 92 * Math.min(st.s, 1.5));
+  const c = ember.cur;
+  if (c && c.text) drawEmberBubble(ctx, sx, sy, c.text, clamp((now - c.at) / 200, 0, 1));
+  else if (st.think) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
+}
+window.campfireSpiritDebug = () => ({
+  ph: spirit.ph, v: spirit.v, got: spirit.got, verse: spirit.r, pos: spirit.pos, ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(),
+  spots: ember.spots.map(s => ({ x: s.x, y: s.y, h: s.h })), song: ember.seq.slice(), playing: !!ember.playing, busy: ember.busy,
+  said: ember.cap ? ember.cap.t : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
+});
+// Local testing only: hop to a spot on the map.
+if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.campfireTestGo = (x, y) => { if (me.sit >= 0) stand(); me.x = x; me.y = y; me.target = null; sentDirty = true; snapCam(); };
+
 // ===== Input =====
 const keys = new Set();
 window.addEventListener('keydown', e => {
@@ -4390,6 +5419,8 @@ window.addEventListener('keydown', e => {
   if ((e.key === 'm' || e.key === 'M') && VOICE_OK) { toggleMic(); return; }
   if ((e.key === 'r' || e.key === 'R') && !e.repeat) { smPrimary(); return; }
   if ((e.key === 'f' || e.key === 'F') && !e.repeat) { smServe(false); return; }
+  if (/^[1-5]$/.test(e.key) && !e.repeat && ember.shown && spirit.ph === 'song') { spTap(+e.key - 1); return; }
+  if ((e.key === 't' || e.key === 'T') && !e.repeat && ember.shown && spirit.ph === 'awake') { e.preventDefault(); if (spCanListen()) spListen(); else $('spInput').focus(); return; }
   const k = e.key.toLowerCase();
   if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { keys.add(k); e.preventDefault(); }
 });
@@ -4537,6 +5568,7 @@ function updateActionBtn() {
   if (smHoldsStick()) label = null;
   if (label === null) b.hidden = true; else { b.hidden = false; if (b.textContent !== label) b.textContent = label; }
   updateSmButtons();
+  updateSpButtons();
 }
 
 // ===== Simulation =====
@@ -4624,6 +5656,7 @@ function step(dt, t) {
   for (const f of fireflies) { f.p += dt * f.s; f.x += Math.cos(f.p * 1.3) * 12 * dt; f.y += Math.sin(f.p) * 9 * dt; }
   // fire sound volume by distance (silent inside the church)
   if (fireGain) fireGain.gain.value = insideNow ? 0 : 0.05 + 0.3 * Math.max(0, 1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 600);
+  spiritTick(performance.now());
   updateActionBtn();
 }
 // Where the camera wants to be: follow me, but stay inside the campsite or the church.
@@ -4639,8 +5672,14 @@ function camTarget() {
   }
   // near the church, look a little higher so its tall front and spire stay in view
   const lift = 20 + 90 * clamp(1 - dist(me.x, me.y, CHURCH.x, CHURCH.y) / 320, 0, 1);
-  const tx = clamp(me.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
-  const ty = clamp(me.y - lift, Math.min(viewH / 2, H / 2), Math.max(H - viewH / 2, H / 2));
+  let tx = clamp(me.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
+  let ty = clamp(me.y - lift, Math.min(viewH / 2, H / 2), Math.max(H - viewH / 2, H / 2));
+  // On phones Ember's panel covers the top of the screen: slide the view so the fire shows below it.
+  if (ember.shown && VW <= 640 && ember.panelBottom) {
+    const want = (ember.panelBottom + 10 + VH - 140) / 2 + 40 * ZOOM; // where the fire should land on screen
+    ty = Math.min(ty, FIRE.y - (want - VH / 2) / ZOOM);
+    tx = clamp(FIRE.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
+  }
   return [tx, ty];
 }
 function snapCam() { const [x, y] = camTarget(); cam.x = x; cam.y = y; }
@@ -4677,16 +5716,21 @@ function drawFire(g, t) {
   g.save(); g.rotate(0.5); roundRect(g, -26, -5, 52, 10, 5); g.fill(); g.restore();
   g.save(); g.rotate(-0.5); roundRect(g, -26, -5, 52, 10, 5); g.fill(); g.restore();
   const fl = (a, b) => Math.sin(t * a + b) * 0.5 + 0.5;
+  // the spirit changes the fire: smaller while its sparks are away, a colour flash per note, taller and awake with a face
+  const st = spFireState(performance.now(), t);
   const layers = [['#e2572b', 30, 62], ['#f39a3c', 22, 48], ['#ffd36b', 14, 32], ['#fff3c4', 7, 16]];
-  layers.forEach(([c, w, h], i) => {
-    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i));
+  layers.forEach(([c, w0, h], i) => {
+    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i)) * st.s;
+    const w = w0 * (1 + (st.s - 1) * 0.55);
     const sway = Math.sin(t * 3.1 + i) * 4;
     g.fillStyle = c;
     g.beginPath(); g.moveTo(-w, -2);
     g.quadraticCurveTo(-w * 0.9, -hh * 0.55, sway, -hh);
     g.quadraticCurveTo(w * 0.9, -hh * 0.55, w, -2);
     g.quadraticCurveTo(0, 8, -w, -2); g.fill();
+    if (st.tintA > 0 && i < 3) { g.globalAlpha = st.tintA * (i === 0 ? 0.9 : 0.6); g.fillStyle = st.tint; g.fill(); g.globalAlpha = 1; }
   });
+  drawSpiritFace(g, t, st);
   g.restore();
 }
 function drawTree(g, tr) {
@@ -4759,6 +5803,7 @@ function drawNameTag(g, sx, sy, name, mine, holder, mic, champ) {
 }
 function drawFloatCard(g, t) {
   if (!story.text || me.sit >= 0) return;
+  if (spirit.ph === 'awake' && (ember.cur || spFireState(performance.now(), t).think)) return; // Ember is talking up there
   if (dist(me.x, me.y, FIRE.x, FIRE.y) > 340) return;
   const [sx, sy] = w2s(FIRE.x, FIRE.y - 120 + Math.sin(t * 1.5) * 3);
   g.save();
@@ -4869,6 +5914,10 @@ function render(t) {
     for (const tr of TREES) if (tr.x > vx0 && tr.x < vx1 && tr.y > vy0 && tr.y < vy1) items.push({ y: tr.y, d: () => drawTree(ctx, tr) });
     for (const tn of TENTS) items.push({ y: tn.y, d: () => drawTent(ctx, tn) });
     items.push({ y: FIRE.y + 6, d: () => drawFire(ctx, t) });
+    if (spirit.ph === 'hunt') for (let k = 0; k < 3; k++) {
+      const s = ember.spots[k];
+      if (s && !(spirit.got >> k & 1)) items.push({ y: s.y, d: () => drawSpark(ctx, s.x, s.y, k, t) });
+    }
     items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
     items.push({ y: CHURCH.y, d: () => drawChurch(ctx, t) });
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });
@@ -4885,10 +5934,12 @@ function render(t) {
 }
 function lightCamp(t, people) {
   const flick = 1 + Math.sin(t * 9) * 0.03 + Math.sin(t * 23) * 0.02;
+  const fst = spFireState(performance.now(), t);
   darkPass('rgba(10, 14, 38, 0.62)', hole => {
-    hole(FIRE.x, FIRE.y - 10, 360 * flick, 1);
+    hole(FIRE.x, FIRE.y - 10, 360 * flick * (0.55 + 0.45 * Math.min(fst.s, 1.6)), 1);
     for (const L of LIGHTS) hole(L.x, L.y, L.r, 0.85);
     for (const p of people) hole(p.x, p.y - 20, 80, 0.55);
+    spLightHoles(hole);
   }, false, (d, sc, dw, dh) => {
     // the deep woods past the old tree line are darker still
     const x0 = w2s(W0 - 150, 0)[0] * sc, x1 = w2s(W0 + 260, 0)[0] * sc;
@@ -4919,6 +5970,7 @@ function lightCamp(t, people) {
     ctx.fillStyle = `rgba(230,255,170,${a})`; ctx.beginPath(); ctx.arc(sx, sy, 1.8, 0, Math.PI * 2); ctx.fill();
   }
   drawChurchGlow(ctx, t);
+  spLightGlow(ctx, t, performance.now());
   ctx.restore();
 }
 // Name tags, speech, emotes and touch hints drawn over the world.
@@ -4949,6 +6001,7 @@ function drawOverlay(t, people, inside) {
       else drawBubble(ctx, sx, sy - (p.sit ? 48 : 56) * ZOOM, b.text, age > life - 800 ? (life - age) / 800 : 1, b.far);
     }
   }
+  if (!inside) drawSpiritOverlay(t, now);
   drawFloatCard(ctx, t);
   // joystick
   if (touch && touch.joy) {

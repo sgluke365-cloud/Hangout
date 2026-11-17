@@ -6,3 +6,8 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /healthz
+    envVars:
+      # Optional: lets Ember, the campfire spirit, really talk (through Claude).
+      # Leave it empty and Ember uses its built-in storybook.
+      - key: ANTHROPIC_API_KEY
+        sync: false
