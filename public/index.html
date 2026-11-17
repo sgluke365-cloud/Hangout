@@ -426,6 +426,24 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .cp-done p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--cream); }
 .cp-done svg { filter: drop-shadow(0 0 14px rgba(255,207,107,0.75)); animation: talRise 1.4s ease-out; }
 @keyframes talRise { from { opacity: 0; transform: translateY(14px) scale(0.7); } to { opacity: 1; transform: none; } }
+/* ---------- the Otherwhere: the story card on the floating island ---------- */
+#owPanel {
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  width: min(330px, calc(100vw - 24px)); box-sizing: border-box;
+  background: rgba(24, 16, 52, 0.88); border: 1px solid rgba(190,150,255,0.45); border-radius: 18px;
+  padding: 12px; display: grid; gap: 10px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 40px rgba(150,100,255,0.18);
+}
+@media (max-width: 640px) {
+  #owPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+}
+#owPanel .story-head h2 { color: #d8c4ff; }
+.ow-sub { margin: 0; font-size: 13px; line-height: 1.4; color: #c8bde6; }
+.ow-card { background: #efe7fb; box-shadow: 0 2px 0 #b9a6dc, 0 8px 18px rgba(0,0,0,0.35); }
+.ow-card .card-deck, .ow-card .card-by { color: #6b5a96; }
+.ow-card .card-text { color: #2c2245; }
+.ow-next { background: linear-gradient(180deg, #d4b8ff, #a77bff); color: #1c0f38; }
 /* ---------- pipe organ keyboard ---------- */
 #orgPanel {
   left: 50%; transform: translateX(-50%);
@@ -712,6 +730,20 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   </div>
 </div>
 
+<div class="hud" id="owPanel" hidden>
+  <div class="story-head">
+    <h2>The Otherwhere</h2>
+    <button class="btn-ghost small" id="owHide" type="button">Hide card</button>
+  </div>
+  <p class="ow-sub">Stories here are told from the life you didn't live.</p>
+  <div class="card ow-card" id="owCard">
+    <div class="card-deck">Otherwhere card</div>
+    <p class="card-text" id="owText"></p>
+    <div class="card-by" id="owBy"></div>
+  </div>
+  <div class="story-row"><button class="btn-warm ow-next" id="owNext" type="button">Turn another card</button></div>
+</div>
+
 <div class="hud" id="orgPanel" hidden>
   <div class="story-head">
     <h2>Pipe organ</h2>
@@ -833,6 +865,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's). At the fire, tap <b>Wake the fire</b> and three of its sparks drift off around the campsite. Find all three (just walk over them; tap the Sparks counter for hints). Then sing the fire's song back to it: listen, and tap the glowing stones in the same order (or press 1 to 5). Sing all four verses together and Ember wakes up. Talk to it by typing, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you.</p>
+    <p><b>The standing stones:</b> seven old stones stand round the campfire clearing. Walk sunwise (clockwise) round the fire, inside the stones, seven times without stopping or turning back, and see what wakes. Friends can watch, and maybe follow.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -850,6 +883,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <p>Someone tucked a note between the pages:</p>
       <p>"The devil of the deep wood hates warm light. Light every candle on the stand and this church will give you a charm to carry.</p>
       <p>The candles are old and stubborn. Touch one and the ones beside it flip too. Light them together with friends if you like: whoever is in here when the last one catches gets a charm."</p>
+      <p>And in pencil underneath, in a different hand: "The stones round the campfire are older than this church. Walk with the sun, seven times round, and don't stop. The fire remembers the way."</p>
     </div>
     <button class="btn-ghost" data-close type="button">Close the book</button>
   </div>
@@ -1169,8 +1203,10 @@ const LIGHTS = [
 
 function blocked(x, y) {
   if (inChurch(x)) return blockedIn(x, y);
+  if (inOther(x)) return blockedOther(x, y);
   if (x < 30 || x > W - 30 || y < 50 || y > H - 20) return true;
-  if (dist(x, y, FIRE.x, FIRE.y) < 42) return true;
+  if (dist(x, y, FIRE.x, FIRE.y) < 42 && !ritDoorOpen()) return true;   // while the door is open, the fire lets you in
+  if (blockedRitStone(x, y)) return true;
   const onDock = x > DOCK.x0 && x < DOCK.x1 && y > DOCK.y0 + 2 && y < DOCK.y1 + 4;
   if (!onDock && inLake(x, y, 1)) return true;
   for (const t of TENTS) if (x > t.x - 62 && x < t.x + 62 && y > t.y - 34 && y < t.y + 6) return true;
@@ -1874,6 +1910,7 @@ function onPeers(change) {
       if (o.fresh || !joined) o.spkOld = key; // said before we got here
       else if (key !== o.spkOld) spFromPeer(o, k, key);
     }
+    ritPeer(o, pr);
     if (o.fresh) freshPeers.add(peer.peer);
     o.fresh = false;
   }
@@ -1889,6 +1926,8 @@ function onPeers(change) {
   resolveChapel();
   resolveOrgan();
   resolveSpirit(freshPeers);
+  resolveDoor(freshPeers);
+  resolveOw();
   updateStatus();
   manageVoice();
 }
@@ -1899,8 +1938,8 @@ function receiveMsg(o, m) {
   if (!text) return;
   const name = cleanText(o.p.n, 16) || 'Someone';
   const d = dist(me.x, me.y, num(o.p.x, 0), num(o.p.y, 0));
-  // everyone inside the church hears each other; it's one quiet room
-  const heard = !joined ? false : d <= EARSHOT || (inChurch(me.x) && inChurch(num(o.p.x, 0)));
+  // everyone inside the church hears each other; it's one quiet room (so is the Otherwhere)
+  const heard = !joined ? false : d <= EARSHOT || (inChurch(me.x) && inChurch(num(o.p.x, 0))) || (inOther(me.x) && inOther(num(o.p.x, 0)));
   if (m.k === 's') {
     addLog(null, heard ? `${name} screamed!` : `A scream echoes from the forest… was that ${name}?`, true);
     bubbles.set(o.peer, { text: 'AAAAH!', at: performance.now(), far: false });
@@ -1951,7 +1990,8 @@ function pushPresence(force) {
     sm: smRound, smp: me.smp, ch: me.champ,
     pw: me.pew, tal: me.tal, cp: chapel,
     org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev } : null,
-    sp: spirit, spk: me.spk, ew: me.ew
+    sp: spirit, spk: me.spk, ew: me.ew,
+    rl: me.rl || null, pt: door.v ? door : null, ow: owCard.v ? owCard : null
   }).catch(() => { });
 }
 
@@ -2393,6 +2433,7 @@ function voiceTick() {
       vol = d <= VOICE_FULL ? 1 : d >= VOICE_FAR ? 0 : 1 - (d - VOICE_FULL) / (VOICE_FAR - VOICE_FULL);
       if (me.sit >= 0 && typeof o.p.sit === 'number' && o.p.sit >= 0) vol = 1;
       if (inChurch(me.x) && inChurch(o.rx)) vol = 1; // the church carries every voice
+      if (inOther(me.x) && inOther(o.rx)) vol = 1;   // and so does the Otherwhere
     }
     if (link.gain && ac) link.gain.gain.setTargetAtTime(vol, ac.currentTime, 0.12);
     else if (link.el) link.el.volume = vol;
@@ -2411,7 +2452,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.7';
+const VERSION = 'v0.8';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -2433,7 +2474,7 @@ function scareActive() { return scare.at >= 0 && (performance.now() - scare.at) 
 function updateScare(dt) {
   const now = performance.now();
   if (scareActive()) return (now - scare.at) / 1000 < SCARE_FREEZE;
-  if (!scare.on || me.sit >= 0 || me.pew >= 0 || inChurch(me.x) || me.fish || now < scare.until) { scare.forestT = 0; scare.eyes = null; scare.whispered = false; return false; }
+  if (!scare.on || me.sit >= 0 || me.pew >= 0 || inChurch(me.x) || inOther(me.x) || me.fish || now < scare.until) { scare.forestT = 0; scare.eyes = null; scare.whispered = false; return false; }
   if (inForest(me.x, me.y)) scare.forestT += dt;
   else scare.forestT = Math.max(0, scare.forestT - dt * 2);
   const k = scare.forestT / scare.need;
@@ -4527,6 +4568,951 @@ window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: 
 
 window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stale, in: sm.in, d: Math.round(sm.d * 100) / 100, T: Math.round(sm.T * 100) / 100, fire: sm.fire, burnt: sm.burnt, served: sm.served, round: smRound, players: smParticipants().map(p => ({ name: p.name, d: Math.round(p.d * 100) / 100, st: p.st })), results: sm.results && sm.results.list.map(p => ({ name: p.name, score: p.score })), champ: me.champ });
 
+// ===== The Circle of Seven =====
+// Seven old standing stones ring the campfire clearing. Walk sunwise (clockwise) around the
+// fire seven times without stopping, wandering out past the stones, or turning back, and each
+// lap wakes one stone. When the seventh wakes, the fire becomes a door to the Otherwhere: a
+// little island floating under strange stars, where stories are told from the life you didn't
+// live. Anyone at the campsite can step through while the door is open (about a minute); an
+// orange rift on the island always leads home.
+// Each player counts their own laps on their own device and shares the count in presence, so
+// friends see the stones wake and the trail of light behind the walker. The door is shared like
+// the story circle: every player carries the newest door they know, the highest version wins.
+// The Otherwhere is its own room off the west edge of the map, like the inside of the church.
+
+// ---- the lap counter and the door (pure logic, no drawing) ----
+const RitualCore = (() => {
+  'use strict';
+
+
+  const TAU = Math.PI * 2;
+
+  /** The seven stones, in the order they wake. Shared so server and client agree. */
+  const STONES = [
+    { name: 'Memory',   color: '#ff8a3d' },
+    { name: 'Laughter', color: '#ffd23f' },
+    { name: 'Courage',  color: '#7ee36a' },
+    { name: 'Longing',  color: '#3fd8ff' },
+    { name: 'Wonder',   color: '#6f8bff' },
+    { name: 'Truth',    color: '#b06bff' },
+    { name: 'Kinship',  color: '#ff5fd2' },
+  ];
+
+  const DEFAULTS = {
+    laps: 7,
+    innerRadius: 72,        // closer to the fire than this doesn't count
+    outerRadius: 205,       // farther than this and you've left the circle
+    direction: 'sunwise',   // 'sunwise' (clockwise from above, y axis down like canvas), 'widdershins', or 'either'
+    strayGrace: 1.5,        // seconds you may spend outside the ring before the circle breaks
+    idleTimeout: 8,         // seconds standing still mid-ritual before the embers fade
+    backtrack: Math.PI / 2, // walking back more than this many radians breaks the circle
+    maxStep: Math.PI / 3,   // a single jump bigger than this is ignored (teleport, lag spike)
+    minSpeed: 0.15,         // radians per second that count as "still walking"
+  };
+
+  const PORTAL_DEFAULTS = {
+    openingSeconds: 3.5,  // the flare: stones beam in, the fire rises, the door forms
+    openSeconds: 60,      // how long friends have to step through
+    closingSeconds: 2.5,
+    cooldownSeconds: 20,  // stones rest before the ritual can be walked again
+    enterRadius: 34,      // how close to the fire's centre you must step to enter
+  };
+
+  function wrapAngle(a) { // into (-PI, PI]
+    a = (a + Math.PI) % TAU;
+    if (a < 0) a += TAU;
+    return a - Math.PI;
+  }
+
+  /**
+   * Tracks one player's walk around one fire.
+   * update(x, y, dt) returns an array of events:
+   *   { type: 'lap', laps, of }            a stone wakes (laps = 1..7)
+   *   { type: 'broken', reason, laps }     reason: 'strayed' | 'too-close' | 'reversed' | 'faded'
+   *   { type: 'complete' }                 seventh lap done; tracker resets itself
+   * Wandering near the fire without finishing a lap is silent: 'broken' is only
+   * reported once at least one stone was awake, so casual walking isn't noisy.
+   */
+  function createRitualTracker(center, options) {
+    const o = Object.assign({}, DEFAULTS, options);
+    const startDir = o.direction === 'sunwise' ? 1 : o.direction === 'widdershins' ? -1 : 0;
+    let s;
+
+    function reset() {
+      s = { active: false, dir: startDir, total: 0, best: 0, laps: 0, lastAngle: null, stray: 0, idle: 0 };
+    }
+    reset();
+
+    function breakCircle(reason, events) {
+      if (s.laps >= 1) events.push({ type: 'broken', reason, laps: s.laps });
+      reset();
+    }
+
+    function update(x, y, dt) {
+      const events = [];
+      dt = Math.max(0, dt || 0);
+      const dx = x - center.x, dy = y - center.y;
+      const r = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx);
+
+      if (r < o.innerRadius || r > o.outerRadius) {
+        s.lastAngle = null; // any arc walked outside the ring never counts, so cutting through the middle can't help
+        if (s.active) {
+          s.stray += dt;
+          if (s.stray > o.strayGrace) breakCircle(r < o.innerRadius ? 'too-close' : 'strayed', events);
+        }
+        return events;
+      }
+      s.stray = 0;
+
+      if (s.lastAngle === null) { s.lastAngle = angle; return events; }
+      const d = wrapAngle(angle - s.lastAngle);
+      s.lastAngle = angle;
+      if (Math.abs(d) > o.maxStep) return events;
+
+      if (dt === 0 || Math.abs(d) / dt < o.minSpeed) {
+        if (s.active) {
+          s.idle += dt;
+          if (s.idle > o.idleTimeout) breakCircle('faded', events);
+        }
+        return events;
+      }
+      s.idle = 0;
+
+      if (s.dir === 0) s.dir = Math.sign(d); // 'either': the first step decides
+      const forward = d * s.dir;
+      if (!s.active) {
+        if (forward <= 0) return events; // walking the wrong way never starts anything
+        s.active = true;
+      }
+
+      s.total += forward;
+      if (s.total > s.best) s.best = s.total;
+      if (s.best - s.total > o.backtrack) { breakCircle('reversed', events); return events; }
+
+      while (s.total >= (s.laps + 1) * TAU) {
+        s.laps++;
+        events.push({ type: 'lap', laps: s.laps, of: o.laps });
+        if (s.laps >= o.laps) {
+          events.push({ type: 'complete' });
+          reset();
+          break;
+        }
+      }
+      return events;
+    }
+
+    return {
+      options: o,
+      update,
+      reset,
+      get state() {
+        return {
+          active: s.active,
+          laps: s.laps,
+          lapProgress: s.active ? (s.total - s.laps * TAU) / TAU : 0,
+          // 0..1, how close the circle is to breaking (for flicker / warnings)
+          danger: s.active ? Math.min(1, Math.max(s.stray / o.strayGrace, s.idle / o.idleTimeout)) : 0,
+        };
+      },
+    };
+  }
+
+  /**
+   * The shared door. One per room.
+   * phase(now): 'closed' | 'opening' | 'open' | 'closing'
+   */
+  function createPortal(center, options) {
+    const o = Object.assign({}, PORTAL_DEFAULTS, options);
+    const life = o.openingSeconds + o.openSeconds + o.closingSeconds;
+    let openedAt = null, openedBy = null, closedAt = -Infinity;
+
+    function settle(now) {
+      if (openedAt !== null && now - openedAt >= life) {
+        closedAt = openedAt + life;
+        openedAt = null;
+        openedBy = null;
+      }
+    }
+    function phase(now) {
+      settle(now);
+      if (openedAt === null) return 'closed';
+      const t = now - openedAt;
+      if (t < o.openingSeconds) return 'opening';
+      if (t < o.openingSeconds + o.openSeconds) return 'open';
+      return 'closing';
+    }
+    function ready(now) { return phase(now) === 'closed' && now - closedAt >= o.cooldownSeconds; }
+
+    return {
+      options: o,
+      phase,
+      ready,
+      open(now, by) {
+        if (!ready(now)) return false;
+        openedAt = now;
+        openedBy = by == null ? null : by;
+        return true;
+      },
+      openedBy(now) { settle(now); return openedBy; },
+      /** seconds since the ritual completed, or null when closed */
+      elapsed(now) { settle(now); return openedAt === null ? null : now - openedAt; },
+      /** seconds left before the door starts closing (0 when not open) */
+      timeLeft(now) {
+        const e = this.elapsed(now);
+        return e === null ? 0 : Math.max(0, o.openingSeconds + o.openSeconds - e);
+      },
+      cooldownLeft(now) { return phase(now) === 'closed' ? Math.max(0, o.cooldownSeconds - (now - closedAt)) : 0; },
+      canEnter(x, y, now) {
+        return phase(now) === 'open' && Math.hypot(x - center.x, y - center.y) <= o.enterRadius;
+      },
+      snapshot(now) {
+        settle(now);
+        return openedAt === null
+          ? { open: false, cooldownLeft: Math.max(0, o.cooldownSeconds - (now - closedAt)) }
+          : { open: true, openedBy, elapsed: now - openedAt };
+      },
+      restore(snap, now) {
+        if (snap && snap.open) { openedAt = now - snap.elapsed; openedBy = snap.openedBy; }
+        else { openedAt = null; openedBy = null; closedAt = now - (o.cooldownSeconds - ((snap && snap.cooldownLeft) || 0)); }
+      },
+    };
+  }
+  return { STONES, DEFAULTS, PORTAL_DEFAULTS, createRitualTracker, createPortal };
+})();
+
+// ---- layout ----
+const RIT_Y = 0.8;                                    // the clearing is a little squashed, like the seats round the fire
+const RIT_STONE_R = 262;                              // just outside the walking ring
+const RIT_ANGLES = [-90, -26, 14, 55, 112, 160, 208]; // sunwise from due north; spaced to keep clear of the paths and tents
+const hexRgb = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const RIT_STONES = RitualCore.STONES.map((s, i) => {
+  const a = RIT_ANGLES[i] * Math.PI / 180;
+  return { name: s.name, color: s.color, rgb: hexRgb(s.color), i, x: Math.round(FIRE.x + Math.cos(a) * RIT_STONE_R), y: Math.round(FIRE.y + Math.sin(a) * RIT_STONE_R * RIT_Y), light: 0 };
+});
+const RIT_GLYPHS = [
+  [[0, -1, 0, 1], [0, -0.55, 0.6, -1], [0, -0.05, 0.6, -0.5]],
+  [[-0.5, 1, -0.5, -1], [-0.5, -1, 0.5, -0.4], [0.5, -0.4, 0.5, 1]],
+  [[-0.3, -1, -0.3, 1], [-0.3, -0.5, 0.45, 0], [0.45, 0, -0.3, 0.5]],
+  [[0, 1, 0, -1], [0, -0.25, -0.6, -1], [0, -0.25, 0.6, -1]],
+  [[0, -1, 0.55, -0.3], [0.55, -0.3, 0, 0.4], [0, 0.4, -0.55, -0.3], [-0.55, -0.3, 0, -1], [-0.3, 0.1, -0.6, 1], [0.3, 0.1, 0.6, 1]],
+  [[0, 1, 0, -1], [0, -1, -0.6, -0.4], [0, -1, 0.6, -0.4]],
+  [[-0.6, 1, -0.6, -1], [0.6, 1, 0.6, -1], [-0.6, -1, 0.6, 0.2], [0.6, -1, -0.6, 0.2]]
+];
+const RIT_DOOR_H = 100;   // how high the door hangs over the fire
+const RIT_BREAK = {
+  'strayed': 'You wandered out past the stones. They fall asleep again.',
+  'too-close': 'Too close to the flames. The circle breaks.',
+  'reversed': 'You turned against the sun. The stones fall asleep again.',
+  'faded': 'You stood still too long. The stones fall asleep again.'
+};
+// The Otherwhere: its own room off the west edge of the map.
+const OW = { x0: -1700, y0: 60, w: 1200, h: 1040 };
+OW.x1 = OW.x0 + OW.w; OW.y1 = OW.y0 + OW.h; OW.cx = OW.x0 + OW.w / 2;
+const ISLE = { x: OW.cx, y: OW.y0 + 540, rx: 330, ry: 230 };
+const SPIRIT = { x: ISLE.x, y: ISLE.y };                 // the spirit fire, which burns downward
+const RIFT = { x: ISLE.x, y: ISLE.y - 185 };             // the way home (x/y is the spot under it)
+const OW_SPAWN = { x: ISLE.x, y: ISLE.y + 140 };
+const OW_STONES = RIT_STONES.map((s, i) => { const a = RIT_ANGLES[i] * Math.PI / 180; return { x: Math.round(SPIRIT.x + Math.cos(a) * 118), y: Math.round(SPIRIT.y + Math.sin(a) * 118 * RIT_Y), color: s.color, rgb: s.rgb }; });
+const OW_PROMPTS = [
+  'In another life, you said yes to the thing you turned down. How is that life going?',
+  'Describe the you who never left your hometown. What does their Saturday look like?',
+  'Somewhere out there, you became famous for something strange. What is it?',
+  "A day you'd live again, changing one small thing. What happens instead?",
+  'Your other self wrote you a letter. What is the first line?',
+  'In another life, which friend here would you have met first, and how?',
+  'The you who was never afraid of one thing. What did they do instead?',
+  'The job your ten-year-old self was sure you would have. Tell us about a day at work.',
+  'In another life you moved somewhere on a whim. Where, and what is your street like?',
+  'The version of you who kept up the hobby you quit. What are they like now?'
+];
+function inOther(x) { return x < OW.x1 + 200; }
+function roomOf(x) { return inChurch(x) ? 'church' : inOther(x) ? 'other' : 'camp'; }
+function blockedOther(x, y) {
+  const u = (x - ISLE.x) / (ISLE.rx - 18), v = (y - ISLE.y) / (ISLE.ry - 16);
+  if (u * u + v * v > 1) return true;
+  if (dist(x, y, SPIRIT.x, SPIRIT.y) < 44) return true;
+  for (const s of OW_STONES) if (dist(x, y, s.x, s.y + 2) < 10) return true;
+  return false;
+}
+// Tap-to-walk on the island: if the spirit fire or a crystal is in the way, go round by
+// one point on a ring outside them (whichever makes the shortest trip).
+function routeOther(x0, y0, x1, y1) {
+  let best = null, bl = 1e9;
+  for (let k = 0; k < 24; k++) {
+    const a = k / 24 * Math.PI * 2, wx = SPIRIT.x + Math.cos(a) * 172, wy = SPIRIT.y + Math.sin(a) * 172 * RIT_Y;
+    if (blocked(wx, wy) || segBlocked(x0, y0, wx, wy) || segBlocked(wx, wy, x1, y1)) continue;
+    const l = dist(x0, y0, wx, wy) + dist(wx, wy, x1, y1);
+    if (l < bl) { bl = l; best = { x: wx, y: wy }; }
+  }
+  return best ? [best] : [];
+}
+function blockedRitStone(x, y) { for (const s of RIT_STONES) if (dist(x, y, s.x, s.y + 2) < 12) return true; return false; }
+
+// ---- state ----
+const ritNow = () => performance.now() / 1000;
+const ritDoorStars = n => Array.from({ length: n }, () => ({ a: Math.random() * 6.283, r: 0.1 + Math.random() * 0.9, sp: 0.2 + Math.random() * 0.3 }));
+const rit = {
+  tracker: RitualCore.createRitualTracker({ x: FIRE.x, y: FIRE.y }, { innerRadius: 56, outerRadius: 240 }),
+  door: RitualCore.createPortal({ x: FIRE.x, y: FIRE.y }, { openSeconds: 60, enterRadius: 34 }),
+  lastPhase: 'closed', fx: [], fxRoom: 'camp', trailAcc: 0, sparkAcc: 0, shake: 0, pulse: 0, flashAt: -1e9,
+  fadeAt: -1e9, fadeRgb: '226,210,255', enterAfter: 0, glow: [255, 150, 60], visited: false, cardHidden: false,
+  hum: null, humLvl: 0, owBus: null, owInp: null, bellT: 2,
+  doorStars: ritDoorStars(36), riftStars: ritDoorStars(18),
+  sky: Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.2, ph: Math.random() * 6.283, sp: 0.6 + Math.random() * 1.6 }))
+};
+let door = { v: 0, id: '', by: '', bn: '', at: 0 };                    // shared: presence 'pt'
+let owCard = { v: 0, i: Math.floor(Math.random() * OW_PROMPTS.length), by: '' }; // shared: presence 'ow'
+me.rl = 0;                                                               // my laps so far: presence 'rl'
+function ritPhase() { return rit.door.phase(ritNow()); }
+function ritDoorOpen() { return ritPhase() === 'open'; }
+function ritDoorShowing() { return ritPhase() !== 'closed'; }
+// How many stones are awake: everything during the door, otherwise whoever is furthest round the circle.
+function ritLitCount() {
+  if (ritDoorShowing()) return 7;
+  let n = joined && roomOf(me.x) === 'camp' ? rit.tracker.state.laps : 0;
+  for (const o of others.values()) if (o.p && o.p.n && roomOf(o.rx) === 'camp') n = Math.max(n, clamp(num(o.p.rl, 0) | 0, 0, 6));
+  return n;
+}
+function ritFireTint() {
+  if (ritDoorShowing()) return { rgb: [196, 150, 255], k: 0.75 };
+  const lit = ritLitCount();
+  return lit ? { rgb: RIT_STONES[lit - 1].rgb, k: 0.22 + 0.06 * lit } : { rgb: [255, 150, 60], k: 0 };
+}
+function mixRgb(a, b, k) { return [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k)); }
+function mixHex(hex, rgb, k) { const c = mixRgb(hexRgb(hex), rgb, clamp(k, 0, 1)); return `rgb(${c.join(',')})`; }
+
+// ---- my walk ----
+function onRitual(ev) {
+  if (ev.type === 'lap') {
+    const st = RIT_STONES[ev.laps - 1];
+    ritStoneBurst(st);
+    ritSoundLap(ev.laps, 1);
+    rit.pulse = 1; rit.shake = Math.max(rit.shake, 0.12);
+    showToast(`Lap ${ev.laps} of 7 · The Stone of ${st.name} wakes.`, 2600);
+    if (ev.laps === 1) addLog(null, 'A standing stone lights up as you walk past it…', true);
+  } else if (ev.type === 'broken') {
+    showToast(RIT_BREAK[ev.reason] || 'The circle breaks.', 3800);
+    ritSoundBreak();
+  } else if (ev.type === 'complete') ritComplete();
+}
+function ritComplete() {
+  const now = ritNow();
+  if (!rit.door.ready(now)) return;
+  door = { v: door.v + 1, id: Math.random().toString(36).slice(2, 10), by: myPeer || 'me', bn: me.name, at: Date.now() };
+  rit.door.open(now, door.by);
+  ritOpenFx(1);
+  addLog(null, 'You walked the circle seven times. The fire has become a door! ✨', true);
+  showToast('The fire has become a door to the Otherwhere. Step into it. Friends can come too!', 6000);
+  me.rl = 0; sentDirty = true; pushPresence(true);
+}
+function ritOpenFx(vol) {
+  rit.flashAt = performance.now(); rit.shake = REDUCED_MOTION ? 0 : vol;
+  ritBurst(FIRE.x, FIRE.y, 40, '#efe3ff', 90, 260, 1.6, 8);
+  ritSoundComplete(vol);
+}
+// Every player carries the newest door they know; the highest version wins (ties by peer label).
+function resolveDoor(freshPeers) {
+  let best = null, bestPeer = '', bestFresh = false;
+  for (const o of others.values()) {
+    const s = o.p && o.p.pt;
+    if (!s || typeof s.v !== 'number' || !(s.v > 0) || typeof s.id !== 'string') continue;
+    if (!best || s.v > best.v || (s.v === best.v && String(o.peer) > bestPeer)) { best = s; bestPeer = String(o.peer); bestFresh = freshPeers.has(o.peer); }
+  }
+  if (!best) return;
+  if (door.v > best.v || (door.v === best.v && String(myPeer || '') >= bestPeer)) return;
+  const next = { v: best.v, id: String(best.id).replace(/[^a-z0-9]/g, '').slice(0, 16), by: typeof best.by === 'string' ? best.by.slice(0, 64) : '', bn: cleanText(best.bn, 16), at: num(best.at, 0) };
+  if (!next.id) return;
+  const isNew = next.id !== door.id;
+  door = next; sentDirty = true;
+  if (!isNew) return;
+  const o = rit.door.options, life = o.openingSeconds + o.openSeconds + o.closingSeconds;
+  // A door that was already open before I arrived: how long ago, going by the opener's clock.
+  const late = bestFresh || !joined;
+  const elapsed = late ? (Date.now() - next.at) / 1000 : 0;
+  if (elapsed >= life || elapsed < -30) return;
+  rit.door.restore({ open: true, openedBy: next.by, elapsed: clamp(elapsed, 0, life) }, ritNow());
+  rit.tracker.reset(); me.rl = 0;
+  if (late) return;
+  const who = next.bn || 'Someone', here = roomOf(me.x);
+  addLog(null, `${who} walked the circle seven times. The fire has become a door! ✨`, true);
+  if (here === 'camp') {
+    const d = dist(me.x, me.y, FIRE.x, FIRE.y);
+    ritOpenFx(clamp(1.1 - d / 900, 0.25, 1));
+    if (d > 260) showToast(`${who} opened a door in the campfire. Hurry over, it only stays open for a minute!`, 6000);
+  } else smBlip(90, 2, 'sine', 0.12, 40);
+}
+function ritOnPhase(ph, prev) {
+  const here = joined ? roomOf(me.x) : 'camp';
+  if (ph === 'closing' && here === 'camp') smBurst(2.2, 3000, 200, 0.12);
+  if (ph === 'closed' && prev === 'closing') {
+    if (here === 'camp') { ritBurst(FIRE.x, FIRE.y, RIT_DOOR_H, '#e9dcff', 40, 120, 1.1, 6); smBlip(110, 1.4, 'sine', 0.16, 45); }
+    if (here === 'other') addLog(null, 'Far away, the door in the campfire closes. The rift will still take you home.', true);
+  }
+}
+
+// ---- friends ----
+// Called for each friend from onPeers: their laps light the stones; note when they step through.
+function ritPeer(o, pr) {
+  const rl = clamp(num(pr.rl, 0) | 0, 0, 7);
+  const here = joined ? roomOf(me.x) : '', there = roomOf(num(pr.x, 0));
+  if (!o.fresh && joined && rl > (o.rl || 0) && here === 'camp' && there === 'camp') {
+    const st = RIT_STONES[rl - 1];
+    if (st) { ritStoneBurst(st); ritSoundLap(rl, clamp(1 - dist(me.x, me.y, st.x, st.y) / 700, 0.15, 0.7)); }
+    if (rl === 3 && !o.ritLogged) { o.ritLogged = true; addLog(null, `${cleanText(pr.n, 16) || 'Someone'} is walking circles round the fire… and the standing stones are waking up.`, true); }
+  }
+  if (rl === 0) o.ritLogged = false;
+  o.rl = rl;
+  const wasThere = o.ritRoom;
+  if (!o.fresh && joined && wasThere && wasThere !== there) {
+    const name = cleanText(pr.n, 16) || 'Someone';
+    if (there === 'other' && here === 'camp') addLog(null, `${name} stepped into the fire and vanished! ✨`, true);
+    else if (there === 'other' && here === 'other') addLog(null, `${name} came tumbling out of the sky.`, true);
+    else if (wasThere === 'other' && here === 'other') addLog(null, `${name} went home through the rift.`, true);
+    else if (wasThere === 'other' && here === 'camp') addLog(null, `${name} stepped back out of the campfire.`, true);
+  }
+  o.ritRoom = there;
+}
+
+// ---- going through ----
+function enterOther() {
+  if (!joined || roomOf(me.x) !== 'camp' || smHoldsStick()) return;
+  if (sm.in && !sm.served && sm.phase === 'join') smLeave();
+  stopFishing();
+  me.sit = -1;
+  rit.tracker.reset(); me.rl = 0;
+  Object.assign(me, { x: OW_SPAWN.x + (Math.random() - 0.5) * 120, y: OW_SPAWN.y + (Math.random() - 0.5) * 30, face: 1, target: null, arrive: null, via: [], moving: false });
+  snapCam();
+  rit.fx.length = 0;
+  rit.fadeAt = performance.now(); rit.fadeRgb = '232,218,255'; rit.enterAfter = performance.now() + 1500;
+  scare.forestT = 0; scare.eyes = null; scare.whispered = false;
+  ritSoundWhoosh(); otherAudio(true);
+  rit.cardHidden = false;
+  if (!rit.visited) {
+    rit.visited = true;
+    addLog(null, 'You step into the fire and fall upward, into the Otherwhere. The orange rift leads home.', true);
+  }
+  sentDirty = true; pushPresence(true);
+  renderStory(false); renderOwCard(false);
+}
+function exitOther() {
+  if (roomOf(me.x) !== 'other') return;
+  Object.assign(me, { x: FIRE.x + (Math.random() - 0.5) * 30, y: FIRE.y + 70, face: 0, target: null, arrive: null, via: [], moving: false });
+  snapCam();
+  rit.fx.length = 0;
+  rit.fadeAt = performance.now(); rit.fadeRgb = '255,206,150'; rit.enterAfter = performance.now() + 1500;
+  ritSoundWhoosh(); otherAudio(false);
+  sentDirty = true; pushPresence(true);
+  renderOwCard(false);
+}
+function nearRift() { return roomOf(me.x) === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 110; }
+
+// ---- the story card in the Otherwhere (shared: highest version wins) ----
+function resolveOw() {
+  let best = null, bestPeer = '';
+  for (const o of others.values()) {
+    const s = o.p && o.p.ow;
+    if (!s || typeof s.v !== 'number' || !(s.v > 0)) continue;
+    if (!best || s.v > best.v || (s.v === best.v && String(o.peer) > bestPeer)) { best = s; bestPeer = String(o.peer); }
+  }
+  if (!best) return;
+  if (owCard.v > best.v || (owCard.v === best.v && String(myPeer || '') >= bestPeer)) return;
+  const next = { v: best.v, i: clamp(num(best.i, 0) | 0, 0, OW_PROMPTS.length - 1), by: cleanText(best.by, 16) };
+  const changed = next.i !== owCard.i;
+  owCard = next; sentDirty = true;
+  if (changed && joined && roomOf(me.x) === 'other') {
+    renderOwCard(true);
+    if (next.by) addLog(null, `${next.by} turned a card: “${OW_PROMPTS[next.i]}”`, true);
+  }
+}
+function nextOwCard() {
+  let i = owCard.i;
+  while (i === owCard.i) i = Math.floor(Math.random() * OW_PROMPTS.length);
+  owCard = { v: owCard.v + 1, i, by: me.name };
+  sentDirty = true; pushPresence(true);
+  rit.cardHidden = false;
+  renderOwCard(true);
+}
+function renderOwCard(flip) {
+  const box = $('owPanel');
+  box.hidden = !(joined && roomOf(me.x) === 'other') || rit.cardHidden;
+  if (box.hidden) return;
+  $('owText').textContent = OW_PROMPTS[owCard.i];
+  $('owBy').textContent = owCard.by ? `Turned by ${owCard.by}` : 'Take turns: tell it as if it really happened.';
+  if (flip) { const c = $('owCard'); c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); }
+}
+$('owNext').addEventListener('click', nextOwCard);
+$('owHide').addEventListener('click', () => { rit.cardHidden = true; renderOwCard(false); updateActionBtn(); });
+
+// ---- every frame ----
+function ritStep(dt) {
+  const now = ritNow(), here = roomOf(me.x), ph = rit.door.phase(now);
+  if (ph !== rit.lastPhase) { const prev = rit.lastPhase; rit.lastPhase = ph; ritOnPhase(ph, prev); }
+  if (here === 'camp') {
+    if (rit.door.ready(now)) { for (const ev of rit.tracker.update(me.x, FIRE.y + (me.y - FIRE.y) / RIT_Y, dt)) onRitual(ev); }
+    else if (rit.tracker.state.active) rit.tracker.reset();
+    const st = rit.tracker.state;
+    if (st.laps !== me.rl) { me.rl = st.laps; sentDirty = true; }
+    if (st.active && st.laps >= 1 && me.moving) ritTrail(me.x, me.y, st.laps, st.danger, dt, rit);
+    if (ph === 'open' && performance.now() > rit.enterAfter && rit.door.canEnter(me.x, me.y, now)) enterOther();
+  } else {
+    // the circle only counts at the campsite
+    if (rit.tracker.state.active) rit.tracker.reset();
+    if (me.rl) { me.rl = 0; sentDirty = true; }
+    if (here === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 30 && performance.now() > rit.enterAfter) exitOther();
+  }
+  const there = roomOf(me.x);
+  if (there !== rit.fxRoom) { rit.fx.length = 0; rit.fxRoom = there; }
+  if (there === 'camp') {
+    // friends partway round leave a trail too
+    for (const o of others.values()) {
+      const rl = o.rl || 0;
+      if (rl >= 1 && o.p && o.p.mv && roomOf(o.rx) === 'camp') ritTrail(o.rx, o.ry, rl, 0, dt, o);
+    }
+    const lit = ritLitCount();
+    rit.sparkAcc += dt * (ph !== 'closed' ? 10 : lit * 1.2);
+    while (rit.sparkAcc > 1) {
+      rit.sparkAcc -= 1;
+      const col = ph !== 'closed' ? rnd(['#c9a6ff', '#9fd0ff', '#ff9fe8', '#ffffff']) : RIT_STONES[Math.max(0, lit - 1)].color;
+      ritEmit({ x: FIRE.x + (Math.random() - 0.5) * 22, y: FIRE.y, h: 24, vx: (Math.random() - 0.5) * 22, vh: 60 + Math.random() * 80, life: 1.1 + Math.random(), size: 3, color: col, wob: 3, ph: Math.random() * 6 });
+    }
+    if (ph !== 'closed') {
+      const str = ritDoorStrength();
+      if (str > 0.2 && Math.random() < dt * 26) {
+        const a = Math.random() * 6.283, i = Math.floor(Math.random() * 7);
+        ritEmit({ x: FIRE.x + Math.cos(a) * 44 * str, y: FIRE.y, h: RIT_DOOR_H - Math.sin(a) * 66 * str, vx: -Math.sin(a) * 40, vh: -Math.cos(a) * 40, life: 0.6 + Math.random() * 0.6, size: 3.5, color: RIT_STONES[i].color, drag: 1 });
+      }
+    }
+  } else if (there === 'other') otherTick(dt);
+  for (const list of [rit.doorStars, rit.riftStars]) for (const s of list) { s.a += dt * (1.2 / (s.r + 0.25)); s.r -= dt * s.sp; if (s.r < 0.04) { s.r = 1; s.a = Math.random() * 6.283; } }
+  // the stones ease towards awake or asleep, and flicker when my walk is about to break
+  const lit = there === 'camp' ? ritLitCount() : 0, danger = rit.tracker.state.danger;
+  for (const s of RIT_STONES) {
+    const want = s.i < lit ? 1 : 0;
+    s.light += (want - s.light) * Math.min(1, dt * (want > s.light ? 4.5 : 2.2));
+    s.flicker = want && danger > 0.15 ? 1 - danger * 0.75 * Math.random() : 1;
+  }
+  const tint = ritFireTint();
+  rit.glow = rit.glow.map((v, i) => v + ((tint.k ? mixRgb([255, 150, 60], tint.rgb, Math.min(1, tint.k + 0.2))[i] : [255, 150, 60][i]) - v) * Math.min(1, dt * 2));
+  rit.shake *= Math.exp(-3.2 * dt); if (rit.shake < 0.003) rit.shake = 0;
+  rit.pulse *= Math.exp(-2.4 * dt);
+  ritFxTick(dt);
+  // a low hum that builds with the stones, and swells while the door is open
+  let hum = 0;
+  if (there === 'camp') {
+    const k = clamp(1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 700, 0, 1);
+    hum = (ph === 'opening' ? 0.08 : ph === 'open' ? 0.045 : ph === 'closing' ? 0.02 : lit * 0.007) * k;
+  }
+  ritHum(hum);
+}
+function ritTrail(x, y, laps, danger, dt, holder) {
+  holder.ritAcc = (holder.ritAcc || 0) + dt;
+  const col = RIT_STONES[Math.min(laps, 6)].color;
+  while (holder.ritAcc > 0.035) {
+    holder.ritAcc -= 0.035;
+    ritEmit({ x: x + (Math.random() - 0.5) * 8, y: y + (Math.random() - 0.5) * 6, h: 0, life: 1.9, size: 10, color: col, ground: true, alpha: 0.5 * (1 - danger * 0.7) });
+    if (Math.random() < 0.22) ritEmit({ x, y, h: 8, vh: 25 + Math.random() * 25, life: 1.4, size: 3.4, color: col, fadeIn: true, wob: 4, ph: Math.random() * 6 });
+  }
+}
+function otherTick(dt) {
+  // the spirit fire burns downward from logs floating in the air
+  rit.trailAcc += dt * 40;
+  while (rit.trailAcc > 1) {
+    rit.trailAcc -= 1;
+    const a = Math.random() * 6.283, r = Math.random() * 12, vh = -(50 + Math.random() * 35);
+    ritEmit({ x: SPIRIT.x + Math.cos(a) * r, y: SPIRIT.y + Math.sin(a) * r * 0.6, h: 62, vx: (Math.random() - 0.5) * 12, vh, life: (62 / -vh) * (0.85 + Math.random() * 0.2), size: 9 + Math.random() * 5, color: Math.random() < 0.65 ? '#6fb8ff' : '#a98bff', alpha: 0.75, wob: 5, ph: Math.random() * 6 });
+  }
+  rit.sparkAcc += dt * 6;
+  while (rit.sparkAcc > 1) {
+    rit.sparkAcc -= 1;
+    const a = Math.random() * 6.283, d = Math.sqrt(Math.random());
+    ritEmit({ x: ISLE.x + Math.cos(a) * (ISLE.rx - 30) * d, y: ISLE.y + Math.sin(a) * (ISLE.ry - 24) * d, h: 2, vh: 14 + Math.random() * 16, life: 3 + Math.random() * 2, size: 2.8, color: rnd(['#c9a6ff', '#9ff6ff', '#ff9fe8']), fadeIn: true, wob: 1.5, ph: Math.random() * 6 });
+  }
+  if (Math.random() < dt * 14) {
+    const a = Math.random() * 6.283;
+    ritEmit({ x: RIFT.x + Math.cos(a) * 26, y: RIFT.y, h: 46 - Math.sin(a) * 40, vx: -Math.sin(a) * 30, vh: -Math.cos(a) * 30, life: 0.6 + Math.random() * 0.4, size: 3, color: rnd(['#ffd23f', '#ff8a3d', '#ffe7b0']), drag: 1 });
+  }
+  rit.bellT -= dt;
+  if (rit.bellT <= 0) { rit.bellT = 2 + Math.random() * 3; bellTone(rnd([587.33, 659.25, 739.99, 880, 987.77, 1174.66]), 0.02, 3, rit.owInp || envOut()); }
+}
+
+// ---- particles (drawn as soft glows in the lighting pass) ----
+function ritEmit(p) {
+  if (rit.fx.length > 700) return;
+  p.vx = p.vx || 0; p.vy = p.vy || 0; p.vh = p.vh || 0; p.h = p.h || 0; p.max = p.life; p.alpha = p.alpha == null ? 1 : p.alpha;
+  rit.fx.push(p);
+}
+function ritBurst(x, y, h, color, n, speed, life, size) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.283, v = (0.35 + Math.random() * 0.65) * speed;
+    ritEmit({ x, y, h, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5, vh: (Math.random() * 1.4 - 0.4) * v, life: (0.6 + Math.random() * 0.4) * life, size: (0.6 + Math.random() * 0.6) * size, color, drag: 2.2, shrink: true });
+  }
+}
+function ritStoneBurst(st) {
+  ritBurst(st.x, st.y, 30, st.color, 40, 140, 1.2, 6);
+  for (let i = 0; i < 20; i++) { const a = i / 20 * 6.283; ritEmit({ x: st.x, y: st.y, h: 0, vx: Math.cos(a) * 90, vy: Math.sin(a) * 70, life: 0.9, size: 7, color: st.color, drag: 2.5, ground: true }); }
+}
+function ritFxTick(dt) {
+  const t = performance.now() / 1000;
+  for (let i = rit.fx.length - 1; i >= 0; i--) {
+    const p = rit.fx[i];
+    p.life -= dt;
+    if (p.life <= 0) { rit.fx[i] = rit.fx[rit.fx.length - 1]; rit.fx.pop(); continue; }
+    if (p.drag) { const k = Math.exp(-p.drag * dt); p.vx *= k; p.vy *= k; p.vh *= k; }
+    p.x += p.vx * dt + (p.wob ? Math.sin(t * p.wob + p.ph) * 12 * dt : 0); p.y += p.vy * dt; p.h += p.vh * dt;
+  }
+}
+const ritSprites = new Map();
+function ritGlow(color) {
+  let c = ritSprites.get(color);
+  if (c) return c;
+  const [r, g, b] = hexRgb(color);
+  c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(0.28, `rgba(${r},${g},${b},0.5)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+  ritSprites.set(color, c);
+  return c;
+}
+function ritBlob(g, color, sx, sy, r, a) { if (a <= 0.003 || r <= 0.3) return; g.globalAlpha = Math.min(1, a); g.drawImage(ritGlow(color), sx - r, sy - r, r * 2, r * 2); }
+function ritDrawFx(g) {
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const p of rit.fx) {
+    const f = p.life / p.max, [sx, sy] = w2s(p.x, p.y - p.h);
+    if (sx < -40 || sy < -40 || sx > VW + 40 || sy > VH + 40) continue;
+    let a = p.alpha * Math.pow(f, 0.7);
+    if (p.fadeIn) a *= Math.min(1, (1 - f) * 5);
+    ritBlob(g, p.color, sx, sy, p.size * ZOOM * (p.shrink ? 0.3 + 0.7 * f : 1), a);
+  }
+  g.restore();
+}
+
+// ---- drawing: the campsite ----
+function drawRitStone(g, st) {
+  g.save(); g.translate(st.x, st.y);
+  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(4, 1, 17, 5, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath();
+  [[-12, 0], [-14, -24], [-10, -43], [-2, -49], [7, -45], [13, -26], [11, 0]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+  g.closePath();
+  const gr = g.createLinearGradient(-14, 0, 14, 0);
+  gr.addColorStop(0, '#6a675f'); gr.addColorStop(0.5, '#8f8b81'); gr.addColorStop(1, '#5a5751');
+  g.fillStyle = gr; g.fill();
+  if (st.light > 0.01) { g.globalAlpha = 0.28 * st.light; g.fillStyle = st.color; g.fill(); g.globalAlpha = 1; }
+  g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 1; g.stroke();
+  g.fillStyle = 'rgba(70,110,64,0.7)'; g.beginPath(); g.ellipse(-6, -2, 8, 3.5, 0, 0, Math.PI * 2); g.ellipse(6, -1, 6, 3, 0, 0, Math.PI * 2); g.fill();
+  // the carved rune (it glows in the lighting pass once the stone wakes)
+  g.strokeStyle = 'rgba(40,36,32,0.7)'; g.lineWidth = 2; g.lineCap = 'round';
+  ritRunePath(g, st.i, 0, -26, 8); g.stroke();
+  g.restore();
+}
+function ritRunePath(g, i, cx, cy, k) {
+  g.beginPath();
+  for (const [x1, y1, x2, y2] of RIT_GLYPHS[i]) { g.moveTo(cx + x1 * k, cy + y1 * k); g.lineTo(cx + x2 * k, cy + y2 * k); }
+}
+function ritDoorStrength() {
+  const e = rit.door.elapsed(ritNow());
+  if (e === null) return 0;
+  const o = rit.door.options;
+  if (e < o.openingSeconds) { const q = clamp((e - 1.7) / (o.openingSeconds - 1.7), 0, 1); if (q <= 0) return 0; const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(q - 1, 3) + c1 * Math.pow(q - 1, 2); }
+  if (e < o.openingSeconds + o.openSeconds) return 1 + 0.03 * Math.sin(performance.now() / 330);
+  const q = clamp((e - o.openingSeconds - o.openSeconds) / o.closingSeconds, 0, 1);
+  return (1 + 0.2 * Math.sin(q * Math.PI)) * Math.pow(1 - q, 2);
+}
+const DOOR_PAL = { glow: '#9b6bff', core: '#ffffff', mid: '#a77bff', edge: '#14062e', rim: '#f1e6ff', rings: RIT_STONES.map(s => s.color) };
+const RIFT_PAL = { glow: '#ff8a3d', core: '#fff4e0', mid: '#ffae5c', edge: '#3a1606', rim: '#ffe2c0', rings: ['#ffd23f', '#ff8a3d', '#ff5f3d', '#ffe7b0'] };
+function ritDrawDoor(g, sx, sy, rx, ry, str, pal, stars, t) {
+  if (str <= 0.01) return;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  ritBlob(g, pal.glow, sx, sy, Math.max(rx, ry) * 2.6, 0.6 * Math.min(1, str));
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  g.save(); g.translate(sx, sy); g.scale(rx, ry);
+  const gr = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+  gr.addColorStop(0, pal.core); gr.addColorStop(0.32, pal.mid); gr.addColorStop(0.8, pal.edge); gr.addColorStop(1, pal.edge);
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 1, 0, Math.PI * 2); g.fill();
+  g.restore();
+  g.globalCompositeOperation = 'lighter';
+  g.fillStyle = '#ffffff';
+  for (const s of stars) { g.globalAlpha = Math.min(1, s.r * 1.4) * Math.min(1, str); g.fillRect(sx + Math.cos(s.a) * s.r * rx * 0.92 - 0.9, sy + Math.sin(s.a) * s.r * ry * 0.92 - 0.9, 1.8, 1.8); }
+  g.lineCap = 'round';
+  pal.rings.forEach((col, i) => {
+    const k = 1 - i * 0.05, dir = i % 2 ? -1 : 1, a0 = t * (1.1 + i * 0.27) * dir + i * 0.9;
+    g.strokeStyle = col; g.globalAlpha = 0.85 * Math.min(1, str); g.lineWidth = Math.max(1, (2.8 - i * 0.18) * ZOOM);
+    g.beginPath(); g.ellipse(sx, sy, rx * k, ry * k, 0, a0, a0 + 1.9 + 0.4 * Math.sin(t + i)); g.stroke();
+  });
+  g.globalAlpha = 0.9 * Math.min(1, str); g.strokeStyle = pal.rim; g.lineWidth = Math.max(1, 1.8 * ZOOM);
+  g.beginPath(); g.ellipse(sx, sy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+  g.restore();
+}
+// Holes in the night: awake stones and the door give off light.
+function ritHoles(hole) {
+  for (const s of RIT_STONES) if (s.light > 0.02) hole(s.x, s.y - 22, 90 * s.light, 0.6 * s.light * s.flicker);
+  const str = ritDoorStrength();
+  if (str > 0.02) hole(FIRE.x, FIRE.y - RIT_DOOR_H, 260 * Math.min(1.2, str), 0.9);
+  const e = rit.door.elapsed(ritNow());
+  if (e !== null && e < 2.8) hole(FIRE.x, FIRE.y - 40, 700 * Math.sin(Math.PI * clamp(e / 2.8, 0, 1)), 0.8);
+}
+function ritLightCamp(t) {
+  const g = ctx;
+  g.save(); g.globalCompositeOperation = 'lighter';
+  // awake stones: glowing runes and a pool of coloured light at their feet
+  for (const s of RIT_STONES) {
+    const L = s.light * s.flicker;
+    if (L < 0.02) continue;
+    const [bx, by] = w2s(s.x, s.y), [rx, ry] = w2s(s.x, s.y - 26);
+    ritBlob(g, s.color, bx, by - 6 * ZOOM, 56 * ZOOM, 0.45 * L);
+    ritBlob(g, s.color, rx, ry, 20 * ZOOM, 0.4 * L);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    ritRunePath(g, s.i, rx, ry, 8 * ZOOM);
+    g.globalAlpha = 1;
+    g.strokeStyle = `rgba(${s.rgb.join(',')},${0.35 * L})`; g.lineWidth = Math.max(2, 6 * ZOOM); g.stroke();
+    g.strokeStyle = `rgba(${s.rgb.join(',')},${L})`; g.lineWidth = Math.max(1, 2.2 * ZOOM); g.stroke();
+    // a faint thread of light to the fire
+    const [fx, fy] = w2s(FIRE.x, FIRE.y - 30);
+    g.strokeStyle = `rgba(${s.rgb.join(',')},${0.12 * L})`; g.lineWidth = Math.max(1, 1.5 * ZOOM);
+    g.beginPath(); g.moveTo(rx, ry); g.lineTo(fx, fy); g.stroke();
+  }
+  const e = rit.door.elapsed(ritNow());
+  if (e !== null && e < 3.6) {
+    // the seventh stone wakes: every stone beams into the fire, a pillar of light, a ring across the ground
+    const ba = e < 0.3 ? e / 0.3 : clamp(1 - (e - 2.4) / 0.9, 0, 1);
+    const [fx, fy] = w2s(FIRE.x, FIRE.y - 50);
+    for (const s of RIT_STONES) {
+      const [rx, ry] = w2s(s.x, s.y - 26);
+      g.globalAlpha = 1;
+      g.strokeStyle = `rgba(${s.rgb.join(',')},${0.35 * ba})`; g.lineWidth = 9 * ZOOM; g.beginPath(); g.moveTo(rx, ry); g.lineTo(fx, fy); g.stroke();
+      g.strokeStyle = `rgba(255,255,255,${0.8 * ba})`; g.lineWidth = Math.max(1, 1.8 * ZOOM); g.stroke();
+    }
+    const pe = clamp((e - 0.15) / 2.5, 0, 1), env = Math.sin(Math.PI * pe);
+    if (env > 0.01) {
+      const [bx, by] = w2s(FIRE.x, FIRE.y), w = 30 * ZOOM * env * (1 + 0.12 * Math.sin(t * 40));
+      const pg = g.createLinearGradient(bx - w, 0, bx + w, 0);
+      pg.addColorStop(0, 'rgba(160,110,255,0)'); pg.addColorStop(0.3, `rgba(170,120,255,${0.5 * env})`); pg.addColorStop(0.5, `rgba(255,255,255,${0.95 * env})`); pg.addColorStop(0.7, `rgba(170,120,255,${0.5 * env})`); pg.addColorStop(1, 'rgba(160,110,255,0)');
+      g.globalAlpha = 1; g.fillStyle = pg; g.fillRect(bx - w, -50, w * 2, by + 50);
+      ritBlob(g, '#e9dcff', bx, by, 100 * ZOOM * env, 0.8);
+    }
+    const sw = clamp((e - 0.1) / 1.5, 0, 1);
+    if (sw > 0 && sw < 1) {
+      const [bx, by] = w2s(FIRE.x, FIRE.y), r = (1 - Math.pow(1 - sw, 3)) * 460 * ZOOM;
+      g.globalAlpha = 1; g.strokeStyle = `rgba(231,214,255,${0.8 * (1 - sw)})`; g.lineWidth = Math.max(1, 6 * ZOOM * (1 - sw));
+      g.beginPath(); g.ellipse(bx, by, r, r * RIT_Y, 0, 0, Math.PI * 2); g.stroke();
+    }
+  }
+  g.restore();
+  ritDrawFx(g);
+  const str = ritDoorStrength();
+  if (str > 0.01) {
+    const [bx, by] = w2s(FIRE.x, FIRE.y), [dx, dy] = w2s(FIRE.x, FIRE.y - RIT_DOOR_H);
+    g.save(); g.globalCompositeOperation = 'lighter'; ritBlob(g, '#9b6bff', bx, by, 130 * ZOOM * str, 0.35); g.restore();
+    ritDrawDoor(g, dx, dy, 44 * ZOOM * str, 66 * ZOOM * str, str, DOOR_PAL, rit.doorStars, t);
+  }
+  const fl = (performance.now() - rit.flashAt) / 500;
+  if (fl < 1) { g.save(); g.fillStyle = `rgba(245,235,255,${(REDUCED_MOTION ? 0.25 : 0.55) * (1 - fl)})`; g.fillRect(0, 0, VW, VH); g.restore(); }
+}
+
+// ---- drawing: the Otherwhere ----
+const otherBg = document.createElement('canvas');
+otherBg.width = OW.w; otherBg.height = OW.h;
+(function paintOther() {
+  const g = otherBg.getContext('2d'), r = mulberry(171);
+  const X = ISLE.x - OW.x0, Y = ISLE.y - OW.y0, RX = ISLE.rx, RY = ISLE.ry;
+  // drifting clouds of colour in the void (transparent elsewhere, so the stars behind show through)
+  for (const [x, y, rr, c] of [[0.2, 0.25, 420, '91,43,191'], [0.85, 0.7, 380, '31,143,168'], [0.6, 0.1, 300, '176,48,122'], [0.1, 0.85, 300, '60,60,190']]) {
+    const gr = g.createRadialGradient(x * OW.w, y * OW.h, 0, x * OW.w, y * OW.h, rr);
+    gr.addColorStop(0, `rgba(${c},0.22)`); gr.addColorStop(1, `rgba(${c},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, OW.w, OW.h);
+  }
+  // the island's rocky underside
+  g.beginPath(); g.moveTo(X - RX, Y);
+  for (let i = 1; i < 18; i++) { const k = i / 18; g.lineTo(X - RX + 2 * RX * k, Y + RY * 0.4 + Math.pow(Math.sin(k * Math.PI), 1.3) * 190 * (0.7 + r() * 0.45)); }
+  g.lineTo(X + RX, Y); g.closePath();
+  let gr = g.createLinearGradient(0, Y, 0, Y + 280);
+  gr.addColorStop(0, '#3a2560'); gr.addColorStop(1, '#0f0820');
+  g.fillStyle = gr; g.fill();
+  g.strokeStyle = 'rgba(160,120,255,0.14)'; g.lineWidth = 2;
+  for (let k = 1; k < 6; k++) { g.beginPath(); g.ellipse(X, Y + k * 28, RX * (1 - k * 0.12), RY * (1 - k * 0.08), 0, 0.15, Math.PI - 0.15); g.stroke(); }
+  for (let i = 0; i < 12; i++) {
+    const k = 0.15 + r() * 0.7, x = X - RX + 2 * RX * k, top = Y + RY * 0.55 + Math.sin(k * Math.PI) * 140 * r(), len = 18 + r() * 34;
+    g.fillStyle = 'rgba(140,230,255,0.55)'; g.beginPath(); g.moveTo(x - 5, top); g.lineTo(x + 5, top); g.lineTo(x, top + len); g.closePath(); g.fill();
+  }
+  // the top: soft blue-violet grass
+  gr = g.createRadialGradient(X, Y, 0, X, Y, RX);
+  gr.addColorStop(0, '#477a86'); gr.addColorStop(0.65, '#33557a'); gr.addColorStop(1, '#2b3566');
+  g.save(); g.translate(X, Y); g.scale(1, RY / RX); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, RX, 0, Math.PI * 2); g.fill(); g.restore();
+  g.strokeStyle = 'rgba(160,230,255,0.4)'; g.lineWidth = 3; g.beginPath(); g.ellipse(X, Y, RX, RY, 0, 0, Math.PI * 2); g.stroke();
+  for (let i = 0; i < 420; i++) {
+    const a = r() * 6.283, d = Math.sqrt(r()), x = X + Math.cos(a) * (RX - 10) * d, y = Y + Math.sin(a) * (RY - 8) * d;
+    g.strokeStyle = `rgba(${150 + r() * 60 | 0},${200 + r() * 50 | 0},235,${0.18 + r() * 0.2})`; g.lineWidth = 1.3;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y - 6); g.moveTo(x + 2, y); g.lineTo(x + 3, y - 5); g.stroke();
+  }
+  // a worn ring round the spirit fire, like the one at home
+  g.strokeStyle = 'rgba(30,24,60,0.35)'; g.lineWidth = 22;
+  g.beginPath(); g.ellipse(SPIRIT.x - OW.x0, SPIRIT.y - OW.y0, 84, 67, 0, 0, Math.PI * 2); g.stroke();
+  for (let i = 0; i < 90; i++) {
+    const a = r() * 6.283, d = 60 + Math.sqrt(r()) * (RX - 85), x = X + Math.cos(a) * d, y = Y + Math.sin(a) * d * RY / RX;
+    g.fillStyle = r() < 0.5 ? 'rgba(170,250,255,0.85)' : 'rgba(255,170,235,0.85)';
+    g.beginPath(); g.arc(x, y, 2.2, 0, Math.PI * 2); g.fill();
+  }
+})();
+function drawOtherSky(t) {
+  // stars behind everything (they drift a little as you walk), and slow ribbons of aurora
+  const ox = (cam.x - OW.cx) * 0.05 * ZOOM, oy = (cam.y - ISLE.y) * 0.05 * ZOOM;
+  ctx.fillStyle = '#ffffff';
+  for (const s of rit.sky) {
+    const x = ((s.x * (VW + 60) - ox) % (VW + 60) + VW + 60) % (VW + 60) - 30, y = ((s.y * (VH + 60) - oy) % (VH + 60) + VH + 60) % (VH + 60) - 30;
+    ctx.globalAlpha = 0.3 + 0.55 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph));
+    ctx.fillRect(x, y, s.r, s.r);
+  }
+  ctx.globalAlpha = 1;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  [['63,255,208', 0.1], ['138,91,255', 0.09], ['255,111,216', 0.06]].forEach(([c, a], k) => {
+    const base = VH * (0.1 + k * 0.07);
+    ctx.beginPath();
+    for (let x = 0; x <= VW + 20; x += 20) { const y = base + Math.sin(x * 0.006 + t * 0.35 + k * 2) * 26 + Math.sin(x * 0.013 - t * 0.2 + k) * 12; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    for (let x = VW + 20; x >= 0; x -= 20) ctx.lineTo(x, base + 90 + Math.sin(x * 0.006 + t * 0.35 + k * 2 + 0.6) * 30);
+    ctx.closePath();
+    const ag = ctx.createLinearGradient(0, base - 30, 0, base + 120);
+    ag.addColorStop(0, `rgba(${c},0)`); ag.addColorStop(0.35, `rgba(${c},${a})`); ag.addColorStop(1, `rgba(${c},0)`);
+    ctx.fillStyle = ag; ctx.fill();
+  });
+  ctx.restore();
+}
+function drawSpiritFire(g, t) {
+  g.save(); g.translate(SPIRIT.x, SPIRIT.y);
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.fillStyle = i % 2 ? '#7d86a8' : '#9aa2c2'; g.beginPath(); g.ellipse(Math.cos(a) * 38, Math.sin(a) * 29, 9, 6, a, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#1c1838'; g.beginPath(); g.ellipse(0, 0, 30, 22, 0, 0, Math.PI * 2); g.fill();
+  // the logs float above the pit, burning downward
+  const hz = 70 + Math.sin(t * 1.3) * 3;
+  g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(0, 4, 30, 8, 0, 0, Math.PI * 2); g.fill();
+  for (const a of [0.5, -0.5]) { g.save(); g.translate(0, -hz); g.rotate(a); g.fillStyle = '#3a2d63'; roundRect(g, -26, -5, 52, 10, 5); g.fill(); g.fillStyle = 'rgba(150,220,255,0.7)'; roundRect(g, -24, 2, 48, 3, 1.5); g.fill(); g.restore(); }
+  g.restore();
+}
+function drawOwStone(g, s) {
+  g.save(); g.translate(s.x, s.y);
+  g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(2, 1, 10, 3.5, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#b9b2e0'; g.beginPath(); g.moveTo(-7, 0); g.lineTo(-5, -20); g.lineTo(0, -28); g.lineTo(5, -21); g.lineTo(7, 0); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.moveTo(-5, -20); g.lineTo(0, -28); g.lineTo(0, 0); g.lineTo(-7, 0); g.closePath(); g.fill();
+  g.restore();
+}
+function drawRiftBase(g) {
+  g.fillStyle = 'rgba(255,170,90,0.18)'; g.beginPath(); g.ellipse(RIFT.x, RIFT.y, 34, 10, 0, 0, Math.PI * 2); g.fill();
+}
+function ritLightOther(t, people) {
+  const flick = 1 + Math.sin(t * 5) * 0.03;
+  darkPass('rgba(16, 8, 44, 0.42)', hole => {
+    hole(SPIRIT.x, SPIRIT.y - 30, 380 * flick, 1);
+    hole(RIFT.x, RIFT.y - 46, 190, 0.9);
+    for (const s of OW_STONES) hole(s.x, s.y - 12, 60, 0.5);
+    for (const p of people) hole(p.x, p.y - 20, 80, 0.55);
+  }, true);
+  const g = ctx;
+  g.save(); g.globalCompositeOperation = 'lighter';
+  const [sx, sy] = w2s(SPIRIT.x, SPIRIT.y - 20);
+  const gr = g.createRadialGradient(sx, sy, 0, sx, sy, 230 * ZOOM * flick);
+  gr.addColorStop(0, 'rgba(120,200,255,0.3)'); gr.addColorStop(1, 'rgba(120,170,255,0)');
+  g.fillStyle = gr; g.fillRect(sx - 240 * ZOOM, sy - 240 * ZOOM, 480 * ZOOM, 480 * ZOOM);
+  const [lx, ly] = w2s(SPIRIT.x, SPIRIT.y - 64);
+  ritBlob(g, '#bfe8ff', lx, ly, 30 * ZOOM, 0.7);
+  for (const s of OW_STONES) { const [x, y] = w2s(s.x, s.y - 16); ritBlob(g, s.color, x, y, 26 * ZOOM, 0.35 + 0.15 * Math.sin(t * 1.5 + s.x)); }
+  g.restore();
+  ritDrawFx(g);
+  const [rx, ry] = w2s(RIFT.x, RIFT.y - 46), pulse = 1 + 0.04 * Math.sin(t * 2.5);
+  ritDrawDoor(g, rx, ry, 26 * ZOOM * pulse, 40 * ZOOM * pulse, 1, RIFT_PAL, rit.riftStars, t);
+}
+// labels over the world: the door's countdown, the way home, and the fade when you step through
+function ritOverlay(here) {
+  const now = performance.now();
+  if (here === 'camp' && ritDoorOpen()) {
+    const [sx, sy] = w2s(FIRE.x, FIRE.y - RIT_DOOR_H - 66 * ritDoorStrength() - 14);
+    ritTag(sx, Math.max(56, sy - 20), `Step into the fire · ${Math.ceil(rit.door.timeLeft(ritNow()))}s`, 'rgba(60,30,110,0.85)', '#f1e6ff');
+  }
+  if (here === 'other') { const [sx, sy] = w2s(RIFT.x, RIFT.y); ritTag(sx, sy + 8, 'Home', 'rgba(90,40,10,0.8)', '#ffe2c0'); }
+  const fo = (now - rit.fadeAt) / 800;
+  if (fo < 1) { ctx.fillStyle = `rgba(${rit.fadeRgb},${Math.pow(1 - fo, 1.5)})`; ctx.fillRect(0, 0, VW, VH); }
+}
+function ritTag(sx, sy, label, bg, fg) {
+  const g = ctx;
+  g.save();
+  g.font = `700 12px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  const w = g.measureText(label).width + 16;
+  g.fillStyle = bg; roundRect(g, sx - w / 2, sy, w, 20, 10); g.fill();
+  g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label, sx, sy + 10.5);
+  g.restore();
+}
+
+// ---- sound (through the campsite volume slider) ----
+const RIT_NOTES = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 739.99];
+function ritSoundLap(n, vol) {
+  if (!audio) return;
+  bellTone(RIT_NOTES[n - 1], 0.07 * vol, 2.8, envOut());
+  bellTone(RIT_NOTES[n - 1] * 1.5, 0.025 * vol, 2.2, envOut());
+  smBlip(110, 1.1, 'sine', 0.14 * vol, 50);
+}
+function ritSoundComplete(vol) {
+  if (!audio) return;
+  smBlip(120, 2.4, 'sine', 0.38 * vol, 36);
+  smBurst(2.2, 250, 4200, 0.22 * vol, 'bandpass');
+  [293.66, 369.99, 440, 554.37, 659.25, 880, 1108.73].forEach((f, i) => setTimeout(() => bellTone(f, 0.045 * vol, 5, envOut()), 120 + i * 85));
+}
+function ritSoundBreak() {
+  if (!audio) return;
+  [440, 369.99, 293.66].forEach((f, i) => setTimeout(() => bellTone(f, 0.03, 1.4, envOut()), i * 130));
+  smBurst(0.6, 3000, 900, 0.05, 'highpass');
+}
+function ritSoundWhoosh() {
+  if (!audio) return;
+  smBurst(1.4, 180, 2600, 0.26, 'bandpass');
+  setTimeout(() => bellTone(880, 0.04, 2.5, envOut()), 450);
+}
+function ritHum(level) {
+  const ac = audio;
+  if (!ac) return;
+  try {
+    if (!rit.hum) {
+      if (level <= 0) return;
+      const g = ac.createGain(); g.gain.value = 0;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520; lp.Q.value = 2;
+      for (const [f, type, a] of [[73.42, 'sawtooth', 0.45], [73.9, 'sawtooth', 0.4], [110, 'sawtooth', 0.3], [146.83, 'triangle', 0.45]]) {
+        const o = ac.createOscillator(); o.type = type; o.frequency.value = f;
+        const og = ac.createGain(); og.gain.value = a; o.connect(og).connect(lp); o.start();
+      }
+      lp.connect(g).connect(envOut());
+      rit.hum = g;
+    }
+    if (Math.abs(level - rit.humLvl) > 0.002 || (level === 0 && rit.humLvl !== 0)) { rit.humLvl = level; rit.hum.gain.setTargetAtTime(level, ac.currentTime, 0.5); }
+  } catch (e) { }
+}
+// the Otherwhere: a slow, bright chord with an echo, and the odd high bell
+function otherAudio(on) {
+  const ac = getAC();
+  if (!ac) return;
+  try {
+    if (on && !rit.owBus) {
+      const bus = ac.createGain(); bus.gain.value = 0; bus.connect(envOut());
+      const len = Math.floor(ac.sampleRate * 3), imp = ac.createBuffer(2, len, ac.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = imp.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8); }
+      const verb = ac.createConvolver(); verb.buffer = imp;
+      const wet = ac.createGain(); wet.gain.value = 0.55; verb.connect(wet).connect(bus);
+      const inp = ac.createGain(); inp.connect(bus); inp.connect(verb);
+      [146.83, 220, 277.18, 329.63, 415.3].forEach((f, i) => {
+        const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.detune.value = (i - 2) * 5;
+        const g = ac.createGain(); g.gain.value = 0.014;
+        const lfo = ac.createOscillator(); lfo.frequency.value = 0.05 + i * 0.023;
+        const lg = ac.createGain(); lg.gain.value = 0.011; lfo.connect(lg).connect(g.gain);
+        o.connect(g).connect(inp); o.start(); lfo.start();
+      });
+      rit.owBus = bus; rit.owInp = inp;
+    }
+    if (rit.owBus) rit.owBus.gain.setTargetAtTime(on ? 1 : 0, ac.currentTime, on ? 0.7 : 0.25);
+  } catch (e) { }
+}
+// For quick checks from the browser console, like the church and voice ones.
+window.campfireRitualDebug = () => ({
+  room: roomOf(me.x), laps: rit.tracker.state.laps, progress: Math.round(rit.tracker.state.lapProgress * 100) / 100, danger: rit.tracker.state.danger,
+  door: ritPhase(), timeLeft: Math.round(rit.door.timeLeft(ritNow())), shared: door, card: owCard.i, lit: ritLitCount(), x: Math.round(me.x), y: Math.round(me.y)
+});
+
+
 // ===== Ember, the campfire spirit =====
 // The fire has a spirit, asleep in the coals (watch for the little z's). Anyone at the
 // fire can try to wake it: three of its sparks drift off around the campsite. Find them,
@@ -5380,6 +6366,7 @@ function drawSpiritOverlay(t, now) {
   const d = dist(me.x, me.y, FIRE.x, FIRE.y);
   if (d > 430) return;
   if (spirit.ph === 'sleep') {
+    if (ritDoorShowing()) return; // the z's would drift through the door
     ctx.save(); ctx.fillStyle = '#ffe7b8'; ctx.textAlign = 'center';
     for (let i = 0; i < 3; i++) {
       const p = (t * 0.32 + i / 3) % 1, [sx, sy] = w2s(FIRE.x + 12 + p * 22 + Math.sin(p * 6 + i) * 4, FIRE.y - 66 - p * 60);
@@ -5448,6 +6435,13 @@ const endTouch = e => {
     const wx = (touch.x - VW / 2) / ZOOM + cam.x, wy = (touch.y - VH / 2) / ZOOM + cam.y;
     me.arrive = null;
     if (inChurch(me.x)) tapInside(wx, wy);
+    else if (inOther(me.x)) {
+      // tapped the rift: walk into it and go home
+      if (dist(wx, wy, RIFT.x, RIFT.y - 46) < 60) walkTo(RIFT.x, RIFT.y, 'home');
+      else walkTo(wx, wy);
+    }
+    // tapped the door (or the fire under it) while it's open: walk in
+    else if (ritDoorOpen() && (dist(wx, wy, FIRE.x, FIRE.y) < 50 || (Math.abs(wx - FIRE.x) < 52 && wy > FIRE.y - RIT_DOOR_H - 72 && wy < FIRE.y))) walkTo(FIRE.x, FIRE.y, 'door');
     else {
       const seat = SEATS.findIndex(s => dist(wx, wy, s.x, s.y) < 22);
       if (seat >= 0 && !seatTaken(seat) && dist(me.x, me.y, FIRE.x, FIRE.y) < 230) sitAt(seat);
@@ -5510,6 +6504,8 @@ function nearFire() { return dist(me.x, me.y, FIRE.x, FIRE.y) < 190; }
 function stopFishing() { if (me.fish) { clearTimeout(me.fish.timer); me.fish = null; sentDirty = true; } }
 function doAction() {
   if (smHoldsStick()) return;
+  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 200 && !me.fish) { if (me.sit >= 0) stand(); walkTo(FIRE.x, FIRE.y, 'door'); return; }
+  if (inOther(me.x)) { if (nearRift()) walkTo(RIFT.x, RIFT.y, 'home'); else { rit.cardHidden = !rit.cardHidden; renderOwCard(true); } return; }
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   if (me.sit >= 0) { stand(); return; }
   if (me.pew >= 0) { standPew(); return; }
@@ -5551,11 +6547,13 @@ function updateActionBtn() {
   const b = $('actionBtn');
   let label = null;
   b.classList.remove('bite');
-  if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
+  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 200 && !me.fish) label = 'Step into the door';
+  else if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
   else if (nearFire()) label = 'Sit by the fire';
   else if (atDock()) label = 'Cast a line';
   else if (nearChurchDoor()) label = 'Enter the church';
+  else if (inOther(me.x)) label = nearRift() ? 'Go home' : (rit.cardHidden ? 'Show the story card' : null);
   else if (inChurch(me.x)) {
     const a = churchAction();
     if (me.organ) label = null;
@@ -5625,8 +6623,9 @@ function step(dt, t) {
     else if (inChurch(me.x) && vy > 0.4 && Math.abs(me.x - IN.cx) < 36 && me.y > IN.y1 - 34) exitChurch();
   } else me.moving = false;
   if (wasMoving !== me.moving) sentDirty = true;
+  ritStep(dt);
   pushPresence(false);
-  const insideNow = inChurch(me.x);
+  const insideNow = inChurch(me.x), otherNow = inOther(me.x);
   if (insideNow) chapelTick(dt);
   else if (!church.spotted && dist(me.x, me.y, CHURCH.x, CHURCH.y - 60) < 430) {
     church.spotted = true;
@@ -5654,8 +6653,8 @@ function step(dt, t) {
   for (const e of embers) { e.x += e.vx * dt + Math.sin(t * 3 + e.y) * 0.3; e.y += e.vy * dt; e.life -= dt; }
   for (let i = embers.length - 1; i >= 0; i--) if (embers[i].life <= 0) embers.splice(i, 1);
   for (const f of fireflies) { f.p += dt * f.s; f.x += Math.cos(f.p * 1.3) * 12 * dt; f.y += Math.sin(f.p) * 9 * dt; }
-  // fire sound volume by distance (silent inside the church)
-  if (fireGain) fireGain.gain.value = insideNow ? 0 : 0.05 + 0.3 * Math.max(0, 1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 600);
+  // fire sound volume by distance (silent inside the church and in the Otherwhere)
+  if (fireGain) fireGain.gain.value = insideNow || otherNow ? 0 : 0.05 + 0.3 * Math.max(0, 1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 600);
   spiritTick(performance.now());
   updateActionBtn();
 }
@@ -5669,6 +6668,13 @@ function camTarget() {
     const tx = IN.w <= viewW ? IN.cx : clamp(me.x, IN.x0 + viewW / 2, IN.x1 - viewW / 2);
     const ty = bottom - top <= viewH ? top + viewH / 2 : clamp(me.y - 20, top + viewH / 2, bottom - viewH / 2);
     return [tx, ty];
+  }
+  if (inOther(me.x)) {
+    // keep the whole island (and the way home) in view, drifting a little as you walk;
+    // on phones, sit it lower so the story card doesn't cover the rift
+    const lift = VW <= 640 && !rit.cardHidden ? 150 / ZOOM : 0;
+    const tx = (ISLE.rx + 40) * 2 <= viewW ? ISLE.x : ISLE.x + (me.x - ISLE.x) * 0.5;
+    return [tx, ISLE.y - 30 + (me.y - ISLE.y) * 0.35 - lift];
   }
   // near the church, look a little higher so its tall front and spire stay in view
   const lift = 20 + 90 * clamp(1 - dist(me.x, me.y, CHURCH.x, CHURCH.y) / 320, 0, 1);
@@ -5693,6 +6699,7 @@ function walkTo(x, y, arrive) {
   me.arrive = arrive === undefined ? null : arrive;
   me.via = [];
   if (inChurch(me.x) && segBlocked(me.x, me.y, x, y)) me.via = findPathIn(me.x, me.y, x, y) || [];
+  else if (inOther(me.x) && segBlocked(me.x, me.y, x, y)) me.via = routeOther(me.x, me.y, x, y);
   me.via.push({ x, y });
   me.target = me.via.shift();
 }
@@ -5702,6 +6709,7 @@ function arrived() {
   me.arrive = null;
   if (a === 'enter' && nearChurchDoor()) enterChurch();
   else if (a === 'exit' && nearExit()) exitChurch();
+  else if (a === 'home' && dist(me.x, me.y, RIFT.x, RIFT.y) < 44) exitOther();
   else if (a === 'rack' && nearRack()) cpShow(true);
   else if (a === 'book' && nearBook()) readBook();
   else if (a === 'organ' && nearOrgan()) startOrgan();
@@ -5719,11 +6727,13 @@ function drawFire(g, t) {
   // the spirit changes the fire: smaller while its sparks are away, a colour flash per note, taller and awake with a face
   const st = spFireState(performance.now(), t);
   const layers = [['#e2572b', 30, 62], ['#f39a3c', 22, 48], ['#ffd36b', 14, 32], ['#fff3c4', 7, 16]];
+  // the Circle of Seven tints the flames with the colour of the newest stone to wake
+  const tint = ritFireTint(), grow = 1 + rit.pulse * 0.25 + (tint.k ? 0.04 * ritLitCount() : 0);
   layers.forEach(([c, w0, h], i) => {
-    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i)) * st.s;
+    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i)) * st.s * grow;
     const w = w0 * (1 + (st.s - 1) * 0.55);
     const sway = Math.sin(t * 3.1 + i) * 4;
-    g.fillStyle = c;
+    g.fillStyle = tint.k ? mixHex(c, tint.rgb, tint.k * [0.9, 0.8, 0.55, 0.15][i]) : c;
     g.beginPath(); g.moveTo(-w, -2);
     g.quadraticCurveTo(-w * 0.9, -hh * 0.55, sway, -hh);
     g.quadraticCurveTo(w * 0.9, -hh * 0.55, w, -2);
@@ -5802,7 +6812,7 @@ function drawNameTag(g, sx, sy, name, mine, holder, mic, champ) {
   g.restore();
 }
 function drawFloatCard(g, t) {
-  if (!story.text || me.sit >= 0) return;
+  if (!story.text || me.sit >= 0 || ritDoorShowing()) return;
   if (spirit.ph === 'awake' && (ember.cur || spFireState(performance.now(), t).think)) return; // Ember is talking up there
   if (dist(me.x, me.y, FIRE.x, FIRE.y) > 340) return;
   const [sx, sy] = w2s(FIRE.x, FIRE.y - 120 + Math.sin(t * 1.5) * 3);
@@ -5822,12 +6832,12 @@ function drawFloatCard(g, t) {
 
 // Everyone to draw in the room I'm in (the campsite, or inside the church).
 function buildPeople(inside) {
-  const people = [];
+  const people = [], here = joined ? roomOf(me.x) : 'camp';
   const mySm = sm.in && !sm.served && SM_ACTIVE.includes(sm.phase) ? { d: sm.d, b: sm.burnt, st: smMyState(), h: sm.depth > 0.5 } : null;
   if (joined) people.push({ key: 'me', x: me.x, y: me.y, av: me.av, face: me.face, moving: me.moving, sit: me.sit >= 0 || me.pew >= 0 || me.organ, name: me.name, mine: true, fish: me.fish && me.fish.st, holder: iHold(), mic: voice.micOn, champ: me.champ === 1, sm: mySm, tal: me.tal > 0 });
   for (const o of others.values()) {
     if (!o.p || !o.p.n || !o.p.av) continue;
-    if (inChurch(o.rx) !== inside) continue;
+    if (roomOf(o.rx) !== here) continue;
     const av = sanitizeAv(o.p.av);
     const sit = (typeof o.p.sit === 'number' && o.p.sit >= 0) || (inside && ((typeof o.p.pw === 'number' && o.p.pw >= 0) || (o.p.org && typeof o.p.org === 'object')));
     people.push({ key: o.peer, x: o.rx, y: o.ry, av, face: num(o.p.f, 0) | 0, moving: !!o.p.mv, sit, name: cleanText(o.p.n, 16), fish: o.p.fish && o.p.fish.st, holder: story.holder === o.peer, mic: o.p.mic === 1, champ: o.p.ch === 1, sm: smOf(o), tal: num(o.p.tal, 0) > 0 });
@@ -5870,9 +6880,13 @@ function darkPass(fill, holes, vignette, shade) {
 }
 function render(t) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  const inside = joined && inChurch(me.x);
-  ctx.fillStyle = inside ? '#0c0b12' : '#141a2e'; ctx.fillRect(0, 0, VW, VH);
+  const inside = joined && inChurch(me.x), other = joined && inOther(me.x);
+  ctx.fillStyle = inside ? '#0c0b12' : other ? '#0b0722' : '#141a2e'; ctx.fillRect(0, 0, VW, VH);
+  if (other) drawOtherSky(t);
   const people = buildPeople(inside);
+  // the ground shakes when the seventh stone wakes
+  const shx = rit.shake ? (Math.random() - 0.5) * rit.shake * 12 / ZOOM : 0, shy = rit.shake ? (Math.random() - 0.5) * rit.shake * 12 / ZOOM : 0;
+  cam.x += shx; cam.y += shy;
   ctx.save();
   ctx.translate(VW / 2, VH / 2); ctx.scale(ZOOM, ZOOM); ctx.translate(-cam.x, -cam.y);
   const items = [];
@@ -5899,6 +6913,11 @@ function render(t) {
     items.push({ y: FONT.y, d: () => drawFont(ctx, t) });
     items.push({ y: CONFESS.y, d: () => drawConfessional(ctx) });
     CHANDELIERS.forEach((ch, i) => items.push({ y: 1e9 + i, d: () => drawChandelier(ctx, ch, t, people) }));
+  } else if (other) {
+    ctx.drawImage(otherBg, OW.x0, OW.y0);
+    items.push({ y: SPIRIT.y, d: () => drawSpiritFire(ctx, t) });
+    items.push({ y: RIFT.y - 1, d: () => drawRiftBase(ctx) });
+    for (const s of OW_STONES) items.push({ y: s.y, d: () => drawOwStone(ctx, s) });
   } else {
     ctx.drawImage(ground, 0, 0);
     // lake shimmer
@@ -5921,6 +6940,7 @@ function render(t) {
     items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
     items.push({ y: CHURCH.y, d: () => drawChurch(ctx, t) });
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });
+    for (const s of RIT_STONES) items.push({ y: s.y, d: () => drawRitStone(ctx, s) });
   }
   for (const p of people) items.push({ y: p.y, d: () => drawPerson(p, t) });
   items.sort((a, b) => a.y - b.y);
@@ -5929,8 +6949,10 @@ function render(t) {
 
   // ---- lighting ----
   if (inside) lightChapel(t, people);
-  else lightCamp(t, people);
-  drawOverlay(t, people, inside);
+  else if (other) ritLightOther(t, people);
+  else { lightCamp(t, people); ritLightCamp(t); }
+  drawOverlay(t, people, inside || other);
+  cam.x -= shx; cam.y -= shy;
 }
 function lightCamp(t, people) {
   const flick = 1 + Math.sin(t * 9) * 0.03 + Math.sin(t * 23) * 0.02;
@@ -5940,6 +6962,7 @@ function lightCamp(t, people) {
     for (const L of LIGHTS) hole(L.x, L.y, L.r, 0.85);
     for (const p of people) hole(p.x, p.y - 20, 80, 0.55);
     spLightHoles(hole);
+    ritHoles(hole);
   }, false, (d, sc, dw, dh) => {
     // the deep woods past the old tree line are darker still
     const x0 = w2s(W0 - 150, 0)[0] * sc, x1 = w2s(W0 + 260, 0)[0] * sc;
@@ -5952,7 +6975,8 @@ function lightCamp(t, people) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const [fx, fy] = w2s(FIRE.x, FIRE.y - 20);
   const gr = ctx.createRadialGradient(fx, fy, 0, fx, fy, 240 * ZOOM * flick);
-  gr.addColorStop(0, 'rgba(255,150,60,0.32)'); gr.addColorStop(1, 'rgba(255,120,40,0)');
+  const fg = rit.glow.map(v => Math.round(v)).join(',');   // shifts with the Circle of Seven
+  gr.addColorStop(0, `rgba(${fg},0.32)`); gr.addColorStop(1, `rgba(${fg},0)`);
   ctx.fillStyle = gr; ctx.fillRect(fx - 260 * ZOOM, fy - 260 * ZOOM, 520 * ZOOM, 520 * ZOOM);
   for (const L of LIGHTS) {
     const [lx, ly] = w2s(L.x, L.y);
@@ -6017,6 +7041,7 @@ function drawOverlay(t, people, inside) {
     ctx.strokeStyle = 'rgba(255,211,107,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy, 10 + Math.sin(t * 6) * 2, 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
   if (!inside) { drawWard(ctx, t); drawScare(ctx, t); }
+  if (joined) ritOverlay(roomOf(me.x));
   // a short fade to black when stepping through the church door
   const fe = (now - church.fadeAt) / 450;
   if (fe < 1) { ctx.fillStyle = `rgba(6,6,12,${1 - fe})`; ctx.fillRect(0, 0, VW, VH); }
