@@ -427,7 +427,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .cp-done svg { filter: drop-shadow(0 0 14px rgba(255,207,107,0.75)); animation: talRise 1.4s ease-out; }
 @keyframes talRise { from { opacity: 0; transform: translateY(14px) scale(0.7); } to { opacity: 1; transform: none; } }
 /* ---------- the Otherwhere: the story card on the floating island ---------- */
-#owPanel {
+#owPanel, #sgPanel {
   top: calc(60px + env(safe-area-inset-top, 0px));
   right: max(12px, env(safe-area-inset-right, 0px));
   width: min(330px, calc(100vw - 24px)); box-sizing: border-box;
@@ -436,7 +436,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 40px rgba(150,100,255,0.18);
 }
 @media (max-width: 640px) {
-  #owPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+  #owPanel, #sgPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
 }
 #owPanel .story-head h2 { color: #d8c4ff; }
 .ow-sub { margin: 0; font-size: 13px; line-height: 1.4; color: #c8bde6; }
@@ -444,6 +444,14 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .ow-card .card-deck, .ow-card .card-by { color: #6b5a96; }
 .ow-card .card-text { color: #2c2245; }
 .ow-next { background: linear-gradient(180deg, #d4b8ff, #a77bff); color: #1c0f38; }
+#sgPanel .story-head h2 { color: #ffe2b8; }
+#sgPanel .ow-sub { color: #e8dccb; }
+.sg-dots { display: flex; gap: 6px; justify-content: center; }
+.sg-dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,235,210,0.35); transition: background .3s, box-shadow .3s; }
+.sg-dots i.on { border-color: transparent; box-shadow: 0 0 8px currentColor; }
+.sg-meter { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.sg-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffd23f, #ff8a3d); transition: width .08s; }
+#sgPanel button:disabled { opacity: 0.45; cursor: default; }
 /* ---------- pipe organ keyboard ---------- */
 #orgPanel {
   left: 50%; transform: translateX(-50%);
@@ -730,6 +738,20 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   </div>
 </div>
 
+<div class="hud" id="sgPanel" hidden>
+  <div class="story-head">
+    <h2>The singing stones</h2>
+    <button class="btn-ghost small" id="sgHide" type="button">Hide</button>
+  </div>
+  <p class="ow-sub" id="sgText"></p>
+  <div class="sg-dots" id="sgDots" aria-hidden="true"></div>
+  <div class="sg-meter" id="sgMeter" hidden><i id="sgLevel"></i></div>
+  <div class="story-row">
+    <button class="btn-warm ow-next" id="sgSing" type="button">🎤 Sing to the stones</button>
+    <button class="btn-ghost small" id="sgTune" type="button">Hear the tune</button>
+  </div>
+</div>
+
 <div class="hud" id="owPanel" hidden>
   <div class="story-head">
     <h2>The Otherwhere</h2>
@@ -865,7 +887,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's). At the fire, tap <b>Wake the fire</b> and three of its sparks drift off around the campsite. Find all three (just walk over them; tap the Sparks counter for hints). Then sing the fire's song back to it: listen, and tap the glowing stones in the same order (or press 1 to 5). Sing all four verses together and Ember wakes up. Talk to it by typing, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you.</p>
-    <p><b>The standing stones:</b> seven old stones stand round the campfire clearing. Walk sunwise (clockwise) round the fire, inside the stones, seven times without stopping or turning back, and see what wakes. Friends can watch, and maybe follow.</p>
+    <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. Sing them the first line of Amazing Grace, or play it on the stones (tap them, or press 1 to 7), and see what opens. The microphone is only on while the stones are listening, and nothing is recorded or sent.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -883,7 +905,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <p>Someone tucked a note between the pages:</p>
       <p>"The devil of the deep wood hates warm light. Light every candle on the stand and this church will give you a charm to carry.</p>
       <p>The candles are old and stubborn. Touch one and the ones beside it flip too. Light them together with friends if you like: whoever is in here when the last one catches gets a charm."</p>
-      <p>And in pencil underneath, in a different hand: "The stones round the campfire are older than this church. Walk with the sun, seven times round, and don't stop. The fire remembers the way."</p>
+      <p>And in pencil underneath, in a different hand: "The singing stones in the south-west woods are older than this church. They only answer one hymn: sing them the first line of Amazing Grace, the way the organ plays it."</p>
     </div>
     <button class="btn-ghost" data-close type="button">Close the book</button>
   </div>
@@ -936,6 +958,9 @@ const TENTS = [{ x: 690, y: 410, c: '#c4674a', d: '#8e4330' }, { x: 1120, y: 420
 // you have to go looking for it. x/y is the middle of the front wall, at the door.
 const CHURCH = { x: 2268, y: 420, w: 236, d: 124 };
 const YARD = { x: 2262, y: 388, rx: 178, ry: 136 }; // a small clearing round it (the devil keeps off it)
+// The singing stones stand in a glade in the south-west woods, reached by a faint trail off the south path.
+const GLADE = { x: 280, y: 1070, r: 175 };
+const GLADE_TRAIL = [[852, 1100], [720, 1072], [585, 1094], [455, 1078], [395, 1072]];
 const GRAVES = [{ x: 2392, y: 455, tilt: -0.08 }, { x: 2364, y: 492, tilt: 0.1 }, { x: 2410, y: 417, tilt: 0.04 }];
 // Inside the church is its own room, kept off the edge of the map, so walking,
 // earshot and voice all work the same in there without any server changes.
@@ -953,6 +978,7 @@ const TR = { foot: 430, top: 190 };   // the north walls of both transepts
 const CROSS_Y1 = 680;                 // where the crossing ends and the nave begins
 const ARC_L = 285, ARC_R = 715;       // the two rows of nave columns
 function inChurch(x) { return x >= IN.x0 - 60; }
+function inGlade(x, y) { if (x < 0 || x > W0) return false; const u = (x - GLADE.x) / (GLADE.r + 40), v = (y - GLADE.y) / ((GLADE.r + 40) * 0.8); return u * u + v * v < 1; }
 function inYard(x, y) { const u = (x - YARD.x) / YARD.rx, v = (y - YARD.y) / YARD.ry; return u * u + v * v < 1; }
 const PEWS = [];
 [740, 828, 916, 1004, 1092, 1180].forEach((ly, row) => {
@@ -1178,6 +1204,10 @@ const yardPad = (x, y, k) => { const u = (x - YARD.x) / (YARD.rx * k), v = (y - 
 const frontLawn = (x, y) => Math.abs(x - CHURCH.x) < 110 && y > CHURCH.y && y < CHURCH.y + 160;
 for (let i = TREES.length - 1; i >= 0; i--) { const t = TREES[i]; if (yardPad(t.x, t.y, 1.06) || frontLawn(t.x, t.y)) TREES.splice(i, 1); }
 for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (yardPad(k.x, k.y, 1)) ROCKS.splice(i, 1); }
+// the same for the singing stones' glade and the faint trail to it
+const gladePad = (x, y, pad) => { const u = (x - GLADE.x) / (GLADE.r + pad), v = (y - GLADE.y) / ((GLADE.r + pad) * 0.8); return u * u + v * v < 1; };
+for (let i = TREES.length - 1; i >= 0; i--) { const t = TREES[i]; if (gladePad(t.x, t.y, 20) || nearLine(GLADE_TRAIL, t.x, t.y, 40)) TREES.splice(i, 1); }
+for (let i = ROCKS.length - 1; i >= 0; i--) { const k = ROCKS[i]; if (gladePad(k.x, k.y, 10) || nearLine(GLADE_TRAIL, k.x, k.y, 24)) ROCKS.splice(i, 1); }
 // The deep woods past the old eastern tree line: as many trees per area as the woods
 // around the camp, just darker, with the church tucked away in the far corner.
 {
@@ -1205,7 +1235,7 @@ function blocked(x, y) {
   if (inChurch(x)) return blockedIn(x, y);
   if (inOther(x)) return blockedOther(x, y);
   if (x < 30 || x > W - 30 || y < 50 || y > H - 20) return true;
-  if (dist(x, y, FIRE.x, FIRE.y) < 42 && !ritDoorOpen()) return true;   // while the door is open, the fire lets you in
+  if (dist(x, y, FIRE.x, FIRE.y) < 42) return true;
   if (blockedRitStone(x, y)) return true;
   const onDock = x > DOCK.x0 && x < DOCK.x1 && y > DOCK.y0 + 2 && y < DOCK.y1 + 4;
   if (!onDock && inLake(x, y, 1)) return true;
@@ -1294,6 +1324,25 @@ ground.width = W; ground.height = H;
       if (Math.abs(x - CHURCH.x) < CHURCH.w / 2 + 6 && y < CHURCH.y + 8) continue;
       g.fillStyle = ['#f2d16b', '#e9e2d0', '#c9b6f2', '#f3b6c6'][i % 4];
       g.beginPath(); g.arc(x, y, 2.2, 0, Math.PI * 2); g.fill();
+    }
+  }
+  // the singing stones' glade: soft grass, a ring worn by old feet, and a faint trail in from the south path
+  {
+    const gr2 = mulberry(57);
+    const gg = g.createRadialGradient(GLADE.x, GLADE.y, 30, GLADE.x, GLADE.y, GLADE.r + 30);
+    gg.addColorStop(0, '#6f9561'); gg.addColorStop(0.75, 'rgba(98,140,88,0.85)'); gg.addColorStop(1, 'rgba(98,140,88,0)');
+    g.fillStyle = gg; g.beginPath(); g.ellipse(GLADE.x, GLADE.y, GLADE.r + 30, (GLADE.r + 30) * 0.8, 0, 0, Math.PI * 2); g.fill();
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (const [w, c] of [[22, 'rgba(110,83,56,0.55)'], [12, 'rgba(138,106,71,0.5)']]) {
+      g.strokeStyle = c; g.lineWidth = w;
+      g.beginPath(); g.moveTo(GLADE_TRAIL[0][0], GLADE_TRAIL[0][1]); for (let i = 1; i < GLADE_TRAIL.length; i++) g.lineTo(GLADE_TRAIL[i][0], GLADE_TRAIL[i][1]); g.stroke();
+    }
+    g.strokeStyle = 'rgba(110,83,56,0.4)'; g.lineWidth = 16;
+    g.beginPath(); g.ellipse(GLADE.x, GLADE.y, 70, 56, 0, 0, Math.PI * 2); g.stroke();
+    for (let i = 0; i < 60; i++) {
+      const a = gr2() * Math.PI * 2, d = 0.35 + Math.sqrt(gr2()) * 0.6;
+      g.fillStyle = ['#f2d16b', '#e9e2d0', '#c9b6f2', '#9fd8ef'][i % 4];
+      g.beginPath(); g.arc(GLADE.x + Math.cos(a) * GLADE.r * d, GLADE.y + Math.sin(a) * GLADE.r * 0.8 * d, 2.2, 0, Math.PI * 2); g.fill();
     }
   }
   // lake
@@ -1991,7 +2040,8 @@ function pushPresence(force) {
     pw: me.pew, tal: me.tal, cp: chapel,
     org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev } : null,
     sp: spirit, spk: me.spk, ew: me.ew,
-    rl: me.rl || null, pt: door.v ? door : null, ow: owCard.v ? owCard : null
+    rp: me.rp || null, sg: me.sg || null, ss: rit.ssList.length ? { e: rit.ssEv, l: rit.ssList } : null,
+    pt: door.v ? door : null, ow: owCard.v ? owCard : null
   }).catch(() => { });
 }
 
@@ -2452,7 +2502,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.8';
+const VERSION = 'v0.9';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -2461,7 +2511,7 @@ const scare = {
   eyes: null, whispered: false, seed: 1
 };
 function inForest(x, y) {
-  if (inChurch(x) || inYard(x, y)) return false; // the devil won't set foot on the churchyard
+  if (inChurch(x) || inYard(x, y) || inGlade(x, y)) return false; // the devil won't set foot on the churchyard, or in the stone circle
   if (dist(x, y, FIRE.x, FIRE.y) < 360) return false;
   if (inLake(x, y, 1.9)) return false;
   if (TENTS.some(t => dist(x, y, t.x, t.y) < 150)) return false;
@@ -4568,25 +4618,22 @@ window.campfireChurchDebug = () => ({ inside: inChurch(me.x), pew: me.pew, tal: 
 
 window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stale, in: sm.in, d: Math.round(sm.d * 100) / 100, T: Math.round(sm.T * 100) / 100, fire: sm.fire, burnt: sm.burnt, served: sm.served, round: smRound, players: smParticipants().map(p => ({ name: p.name, d: Math.round(p.d * 100) / 100, st: p.st })), results: sm.results && sm.results.list.map(p => ({ name: p.name, score: p.score })), champ: me.champ });
 
-// ===== The Circle of Seven =====
-// Seven old standing stones ring the campfire clearing. Walk sunwise (clockwise) around the
-// fire seven times without stopping, wandering out past the stones, or turning back, and each
-// lap wakes one stone. When the seventh wakes, the fire becomes a door to the Otherwhere: a
-// little island floating under strange stars, where stories are told from the life you didn't
-// live. Anyone at the campsite can step through while the door is open (about a minute); an
-// orange rift on the island always leads home.
-// Each player counts their own laps on their own device and shares the count in presence, so
-// friends see the stones wake and the trail of light behind the walker. The door is shared like
-// the story circle: every player carries the newest door they know, the highest version wins.
+// ===== The singing stones =====
+// Seven old standing stones stand in a ring in a glade in the south-west (bottom-left) corner of the
+// woods, and each one sings a note. Sing them the first line of Amazing Grace (the game listens through
+// your microphone, in any key, and forgives a wobbly note), or play it on the stones themselves, and a
+// door opens in the middle of the ring: the way into the Otherwhere, a little island floating under
+// strange stars where stories are told from the life you didn't live. Anyone can step through while
+// the door is open (about a minute); an orange rift on the island always leads back to the stones.
+// Your stone taps and how far through the tune you are go out in presence, so friends hear the stones
+// and watch them light up. The door is shared like the story circle: every player carries the newest
+// door they know, the highest version wins. The microphone is only on while the stones are listening,
+// and what it hears never leaves your device.
 // The Otherwhere is its own room off the west edge of the map, like the inside of the church.
 
-// ---- the lap counter and the door (pure logic, no drawing) ----
+// ---- the door (pure logic, no drawing) ----
 const RitualCore = (() => {
   'use strict';
-
-
-  const TAU = Math.PI * 2;
-
   /** The seven stones, in the order they wake. Shared so server and client agree. */
   const STONES = [
     { name: 'Memory',   color: '#ff8a3d' },
@@ -4598,18 +4645,6 @@ const RitualCore = (() => {
     { name: 'Kinship',  color: '#ff5fd2' },
   ];
 
-  const DEFAULTS = {
-    laps: 7,
-    innerRadius: 72,        // closer to the fire than this doesn't count
-    outerRadius: 205,       // farther than this and you've left the circle
-    direction: 'sunwise',   // 'sunwise' (clockwise from above, y axis down like canvas), 'widdershins', or 'either'
-    strayGrace: 1.5,        // seconds you may spend outside the ring before the circle breaks
-    idleTimeout: 8,         // seconds standing still mid-ritual before the embers fade
-    backtrack: Math.PI / 2, // walking back more than this many radians breaks the circle
-    maxStep: Math.PI / 3,   // a single jump bigger than this is ignored (teleport, lag spike)
-    minSpeed: 0.15,         // radians per second that count as "still walking"
-  };
-
   const PORTAL_DEFAULTS = {
     openingSeconds: 3.5,  // the flare: stones beam in, the fire rises, the door forms
     openSeconds: 60,      // how long friends have to step through
@@ -4617,106 +4652,6 @@ const RitualCore = (() => {
     cooldownSeconds: 20,  // stones rest before the ritual can be walked again
     enterRadius: 34,      // how close to the fire's centre you must step to enter
   };
-
-  function wrapAngle(a) { // into (-PI, PI]
-    a = (a + Math.PI) % TAU;
-    if (a < 0) a += TAU;
-    return a - Math.PI;
-  }
-
-  /**
-   * Tracks one player's walk around one fire.
-   * update(x, y, dt) returns an array of events:
-   *   { type: 'lap', laps, of }            a stone wakes (laps = 1..7)
-   *   { type: 'broken', reason, laps }     reason: 'strayed' | 'too-close' | 'reversed' | 'faded'
-   *   { type: 'complete' }                 seventh lap done; tracker resets itself
-   * Wandering near the fire without finishing a lap is silent: 'broken' is only
-   * reported once at least one stone was awake, so casual walking isn't noisy.
-   */
-  function createRitualTracker(center, options) {
-    const o = Object.assign({}, DEFAULTS, options);
-    const startDir = o.direction === 'sunwise' ? 1 : o.direction === 'widdershins' ? -1 : 0;
-    let s;
-
-    function reset() {
-      s = { active: false, dir: startDir, total: 0, best: 0, laps: 0, lastAngle: null, stray: 0, idle: 0 };
-    }
-    reset();
-
-    function breakCircle(reason, events) {
-      if (s.laps >= 1) events.push({ type: 'broken', reason, laps: s.laps });
-      reset();
-    }
-
-    function update(x, y, dt) {
-      const events = [];
-      dt = Math.max(0, dt || 0);
-      const dx = x - center.x, dy = y - center.y;
-      const r = Math.hypot(dx, dy);
-      const angle = Math.atan2(dy, dx);
-
-      if (r < o.innerRadius || r > o.outerRadius) {
-        s.lastAngle = null; // any arc walked outside the ring never counts, so cutting through the middle can't help
-        if (s.active) {
-          s.stray += dt;
-          if (s.stray > o.strayGrace) breakCircle(r < o.innerRadius ? 'too-close' : 'strayed', events);
-        }
-        return events;
-      }
-      s.stray = 0;
-
-      if (s.lastAngle === null) { s.lastAngle = angle; return events; }
-      const d = wrapAngle(angle - s.lastAngle);
-      s.lastAngle = angle;
-      if (Math.abs(d) > o.maxStep) return events;
-
-      if (dt === 0 || Math.abs(d) / dt < o.minSpeed) {
-        if (s.active) {
-          s.idle += dt;
-          if (s.idle > o.idleTimeout) breakCircle('faded', events);
-        }
-        return events;
-      }
-      s.idle = 0;
-
-      if (s.dir === 0) s.dir = Math.sign(d); // 'either': the first step decides
-      const forward = d * s.dir;
-      if (!s.active) {
-        if (forward <= 0) return events; // walking the wrong way never starts anything
-        s.active = true;
-      }
-
-      s.total += forward;
-      if (s.total > s.best) s.best = s.total;
-      if (s.best - s.total > o.backtrack) { breakCircle('reversed', events); return events; }
-
-      while (s.total >= (s.laps + 1) * TAU) {
-        s.laps++;
-        events.push({ type: 'lap', laps: s.laps, of: o.laps });
-        if (s.laps >= o.laps) {
-          events.push({ type: 'complete' });
-          reset();
-          break;
-        }
-      }
-      return events;
-    }
-
-    return {
-      options: o,
-      update,
-      reset,
-      get state() {
-        return {
-          active: s.active,
-          laps: s.laps,
-          lapProgress: s.active ? (s.total - s.laps * TAU) / TAU : 0,
-          // 0..1, how close the circle is to breaking (for flicker / warnings)
-          danger: s.active ? Math.min(1, Math.max(s.stray / o.strayGrace, s.idle / o.idleTimeout)) : 0,
-        };
-      },
-    };
-  }
 
   /**
    * The shared door. One per room.
@@ -4778,18 +4713,141 @@ const RitualCore = (() => {
       },
     };
   }
-  return { STONES, DEFAULTS, PORTAL_DEFAULTS, createRitualTracker, createPortal };
+  return { STONES, PORTAL_DEFAULTS, createPortal };
+})();
+// ---- hearing Amazing Grace (pure logic, no drawing; also loads in Node for tests) ----
+const RitualSong = (() => {
+  'use strict';
+  // The first line, "A-ma-zing grace, how sweet the sound", as semitones above its first note
+  // (C F A F A G F D C, the way the church organ teaches it). Repeated notes are merged, so there
+  // are also versions without the little turn on "-zing", or without the quick "A" at the start
+  // (not both: that leaves too short a tune to tell apart from a scale).
+  // `at` says how far through the full line (out of 9) each number of matched notes gets you.
+  const LINES = [
+    { notes: [0, 5, 9, 5, 9, 7, 5, 2, 0], at: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+    { notes: [0, 5, 9, 7, 5, 2, 0], at: [0, 1, 2, 5, 6, 7, 8, 9] },
+    { notes: [5, 9, 5, 9, 7, 5, 2, 0], at: [0, 1, 3, 4, 5, 6, 7, 8, 9] }
+  ];
+  const STEPS = 9;
+
+  // The pitch of one block of samples (Hz), or 0 when it isn't a clear sung note.
+  // McLeod's normalised autocorrelation: robust to loudness, rarely an octave out.
+  function detectPitch(buf, sr) {
+    const n = buf.length;
+    let rms = 0;
+    for (let i = 0; i < n; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / n);
+    if (rms < 0.008) return { f: 0, rms, clarity: 0 };
+    const maxLag = Math.min(n - 2, Math.floor(sr / 65)), minLag = Math.max(2, Math.floor(sr / 1100));
+    const nsdf = new Float32Array(maxLag + 2);
+    for (let tau = 1; tau <= maxLag + 1; tau++) {
+      let acf = 0, m = 0;
+      for (let i = 0, e = n - tau; i < e; i++) { const a = buf[i], b = buf[i + tau]; acf += a * b; m += a * a + b * b; }
+      nsdf[tau] = m > 0 ? 2 * acf / m : 0;
+    }
+    // highest point of each positive lobe after the first dip
+    const peaks = [];
+    let tau = 1;
+    while (tau <= maxLag && nsdf[tau] > 0) tau++;
+    while (tau <= maxLag) {
+      while (tau <= maxLag && nsdf[tau] <= 0) tau++;
+      let best = -1;
+      while (tau <= maxLag && nsdf[tau] > 0) { if (best < 0 || nsdf[tau] > nsdf[best]) best = tau; tau++; }
+      if (best > 0) peaks.push(best);
+    }
+    if (!peaks.length) return { f: 0, rms, clarity: 0 };
+    let top = 0;
+    for (const p of peaks) top = Math.max(top, nsdf[p]);
+    const p = peaks.find(q => nsdf[q] >= 0.9 * top);
+    if (!p || p < minLag || nsdf[p] < 0.75) return { f: 0, rms, clarity: nsdf[p] || 0 };
+    const a = nsdf[p - 1], b = nsdf[p], c = nsdf[p + 1], den = a - 2 * b + c;
+    const shift = den ? 0.5 * (a - c) / den : 0;
+    return { f: sr / (p + shift), rms, clarity: b };
+  }
+  const toMidi = f => 69 + 12 * Math.log2(f / 440);
+  const median = a => { const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; };
+
+  // Turns a stream of pitch readings (about 20 a second; 0 = silence) into the notes that were sung.
+  function createListener() {
+    let seg = [], quiet = 0;
+    const notes = [];
+    function close() {
+      if (seg.length >= 3) {
+        let m = median(seg);
+        const last = notes[notes.length - 1];
+        if (last != null) {
+          while (m - last > 7.5) m -= 12;   // the line never leaps more than a fourth, so a big jump is an octave slip
+          while (last - m > 7.5) m += 12;
+          if (Math.abs(m - last) <= 0.75) { seg = []; return; }   // the same note again
+        }
+        notes.push(m);
+        if (notes.length > 24) notes.shift();
+      }
+      seg = [];
+    }
+    return {
+      notes,
+      push(f) {
+        if (!f) { if (++quiet >= 2) close(); return; }
+        quiet = 0;
+        let v = toMidi(f);
+        if (seg.length) {
+          const m = median(seg);
+          if (Math.abs(v - m) > 6) v += 12 * Math.round((m - v) / 12);
+          if (Math.abs(v - m) <= 0.8) { seg.push(v); return; }
+          close();
+        }
+        seg.push(v);
+      },
+      reset() { seg = []; quiet = 0; notes.length = 0; }
+    };
+  }
+
+  // How the end of a run of notes compares with a stretch of the line: intervals, not exact
+  // pitches, so any key works and a little out of tune is fine.
+  function fits(N, T, tol, avg) {
+    let sum = 0;
+    for (let i = 1; i < T.length; i++) {
+      const d = Math.abs((N[i] - N[i - 1]) - (T[i] - T[i - 1]));
+      if (d > tol) return false;
+      sum += d;
+    }
+    if (T.length > 1 && sum / (T.length - 1) > avg) return false;
+    return Math.abs((N[N.length - 1] - N[0]) - (T[T.length - 1] - T[0])) <= tol + 1;
+  }
+  // How far through the first line the latest notes are (0-9), allowing one stray note on the way.
+  function progress(notes, strict) {
+    const tol = strict ? 0.4 : 1.6, avg = strict ? 0.3 : 0.95;
+    let best = notes.length ? 1 : 0;
+    LINES.forEach(({ notes: T, at }) => {
+      for (let k = Math.min(T.length, notes.length); k >= 2; k--) {
+        const want = T.slice(0, k), score = at[k];
+        if (score <= best) break;
+        let ok = fits(notes.slice(-k), want, tol, avg);
+        if (!ok && !strict && notes.length > k) {
+          const w = notes.slice(-(k + 1));
+          for (let j = 1; j < k && !ok; j++) ok = fits(w.filter((_, x) => x !== j), want, tol, avg);
+        }
+        if (ok) { best = score; break; }
+      }
+    });
+    return best;
+  }
+  return { LINES, STEPS, detectPitch, toMidi, createListener, progress };
 })();
 
 // ---- layout ----
-const RIT_Y = 0.8;                                    // the clearing is a little squashed, like the seats round the fire
-const RIT_STONE_R = 262;                              // just outside the walking ring
-const RIT_ANGLES = [-90, -26, 14, 55, 112, 160, 208]; // sunwise from due north; spaced to keep clear of the paths and tents
+const RIT_Y = 0.8;                                    // the ground is a little squashed, like the seats round the fire
+const RIT_STONE_R = 118;
+const RIT_ANGLES = [0, 1, 2, 3, 4, 5, 6].map(i => -90 + i * 360 / 7); // round the ring from due north, rising in pitch
+const RIT_NOTES = [60, 62, 65, 67, 69, 72, 74];       // C D F G A C D: every note the first line of Amazing Grace needs, and one more
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const RIT_STONES = RitualCore.STONES.map((s, i) => {
   const a = RIT_ANGLES[i] * Math.PI / 180;
-  return { name: s.name, color: s.color, rgb: hexRgb(s.color), i, x: Math.round(FIRE.x + Math.cos(a) * RIT_STONE_R), y: Math.round(FIRE.y + Math.sin(a) * RIT_STONE_R * RIT_Y), light: 0 };
+  return { name: s.name, color: s.color, rgb: hexRgb(s.color), i, note: RIT_NOTES[i], x: Math.round(GLADE.x + Math.cos(a) * RIT_STONE_R), y: Math.round(GLADE.y + Math.sin(a) * RIT_STONE_R * RIT_Y), light: 0, flash: 0 };
 });
+const GRACE_STONES = [0, 2, 4, 2, 4, 3, 2, 1, 0];     // "A-ma-zing grace, how sweet the sound" on the stones
+const GRACE_BEATS = [1, 2, 0.5, 0.5, 2, 1, 2, 1, 2];
 const RIT_GLYPHS = [
   [[0, -1, 0, 1], [0, -0.55, 0.6, -1], [0, -0.05, 0.6, -0.5]],
   [[-0.5, 1, -0.5, -1], [-0.5, -1, 0.5, -0.4], [0.5, -0.4, 0.5, 1]],
@@ -4799,13 +4857,7 @@ const RIT_GLYPHS = [
   [[0, 1, 0, -1], [0, -1, -0.6, -0.4], [0, -1, 0.6, -0.4]],
   [[-0.6, 1, -0.6, -1], [0.6, 1, 0.6, -1], [-0.6, -1, 0.6, 0.2], [0.6, -1, -0.6, 0.2]]
 ];
-const RIT_DOOR_H = 100;   // how high the door hangs over the fire
-const RIT_BREAK = {
-  'strayed': 'You wandered out past the stones. They fall asleep again.',
-  'too-close': 'Too close to the flames. The circle breaks.',
-  'reversed': 'You turned against the sun. The stones fall asleep again.',
-  'faded': 'You stood still too long. The stones fall asleep again.'
-};
+const RIT_DOOR_H = 100;   // how high the door hangs over the middle of the ring
 // The Otherwhere: its own room off the west edge of the map.
 const OW = { x0: -1700, y0: 60, w: 1200, h: 1040 };
 OW.x1 = OW.x0 + OW.w; OW.y1 = OW.y0 + OW.h; OW.cx = OW.x0 + OW.w / 2;
@@ -4852,63 +4904,152 @@ function blockedRitStone(x, y) { for (const s of RIT_STONES) if (dist(x, y, s.x,
 // ---- state ----
 const ritNow = () => performance.now() / 1000;
 const ritDoorStars = n => Array.from({ length: n }, () => ({ a: Math.random() * 6.283, r: 0.1 + Math.random() * 0.9, sp: 0.2 + Math.random() * 0.3 }));
+const SING_OK = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext !== false;
 const rit = {
-  tracker: RitualCore.createRitualTracker({ x: FIRE.x, y: FIRE.y }, { innerRadius: 56, outerRadius: 240 }),
-  door: RitualCore.createPortal({ x: FIRE.x, y: FIRE.y }, { openSeconds: 60, enterRadius: 34 }),
-  lastPhase: 'closed', fx: [], fxRoom: 'camp', trailAcc: 0, sparkAcc: 0, shake: 0, pulse: 0, flashAt: -1e9,
-  fadeAt: -1e9, fadeRgb: '226,210,255', enterAfter: 0, glow: [255, 150, 60], visited: false, cardHidden: false,
+  door: RitualCore.createPortal({ x: GLADE.x, y: GLADE.y }, { openSeconds: 60, enterRadius: 34 }),
+  lastPhase: 'closed', fx: [], fxRoom: 'camp', sparkAcc: 0, trailAcc: 0, noteAcc: 0, shake: 0, flashAt: -1e9,
+  fadeAt: -1e9, fadeRgb: '226,210,255', enterAfter: 0, visited: false, cardHidden: false, panelHidden: false,
   hum: null, humLvl: 0, owBus: null, owInp: null, bellT: 2,
+  taps: [], tapAt: 0, tapProg: 0,      // my stone taps (as notes) and how far through the line they get
+  mic: null, singProg: 0,              // while the stones are listening to me sing
+  demo: null,                          // "Hear the tune": the stones playing the line by themselves
+  ssEv: 0, ssList: [],                 // my recent taps, for presence (so friends hear them)
+  panelKey: '',
   doorStars: ritDoorStars(36), riftStars: ritDoorStars(18),
   sky: Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.2, ph: Math.random() * 6.283, sp: 0.6 + Math.random() * 1.6 }))
 };
-let door = { v: 0, id: '', by: '', bn: '', at: 0 };                    // shared: presence 'pt'
+let door = { v: 0, id: '', by: '', bn: '', at: 0, h: '' };              // shared: presence 'pt'
 let owCard = { v: 0, i: Math.floor(Math.random() * OW_PROMPTS.length), by: '' }; // shared: presence 'ow'
-me.rl = 0;                                                               // my laps so far: presence 'rl'
+me.rp = 0;   // how far through the tune I am, 0-9 (presence 'rp')
+me.sg = 0;   // 1 while the stones are listening to me (presence 'sg')
 function ritPhase() { return rit.door.phase(ritNow()); }
 function ritDoorOpen() { return ritPhase() === 'open'; }
 function ritDoorShowing() { return ritPhase() !== 'closed'; }
-// How many stones are awake: everything during the door, otherwise whoever is furthest round the circle.
-function ritLitCount() {
-  if (ritDoorShowing()) return 7;
-  let n = joined && roomOf(me.x) === 'camp' ? rit.tracker.state.laps : 0;
-  for (const o of others.values()) if (o.p && o.p.n && roomOf(o.rx) === 'camp') n = Math.max(n, clamp(num(o.p.rl, 0) | 0, 0, 6));
-  return n;
+function nearGlade() { return joined && inGlade(me.x, me.y); }
+function ritCanPlay() { return nearGlade() && rit.door.ready(ritNow()); }
+// Which stones glow: all of them while the door is open, otherwise the notes of the tune so far
+// (mine, or whoever in the glade is furthest through it).
+function ritGladeProg() {
+  let k = me.rp;
+  for (const o of others.values()) if (o.p && o.p.n && inGlade(o.rx, o.ry)) k = Math.max(k, o.rp || 0);
+  return k;
 }
-function ritFireTint() {
-  if (ritDoorShowing()) return { rgb: [196, 150, 255], k: 0.75 };
-  const lit = ritLitCount();
-  return lit ? { rgb: RIT_STONES[lit - 1].rgb, k: 0.22 + 0.06 * lit } : { rgb: [255, 150, 60], k: 0 };
+function ritLitSet() {
+  if (ritDoorShowing()) return new Set([0, 1, 2, 3, 4, 5, 6]);
+  return new Set(GRACE_STONES.slice(0, ritGladeProg()));
 }
-function mixRgb(a, b, k) { return [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k)); }
-function mixHex(hex, rgb, k) { const c = mixRgb(hexRgb(hex), rgb, clamp(k, 0, 1)); return `rgb(${c.join(',')})`; }
 
-// ---- my walk ----
-function onRitual(ev) {
-  if (ev.type === 'lap') {
-    const st = RIT_STONES[ev.laps - 1];
-    ritStoneBurst(st);
-    ritSoundLap(ev.laps, 1);
-    rit.pulse = 1; rit.shake = Math.max(rit.shake, 0.12);
-    showToast(`Lap ${ev.laps} of 7 · The Stone of ${st.name} wakes.`, 2600);
-    if (ev.laps === 1) addLog(null, 'A standing stone lights up as you walk past it…', true);
-  } else if (ev.type === 'broken') {
-    showToast(RIT_BREAK[ev.reason] || 'The circle breaks.', 3800);
-    ritSoundBreak();
-  } else if (ev.type === 'complete') ritComplete();
+// ---- playing the stones ----
+function ritStrikeFx(i, vol) {
+  const st = RIT_STONES[i];
+  st.flash = 1;
+  ritBurst(st.x, st.y, 30, st.color, Math.round(10 + 18 * vol), 90, 0.9, 5);
+  ritSoundStone(i, vol);
 }
-function ritComplete() {
+function ritStrike(i) {
+  if (!nearGlade() || rit.mic) return;
+  ritStrikeFx(i, 1);
+  rit.ssEv++; rit.ssList.push([rit.ssEv, i]);
+  if (rit.ssList.length > 6) rit.ssList.shift();
+  sentDirty = true; pushPresence(true);
+  if (!rit.door.ready(ritNow())) return;
+  const now = performance.now();
+  if (now - rit.tapAt > 4000) rit.taps = [];
+  rit.tapAt = now;
+  rit.taps.push(RIT_NOTES[i]);
+  if (rit.taps.length > 16) rit.taps.shift();
+  rit.tapProg = RitualSong.progress(rit.taps, true);
+  ritSetProgress();
+  if (rit.tapProg >= RitualSong.STEPS) ritSung('played');
+}
+function ritSetProgress() {
+  const k = Math.max(rit.tapProg, rit.mic ? rit.singProg : 0);
+  if (k !== me.rp) { me.rp = k; sentDirty = true; }
+}
+// "Hear the tune": the stones play the first line by themselves (it doesn't count, and not while listening)
+function ritPlayDemo() {
+  if (rit.mic || !nearGlade()) return;
+  getAC();
+  rit.demo = { i: 0, at: performance.now() + 300 };
+}
+function ritDemoTick() {
+  const d = rit.demo;
+  if (!d) return;
+  if (rit.mic || !nearGlade()) { rit.demo = null; return; }
+  if (performance.now() < d.at) return;
+  ritStrikeFx(GRACE_STONES[d.i], 0.8);
+  d.at += GRACE_BEATS[d.i] * 60000 / 76;
+  if (++d.i >= GRACE_STONES.length) rit.demo = null;
+}
+
+// ---- singing to the stones ----
+async function ritStartSinging() {
+  if (rit.mic || rit.micAsking || !SING_OK || !ritCanPlay()) return;
+  const ac = getAC();
+  if (!ac) return;
+  rit.demo = null; rit.micAsking = true; renderGladePanel(true);
+  let stream = null;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: true } }); }
+  catch (e) { showToast("The stones couldn't hear your microphone. You can play the tune on them instead: tap the stones, or press 1 to 7.", 6500); }
+  rit.micAsking = false;
+  if (!stream) { renderGladePanel(true); return; }
+  if (!ritCanPlay()) { stream.getTracks().forEach(t => t.stop()); renderGladePanel(true); return; }
+  try { if (ac.state === 'suspended') await ac.resume(); } catch (e) { }
+  const src = ac.createMediaStreamSource(stream), an = ac.createAnalyser();
+  an.fftSize = 2048; src.connect(an);
+  rit.mic = { stream, src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), t0: performance.now(), heardAt: 0, acc: 0, level: 0 };
+  rit.singProg = 0; me.sg = 1; rit.panelHidden = false;
+  sentDirty = true; pushPresence(true);
+  renderGladePanel(true);
+}
+function ritStopSinging(why) {
+  const m = rit.mic;
+  if (!m) return;
+  try { m.src.disconnect(); } catch (e) { }
+  m.stream.getTracks().forEach(t => t.stop());
+  rit.mic = null; rit.singProg = 0; me.sg = 0;
+  ritSetProgress(); sentDirty = true;
+  if (why === 'timeout') showToast(m.heardAt ? "The stones didn't quite catch it. Try again, nice and slow, or play it on the stones." : "The stones couldn't hear anything. Is your microphone on? You can also play the tune on the stones.", 6000);
+  renderGladePanel(true);
+}
+// About 20 times a second: read the mic, find the note being sung, and see how far through the line it is.
+function ritListen(dt) {
+  const m = rit.mic;
+  if (!m) return;
+  m.acc += dt;
+  if (m.acc < 0.05) return;
+  m.acc = 0;
+  m.an.getFloatTimeDomainData(m.buf);
+  for (let i = 0; i < 1024; i++) m.half[i] = 0.5 * (m.buf[2 * i] + m.buf[2 * i + 1]);
+  const p = RitualSong.detectPitch(m.half, m.an.context.sampleRate / 2);
+  m.level = m.level * 0.6 + Math.min(1, p.rms * 9) * 0.4;
+  if (p.f) m.heardAt = performance.now();
+  m.listener.push(p.f);
+  const k = RitualSong.progress(m.listener.notes);
+  if (k !== rit.singProg) {
+    if (k > rit.singProg && k >= 1) ritStrikeFx(GRACE_STONES[k - 1], 0);   // the stone for that note lights up (silently)
+    rit.singProg = k; ritSetProgress();
+  }
+  if (k >= RitualSong.STEPS) { ritSung('sang'); return; }
+  if (performance.now() - m.t0 > 45000 || (m.heardAt && performance.now() - m.heardAt > 12000)) ritStopSinging('timeout');
+}
+
+// ---- the door opens ----
+function ritSung(how) {
   const now = ritNow();
   if (!rit.door.ready(now)) return;
-  door = { v: door.v + 1, id: Math.random().toString(36).slice(2, 10), by: myPeer || 'me', bn: me.name, at: Date.now() };
+  door = { v: door.v + 1, id: Math.random().toString(36).slice(2, 10), by: myPeer || 'me', bn: me.name, at: Date.now(), h: how === 'sang' ? 's' : 'p' };
   rit.door.open(now, door.by);
+  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; rit.demo = null; ritSetProgress();
   ritOpenFx(1);
-  addLog(null, 'You walked the circle seven times. The fire has become a door! ✨', true);
-  showToast('The fire has become a door to the Otherwhere. Step into it. Friends can come too!', 6000);
-  me.rl = 0; sentDirty = true; pushPresence(true);
+  addLog(null, `You ${how} Amazing Grace to the standing stones. A door has opened among them! ✨`, true);
+  showToast('A door to the Otherwhere has opened in the middle of the stones. Step in! Friends can come too.', 6000);
+  sentDirty = true; pushPresence(true);
+  renderGladePanel(true);
 }
 function ritOpenFx(vol) {
   rit.flashAt = performance.now(); rit.shake = REDUCED_MOTION ? 0 : vol;
-  ritBurst(FIRE.x, FIRE.y, 40, '#efe3ff', 90, 260, 1.6, 8);
+  ritBurst(GLADE.x, GLADE.y, 40, '#efe3ff', 90, 260, 1.6, 8);
   ritSoundComplete(vol);
 }
 // Every player carries the newest door they know; the highest version wins (ties by peer label).
@@ -4921,7 +5062,7 @@ function resolveDoor(freshPeers) {
   }
   if (!best) return;
   if (door.v > best.v || (door.v === best.v && String(myPeer || '') >= bestPeer)) return;
-  const next = { v: best.v, id: String(best.id).replace(/[^a-z0-9]/g, '').slice(0, 16), by: typeof best.by === 'string' ? best.by.slice(0, 64) : '', bn: cleanText(best.bn, 16), at: num(best.at, 0) };
+  const next = { v: best.v, id: String(best.id).replace(/[^a-z0-9]/g, '').slice(0, 16), by: typeof best.by === 'string' ? best.by.slice(0, 64) : '', bn: cleanText(best.bn, 16), at: num(best.at, 0), h: best.h === 'p' ? 'p' : 's' };
   if (!next.id) return;
   const isNew = next.id !== door.id;
   door = next; sentDirty = true;
@@ -4932,44 +5073,54 @@ function resolveDoor(freshPeers) {
   const elapsed = late ? (Date.now() - next.at) / 1000 : 0;
   if (elapsed >= life || elapsed < -30) return;
   rit.door.restore({ open: true, openedBy: next.by, elapsed: clamp(elapsed, 0, life) }, ritNow());
-  rit.tracker.reset(); me.rl = 0;
+  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; ritSetProgress();
   if (late) return;
   const who = next.bn || 'Someone', here = roomOf(me.x);
-  addLog(null, `${who} walked the circle seven times. The fire has become a door! ✨`, true);
+  addLog(null, `${who} ${next.h === 'p' ? 'played' : 'sang'} Amazing Grace to the standing stones. A door has opened among them! ✨`, true);
   if (here === 'camp') {
-    const d = dist(me.x, me.y, FIRE.x, FIRE.y);
-    ritOpenFx(clamp(1.1 - d / 900, 0.25, 1));
-    if (d > 260) showToast(`${who} opened a door in the campfire. Hurry over, it only stays open for a minute!`, 6000);
+    const d = dist(me.x, me.y, GLADE.x, GLADE.y);
+    if (d < 900) ritOpenFx(clamp(1.1 - d / 900, 0.25, 1)); else smBlip(90, 2, 'sine', 0.1, 40);
+    if (d > 300) showToast(`${who} opened a door in the stone circle, in the south-west woods. Hurry, it only stays open for a minute!`, 6500);
   } else smBlip(90, 2, 'sine', 0.12, 40);
 }
 function ritOnPhase(ph, prev) {
   const here = joined ? roomOf(me.x) : 'camp';
-  if (ph === 'closing' && here === 'camp') smBurst(2.2, 3000, 200, 0.12);
+  const near = here === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 900;
+  if (ph === 'closing' && near) smBurst(2.2, 3000, 200, 0.12);
   if (ph === 'closed' && prev === 'closing') {
-    if (here === 'camp') { ritBurst(FIRE.x, FIRE.y, RIT_DOOR_H, '#e9dcff', 40, 120, 1.1, 6); smBlip(110, 1.4, 'sine', 0.16, 45); }
-    if (here === 'other') addLog(null, 'Far away, the door in the campfire closes. The rift will still take you home.', true);
+    if (near) { ritBurst(GLADE.x, GLADE.y, RIT_DOOR_H, '#e9dcff', 40, 120, 1.1, 6); smBlip(110, 1.4, 'sine', 0.16, 45); }
+    if (here === 'other') addLog(null, 'Far away, the door in the stone circle closes. The rift will still take you home.', true);
   }
 }
 
 // ---- friends ----
-// Called for each friend from onPeers: their laps light the stones; note when they step through.
+// Called for each friend from onPeers: hear their stone taps, see how far through the tune they are,
+// and note when they step through.
 function ritPeer(o, pr) {
-  const rl = clamp(num(pr.rl, 0) | 0, 0, 7);
-  const here = joined ? roomOf(me.x) : '', there = roomOf(num(pr.x, 0));
-  if (!o.fresh && joined && rl > (o.rl || 0) && here === 'camp' && there === 'camp') {
-    const st = RIT_STONES[rl - 1];
-    if (st) { ritStoneBurst(st); ritSoundLap(rl, clamp(1 - dist(me.x, me.y, st.x, st.y) / 700, 0.15, 0.7)); }
-    if (rl === 3 && !o.ritLogged) { o.ritLogged = true; addLog(null, `${cleanText(pr.n, 16) || 'Someone'} is walking circles round the fire… and the standing stones are waking up.`, true); }
+  const here = joined ? roomOf(me.x) : '', there = roomOf(num(pr.x, 0)), name = cleanText(pr.n, 16) || 'Someone';
+  const ss = pr.ss;
+  if (ss && Array.isArray(ss.l)) {
+    const seen = o.ssSeen || 0;
+    if (!o.fresh && joined && here === 'camp') {
+      for (const ev of ss.l) {
+        const id = num(ev && ev[0], 0), i = num(ev && ev[1], -1) | 0;
+        if (id <= seen || i < 0 || i > 6) continue;
+        const d = dist(me.x, me.y, RIT_STONES[i].x, RIT_STONES[i].y);
+        if (d < 900) ritStrikeFx(i, clamp(1 - d / 900, 0.12, 0.8));
+      }
+    }
+    o.ssSeen = Math.max(seen, num(ss.e, 0));
   }
-  if (rl === 0) o.ritLogged = false;
-  o.rl = rl;
+  o.rp = clamp(num(pr.rp, 0) | 0, 0, RitualSong.STEPS);
+  const sg = !!pr.sg;
+  if (!o.fresh && joined && sg && !o.sg && here === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 800) addLog(null, `${name} is singing to the standing stones…`, true);
+  o.sg = sg;
   const wasThere = o.ritRoom;
   if (!o.fresh && joined && wasThere && wasThere !== there) {
-    const name = cleanText(pr.n, 16) || 'Someone';
-    if (there === 'other' && here === 'camp') addLog(null, `${name} stepped into the fire and vanished! ✨`, true);
+    if (there === 'other' && here === 'camp') addLog(null, `${name} stepped into the stone circle and vanished! ✨`, true);
     else if (there === 'other' && here === 'other') addLog(null, `${name} came tumbling out of the sky.`, true);
     else if (wasThere === 'other' && here === 'other') addLog(null, `${name} went home through the rift.`, true);
-    else if (wasThere === 'other' && here === 'camp') addLog(null, `${name} stepped back out of the campfire.`, true);
+    else if (wasThere === 'other' && here === 'camp') addLog(null, `${name} stepped back out of the stone circle.`, true);
   }
   o.ritRoom = there;
 }
@@ -4980,7 +5131,7 @@ function enterOther() {
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   stopFishing();
   me.sit = -1;
-  rit.tracker.reset(); me.rl = 0;
+  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; ritSetProgress();
   Object.assign(me, { x: OW_SPAWN.x + (Math.random() - 0.5) * 120, y: OW_SPAWN.y + (Math.random() - 0.5) * 30, face: 1, target: null, arrive: null, via: [], moving: false });
   snapCam();
   rit.fx.length = 0;
@@ -4990,20 +5141,20 @@ function enterOther() {
   rit.cardHidden = false;
   if (!rit.visited) {
     rit.visited = true;
-    addLog(null, 'You step into the fire and fall upward, into the Otherwhere. The orange rift leads home.', true);
+    addLog(null, 'You step into the light between the stones and fall upward, into the Otherwhere. The orange rift leads home.', true);
   }
   sentDirty = true; pushPresence(true);
-  renderStory(false); renderOwCard(false);
+  renderStory(false); renderOwCard(false); renderGladePanel(true);
 }
 function exitOther() {
   if (roomOf(me.x) !== 'other') return;
-  Object.assign(me, { x: FIRE.x + (Math.random() - 0.5) * 30, y: FIRE.y + 70, face: 0, target: null, arrive: null, via: [], moving: false });
+  Object.assign(me, { x: GLADE.x + (Math.random() - 0.5) * 30, y: GLADE.y + 64, face: 0, target: null, arrive: null, via: [], moving: false });
   snapCam();
   rit.fx.length = 0;
   rit.fadeAt = performance.now(); rit.fadeRgb = '255,206,150'; rit.enterAfter = performance.now() + 1500;
   ritSoundWhoosh(); otherAudio(false);
   sentDirty = true; pushPresence(true);
-  renderOwCard(false);
+  renderOwCard(false); renderGladePanel(true);
 }
 function nearRift() { return roomOf(me.x) === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 110; }
 
@@ -5044,75 +5195,91 @@ function renderOwCard(flip) {
 $('owNext').addEventListener('click', nextOwCard);
 $('owHide').addEventListener('click', () => { rit.cardHidden = true; renderOwCard(false); updateActionBtn(); });
 
+// ---- the panel in the glade ----
+function renderGladePanel(force) {
+  const box = $('sgPanel');
+  const show = nearGlade() && !ritDoorShowing() && !rit.panelHidden;
+  const ready = rit.door.ready(ritNow()), m = rit.mic;
+  const prog = ritGladeProg(), key = [show, ready, !!m, !!rit.micAsking, prog].join('|');
+  if (m) $('sgLevel').style.width = Math.round(m.level * 100) + '%';
+  if (!force && key === rit.panelKey) return;
+  rit.panelKey = key;
+  box.hidden = !show;
+  if (!show) return;
+  requestAnimationFrame(() => { rit.panelBottom = box.hidden ? 0 : box.getBoundingClientRect().bottom; });
+  const dots = $('sgDots');
+  if (dots.children.length !== RitualSong.STEPS) { dots.innerHTML = ''; for (let i = 0; i < RitualSong.STEPS; i++) dots.appendChild(document.createElement('i')); }
+  [...dots.children].forEach((d, i) => { const on = i < prog; d.classList.toggle('on', on); d.style.background = on ? RIT_STONES[GRACE_STONES[i]].color : ''; });
+  $('sgText').innerHTML = !ready ? 'The stones are resting…'
+    : m ? 'Listening… sing <b>“Amazing grace, how sweet the sound”</b>. Nothing is recorded or sent.'
+    : rit.micAsking ? 'Allow the microphone, then sing.'
+    : `Sing them the first line of <b>Amazing Grace</b>, or play it on the stones: tap them${HAS_KEYS ? ', or press 1 to 7' : ''}.`;
+  $('sgMeter').hidden = !m;
+  const sing = $('sgSing');
+  sing.hidden = !SING_OK;
+  sing.disabled = !ready || !!rit.micAsking;
+  sing.textContent = m ? 'Stop listening' : '🎤 Sing to the stones';
+  $('sgTune').disabled = !ready || !!m;
+}
+const HAS_KEYS = !matchMedia('(pointer: coarse)').matches;
+$('sgSing').addEventListener('click', () => { if (rit.mic) ritStopSinging(''); else ritStartSinging(); });
+$('sgTune').addEventListener('click', ritPlayDemo);
+$('sgHide').addEventListener('click', () => { rit.panelHidden = true; renderGladePanel(true); updateActionBtn(); });
+
 // ---- every frame ----
 function ritStep(dt) {
   const now = ritNow(), here = roomOf(me.x), ph = rit.door.phase(now);
   if (ph !== rit.lastPhase) { const prev = rit.lastPhase; rit.lastPhase = ph; ritOnPhase(ph, prev); }
   if (here === 'camp') {
-    if (rit.door.ready(now)) { for (const ev of rit.tracker.update(me.x, FIRE.y + (me.y - FIRE.y) / RIT_Y, dt)) onRitual(ev); }
-    else if (rit.tracker.state.active) rit.tracker.reset();
-    const st = rit.tracker.state;
-    if (st.laps !== me.rl) { me.rl = st.laps; sentDirty = true; }
-    if (st.active && st.laps >= 1 && me.moving) ritTrail(me.x, me.y, st.laps, st.danger, dt, rit);
     if (ph === 'open' && performance.now() > rit.enterAfter && rit.door.canEnter(me.x, me.y, now)) enterOther();
+    if (rit.mic && !ritCanPlay()) ritStopSinging('');
+    ritListen(dt);
   } else {
-    // the circle only counts at the campsite
-    if (rit.tracker.state.active) rit.tracker.reset();
-    if (me.rl) { me.rl = 0; sentDirty = true; }
+    if (rit.mic) ritStopSinging('');
     if (here === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 30 && performance.now() > rit.enterAfter) exitOther();
   }
+  if (rit.tapProg && performance.now() - rit.tapAt > 4000) { rit.tapProg = 0; rit.taps = []; }
+  if (!nearGlade() && rit.panelHidden) rit.panelHidden = false;   // the panel comes back next visit
+  ritSetProgress();
+  ritDemoTick();
   const there = roomOf(me.x);
   if (there !== rit.fxRoom) { rit.fx.length = 0; rit.fxRoom = there; }
   if (there === 'camp') {
-    // friends partway round leave a trail too
-    for (const o of others.values()) {
-      const rl = o.rl || 0;
-      if (rl >= 1 && o.p && o.p.mv && roomOf(o.rx) === 'camp') ritTrail(o.rx, o.ry, rl, 0, dt, o);
-    }
-    const lit = ritLitCount();
-    rit.sparkAcc += dt * (ph !== 'closed' ? 10 : lit * 1.2);
-    while (rit.sparkAcc > 1) {
-      rit.sparkAcc -= 1;
-      const col = ph !== 'closed' ? rnd(['#c9a6ff', '#9fd0ff', '#ff9fe8', '#ffffff']) : RIT_STONES[Math.max(0, lit - 1)].color;
-      ritEmit({ x: FIRE.x + (Math.random() - 0.5) * 22, y: FIRE.y, h: 24, vx: (Math.random() - 0.5) * 22, vh: 60 + Math.random() * 80, life: 1.1 + Math.random(), size: 3, color: col, wob: 3, ph: Math.random() * 6 });
+    // little notes rise from anyone the stones are listening to
+    rit.noteAcc += dt * 2.2;
+    while (rit.noteAcc > 1) {
+      rit.noteAcc -= 1;
+      const singers = [];
+      if (rit.mic && performance.now() - rit.mic.heardAt < 400) singers.push([me.x, me.y]);
+      for (const o of others.values()) if (o.sg && roomOf(o.rx) === 'camp') singers.push([o.rx, o.ry]);
+      for (const [x, y] of singers) ritEmit({ x: x + (Math.random() - 0.5) * 20, y, h: 56, vx: (Math.random() - 0.5) * 16, vh: 26 + Math.random() * 14, life: 1.8, size: 10, color: rnd(['#fff1c9', '#e9dcff', '#c9f0ff']), glyph: rnd(['♪', '♫']), fadeIn: true, wob: 2, ph: Math.random() * 6 });
     }
     if (ph !== 'closed') {
       const str = ritDoorStrength();
       if (str > 0.2 && Math.random() < dt * 26) {
         const a = Math.random() * 6.283, i = Math.floor(Math.random() * 7);
-        ritEmit({ x: FIRE.x + Math.cos(a) * 44 * str, y: FIRE.y, h: RIT_DOOR_H - Math.sin(a) * 66 * str, vx: -Math.sin(a) * 40, vh: -Math.cos(a) * 40, life: 0.6 + Math.random() * 0.6, size: 3.5, color: RIT_STONES[i].color, drag: 1 });
+        ritEmit({ x: GLADE.x + Math.cos(a) * 44 * str, y: GLADE.y, h: RIT_DOOR_H - Math.sin(a) * 66 * str, vx: -Math.sin(a) * 40, vh: -Math.cos(a) * 40, life: 0.6 + Math.random() * 0.6, size: 3.5, color: RIT_STONES[i].color, drag: 1 });
       }
     }
   } else if (there === 'other') otherTick(dt);
   for (const list of [rit.doorStars, rit.riftStars]) for (const s of list) { s.a += dt * (1.2 / (s.r + 0.25)); s.r -= dt * s.sp; if (s.r < 0.04) { s.r = 1; s.a = Math.random() * 6.283; } }
-  // the stones ease towards awake or asleep, and flicker when my walk is about to break
-  const lit = there === 'camp' ? ritLitCount() : 0, danger = rit.tracker.state.danger;
+  // stones glow with the tune so far, and flash as they sing
+  const lit = there === 'camp' ? ritLitSet() : new Set();
   for (const s of RIT_STONES) {
-    const want = s.i < lit ? 1 : 0;
-    s.light += (want - s.light) * Math.min(1, dt * (want > s.light ? 4.5 : 2.2));
-    s.flicker = want && danger > 0.15 ? 1 - danger * 0.75 * Math.random() : 1;
+    const want = lit.has(s.i) ? 1 : 0;
+    s.light += (want - s.light) * Math.min(1, dt * (want > s.light ? 4.5 : 1.6));
+    s.flash = Math.max(0, s.flash - dt * 1.8);
   }
-  const tint = ritFireTint();
-  rit.glow = rit.glow.map((v, i) => v + ((tint.k ? mixRgb([255, 150, 60], tint.rgb, Math.min(1, tint.k + 0.2))[i] : [255, 150, 60][i]) - v) * Math.min(1, dt * 2));
   rit.shake *= Math.exp(-3.2 * dt); if (rit.shake < 0.003) rit.shake = 0;
-  rit.pulse *= Math.exp(-2.4 * dt);
   ritFxTick(dt);
-  // a low hum that builds with the stones, and swells while the door is open
+  // a low hum while the door is open nearby
   let hum = 0;
-  if (there === 'camp') {
-    const k = clamp(1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 700, 0, 1);
-    hum = (ph === 'opening' ? 0.08 : ph === 'open' ? 0.045 : ph === 'closing' ? 0.02 : lit * 0.007) * k;
+  if (there === 'camp' && ph !== 'closed') {
+    const k = clamp(1 - dist(me.x, me.y, GLADE.x, GLADE.y) / 700, 0, 1);
+    hum = (ph === 'opening' ? 0.08 : ph === 'open' ? 0.045 : 0.02) * k;
   }
   ritHum(hum);
-}
-function ritTrail(x, y, laps, danger, dt, holder) {
-  holder.ritAcc = (holder.ritAcc || 0) + dt;
-  const col = RIT_STONES[Math.min(laps, 6)].color;
-  while (holder.ritAcc > 0.035) {
-    holder.ritAcc -= 0.035;
-    ritEmit({ x: x + (Math.random() - 0.5) * 8, y: y + (Math.random() - 0.5) * 6, h: 0, life: 1.9, size: 10, color: col, ground: true, alpha: 0.5 * (1 - danger * 0.7) });
-    if (Math.random() < 0.22) ritEmit({ x, y, h: 8, vh: 25 + Math.random() * 25, life: 1.4, size: 3.4, color: col, fadeIn: true, wob: 4, ph: Math.random() * 6 });
-  }
+  renderGladePanel(false);
 }
 function otherTick(dt) {
   // the spirit fire burns downward from logs floating in the air
@@ -5182,12 +5349,13 @@ function ritDrawFx(g) {
     if (sx < -40 || sy < -40 || sx > VW + 40 || sy > VH + 40) continue;
     let a = p.alpha * Math.pow(f, 0.7);
     if (p.fadeIn) a *= Math.min(1, (1 - f) * 5);
+    if (p.glyph) { g.globalAlpha = Math.min(1, a); g.fillStyle = p.color; g.font = `${Math.round(p.size * 1.6 * ZOOM)}px serif`; g.textAlign = 'center'; g.fillText(p.glyph, sx, sy); continue; }
     ritBlob(g, p.color, sx, sy, p.size * ZOOM * (p.shrink ? 0.3 + 0.7 * f : 1), a);
   }
   g.restore();
 }
 
-// ---- drawing: the campsite ----
+// ---- drawing: the stone circle ----
 function drawRitStone(g, st) {
   g.save(); g.translate(st.x, st.y);
   g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.ellipse(4, 1, 17, 5, 0, 0, Math.PI * 2); g.fill();
@@ -5197,13 +5365,22 @@ function drawRitStone(g, st) {
   const gr = g.createLinearGradient(-14, 0, 14, 0);
   gr.addColorStop(0, '#6a675f'); gr.addColorStop(0.5, '#8f8b81'); gr.addColorStop(1, '#5a5751');
   g.fillStyle = gr; g.fill();
-  if (st.light > 0.01) { g.globalAlpha = 0.28 * st.light; g.fillStyle = st.color; g.fill(); g.globalAlpha = 1; }
+  const L = Math.max(st.light, st.flash);
+  if (L > 0.01) { g.globalAlpha = 0.28 * L; g.fillStyle = st.color; g.fill(); g.globalAlpha = 1; }
   g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 1; g.stroke();
   g.fillStyle = 'rgba(70,110,64,0.7)'; g.beginPath(); g.ellipse(-6, -2, 8, 3.5, 0, 0, Math.PI * 2); g.ellipse(6, -1, 6, 3, 0, 0, Math.PI * 2); g.fill();
-  // the carved rune (it glows in the lighting pass once the stone wakes)
+  // the carved rune (it glows in the lighting pass when the stone sings)
   g.strokeStyle = 'rgba(40,36,32,0.7)'; g.lineWidth = 2; g.lineCap = 'round';
   ritRunePath(g, st.i, 0, -26, 8); g.stroke();
   g.restore();
+}
+// a low flat stone in the middle of the ring, where the door opens
+function drawGladeHeart(g) {
+  g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(GLADE.x + 3, GLADE.y + 2, 30, 11, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#8a867c'; g.beginPath(); g.ellipse(GLADE.x, GLADE.y, 28, 10, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#a19c90'; g.beginPath(); g.ellipse(GLADE.x - 2, GLADE.y - 2, 22, 7, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = 'rgba(60,56,50,0.5)'; g.lineWidth = 1.5;
+  g.beginPath(); g.ellipse(GLADE.x - 2, GLADE.y - 2, 12, 4, 0, 0, Math.PI * 2); g.stroke();
 }
 function ritRunePath(g, i, cx, cy, k) {
   g.beginPath();
@@ -5244,20 +5421,21 @@ function ritDrawDoor(g, sx, sy, rx, ry, str, pal, stars, t) {
   g.beginPath(); g.ellipse(sx, sy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
   g.restore();
 }
-// Holes in the night: awake stones and the door give off light.
+// Holes in the night: singing stones and the door give off light.
 function ritHoles(hole) {
-  for (const s of RIT_STONES) if (s.light > 0.02) hole(s.x, s.y - 22, 90 * s.light, 0.6 * s.light * s.flicker);
+  for (const s of RIT_STONES) { const L = Math.max(s.light, s.flash); if (L > 0.02) hole(s.x, s.y - 22, 90 * L, 0.6 * L); }
   const str = ritDoorStrength();
-  if (str > 0.02) hole(FIRE.x, FIRE.y - RIT_DOOR_H, 260 * Math.min(1.2, str), 0.9);
+  if (str > 0.02) hole(GLADE.x, GLADE.y - RIT_DOOR_H, 260 * Math.min(1.2, str), 0.9);
   const e = rit.door.elapsed(ritNow());
-  if (e !== null && e < 2.8) hole(FIRE.x, FIRE.y - 40, 700 * Math.sin(Math.PI * clamp(e / 2.8, 0, 1)), 0.8);
+  if (e !== null && e < 2.8) hole(GLADE.x, GLADE.y - 40, 700 * Math.sin(Math.PI * clamp(e / 2.8, 0, 1)), 0.8);
 }
 function ritLightCamp(t) {
   const g = ctx;
+  const [cx, cy] = w2s(GLADE.x, GLADE.y - 20);
   g.save(); g.globalCompositeOperation = 'lighter';
-  // awake stones: glowing runes and a pool of coloured light at their feet
+  // singing stones: glowing runes and a pool of coloured light at their feet
   for (const s of RIT_STONES) {
-    const L = s.light * s.flicker;
+    const L = Math.max(s.light, s.flash);
     if (L < 0.02) continue;
     const [bx, by] = w2s(s.x, s.y), [rx, ry] = w2s(s.x, s.y - 26);
     ritBlob(g, s.color, bx, by - 6 * ZOOM, 56 * ZOOM, 0.45 * L);
@@ -5267,16 +5445,15 @@ function ritLightCamp(t) {
     g.globalAlpha = 1;
     g.strokeStyle = `rgba(${s.rgb.join(',')},${0.35 * L})`; g.lineWidth = Math.max(2, 6 * ZOOM); g.stroke();
     g.strokeStyle = `rgba(${s.rgb.join(',')},${L})`; g.lineWidth = Math.max(1, 2.2 * ZOOM); g.stroke();
-    // a faint thread of light to the fire
-    const [fx, fy] = w2s(FIRE.x, FIRE.y - 30);
-    g.strokeStyle = `rgba(${s.rgb.join(',')},${0.12 * L})`; g.lineWidth = Math.max(1, 1.5 * ZOOM);
-    g.beginPath(); g.moveTo(rx, ry); g.lineTo(fx, fy); g.stroke();
+    // a faint thread of light to the middle of the ring
+    g.strokeStyle = `rgba(${s.rgb.join(',')},${0.12 * s.light})`; g.lineWidth = Math.max(1, 1.5 * ZOOM);
+    g.beginPath(); g.moveTo(rx, ry); g.lineTo(cx, cy); g.stroke();
   }
   const e = rit.door.elapsed(ritNow());
   if (e !== null && e < 3.6) {
-    // the seventh stone wakes: every stone beams into the fire, a pillar of light, a ring across the ground
+    // the tune is sung: every stone beams into the middle, a pillar of light, a ring across the ground
     const ba = e < 0.3 ? e / 0.3 : clamp(1 - (e - 2.4) / 0.9, 0, 1);
-    const [fx, fy] = w2s(FIRE.x, FIRE.y - 50);
+    const [fx, fy] = w2s(GLADE.x, GLADE.y - 50);
     for (const s of RIT_STONES) {
       const [rx, ry] = w2s(s.x, s.y - 26);
       g.globalAlpha = 1;
@@ -5285,7 +5462,7 @@ function ritLightCamp(t) {
     }
     const pe = clamp((e - 0.15) / 2.5, 0, 1), env = Math.sin(Math.PI * pe);
     if (env > 0.01) {
-      const [bx, by] = w2s(FIRE.x, FIRE.y), w = 30 * ZOOM * env * (1 + 0.12 * Math.sin(t * 40));
+      const [bx, by] = w2s(GLADE.x, GLADE.y), w = 30 * ZOOM * env * (1 + 0.12 * Math.sin(t * 40));
       const pg = g.createLinearGradient(bx - w, 0, bx + w, 0);
       pg.addColorStop(0, 'rgba(160,110,255,0)'); pg.addColorStop(0.3, `rgba(170,120,255,${0.5 * env})`); pg.addColorStop(0.5, `rgba(255,255,255,${0.95 * env})`); pg.addColorStop(0.7, `rgba(170,120,255,${0.5 * env})`); pg.addColorStop(1, 'rgba(160,110,255,0)');
       g.globalAlpha = 1; g.fillStyle = pg; g.fillRect(bx - w, -50, w * 2, by + 50);
@@ -5293,7 +5470,7 @@ function ritLightCamp(t) {
     }
     const sw = clamp((e - 0.1) / 1.5, 0, 1);
     if (sw > 0 && sw < 1) {
-      const [bx, by] = w2s(FIRE.x, FIRE.y), r = (1 - Math.pow(1 - sw, 3)) * 460 * ZOOM;
+      const [bx, by] = w2s(GLADE.x, GLADE.y), r = (1 - Math.pow(1 - sw, 3)) * 460 * ZOOM;
       g.globalAlpha = 1; g.strokeStyle = `rgba(231,214,255,${0.8 * (1 - sw)})`; g.lineWidth = Math.max(1, 6 * ZOOM * (1 - sw));
       g.beginPath(); g.ellipse(bx, by, r, r * RIT_Y, 0, 0, Math.PI * 2); g.stroke();
     }
@@ -5302,12 +5479,12 @@ function ritLightCamp(t) {
   ritDrawFx(g);
   const str = ritDoorStrength();
   if (str > 0.01) {
-    const [bx, by] = w2s(FIRE.x, FIRE.y), [dx, dy] = w2s(FIRE.x, FIRE.y - RIT_DOOR_H);
+    const [bx, by] = w2s(GLADE.x, GLADE.y), [dx, dy] = w2s(GLADE.x, GLADE.y - RIT_DOOR_H);
     g.save(); g.globalCompositeOperation = 'lighter'; ritBlob(g, '#9b6bff', bx, by, 130 * ZOOM * str, 0.35); g.restore();
     ritDrawDoor(g, dx, dy, 44 * ZOOM * str, 66 * ZOOM * str, str, DOOR_PAL, rit.doorStars, t);
   }
   const fl = (performance.now() - rit.flashAt) / 500;
-  if (fl < 1) { g.save(); g.fillStyle = `rgba(245,235,255,${(REDUCED_MOTION ? 0.25 : 0.55) * (1 - fl)})`; g.fillRect(0, 0, VW, VH); g.restore(); }
+  if (fl < 1 && dist(me.x, me.y, GLADE.x, GLADE.y) < 900) { g.save(); g.fillStyle = `rgba(245,235,255,${(REDUCED_MOTION ? 0.25 : 0.55) * (1 - fl)})`; g.fillRect(0, 0, VW, VH); g.restore(); }
 }
 
 // ---- drawing: the Otherwhere ----
@@ -5423,8 +5600,8 @@ function ritLightOther(t, people) {
 function ritOverlay(here) {
   const now = performance.now();
   if (here === 'camp' && ritDoorOpen()) {
-    const [sx, sy] = w2s(FIRE.x, FIRE.y - RIT_DOOR_H - 66 * ritDoorStrength() - 14);
-    ritTag(sx, Math.max(56, sy - 20), `Step into the fire · ${Math.ceil(rit.door.timeLeft(ritNow()))}s`, 'rgba(60,30,110,0.85)', '#f1e6ff');
+    const [sx, sy] = w2s(GLADE.x, GLADE.y - RIT_DOOR_H - 66 * ritDoorStrength() - 14);
+    ritTag(sx, Math.max(56, sy - 20), `Step into the circle · ${Math.ceil(rit.door.timeLeft(ritNow()))}s`, 'rgba(60,30,110,0.85)', '#f1e6ff');
   }
   if (here === 'other') { const [sx, sy] = w2s(RIFT.x, RIFT.y); ritTag(sx, sy + 8, 'Home', 'rgba(90,40,10,0.8)', '#ffe2c0'); }
   const fo = (now - rit.fadeAt) / 800;
@@ -5441,23 +5618,18 @@ function ritTag(sx, sy, label, bg, fg) {
 }
 
 // ---- sound (through the campsite volume slider) ----
-const RIT_NOTES = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 739.99];
-function ritSoundLap(n, vol) {
-  if (!audio) return;
-  bellTone(RIT_NOTES[n - 1], 0.07 * vol, 2.8, envOut());
-  bellTone(RIT_NOTES[n - 1] * 1.5, 0.025 * vol, 2.2, envOut());
-  smBlip(110, 1.1, 'sine', 0.14 * vol, 50);
+function ritSoundStone(i, vol) {
+  if (!audio || vol <= 0) return;
+  const f = 440 * Math.pow(2, (RIT_NOTES[i] - 69) / 12);
+  bellTone(f, 0.075 * vol, 2.6, envOut());
+  bellTone(f * 2, 0.018 * vol, 1.3, envOut());
+  smBlip(f / 2, 0.35, 'sine', 0.05 * vol, f / 2.1);
 }
 function ritSoundComplete(vol) {
   if (!audio) return;
   smBlip(120, 2.4, 'sine', 0.38 * vol, 36);
   smBurst(2.2, 250, 4200, 0.22 * vol, 'bandpass');
   [293.66, 369.99, 440, 554.37, 659.25, 880, 1108.73].forEach((f, i) => setTimeout(() => bellTone(f, 0.045 * vol, 5, envOut()), 120 + i * 85));
-}
-function ritSoundBreak() {
-  if (!audio) return;
-  [440, 369.99, 293.66].forEach((f, i) => setTimeout(() => bellTone(f, 0.03, 1.4, envOut()), i * 130));
-  smBurst(0.6, 3000, 900, 0.05, 'highpass');
 }
 function ritSoundWhoosh() {
   if (!audio) return;
@@ -5508,10 +5680,11 @@ function otherAudio(on) {
 }
 // For quick checks from the browser console, like the church and voice ones.
 window.campfireRitualDebug = () => ({
-  room: roomOf(me.x), laps: rit.tracker.state.laps, progress: Math.round(rit.tracker.state.lapProgress * 100) / 100, danger: rit.tracker.state.danger,
-  door: ritPhase(), timeLeft: Math.round(rit.door.timeLeft(ritNow())), shared: door, card: owCard.i, lit: ritLitCount(), x: Math.round(me.x), y: Math.round(me.y)
+  room: roomOf(me.x), glade: nearGlade(), prog: me.rp, taps: rit.taps.length, singing: !!rit.mic,
+  heard: rit.mic ? rit.mic.listener.notes.map(n => Math.round(n * 10) / 10) : [],
+  door: ritPhase(), timeLeft: Math.round(rit.door.timeLeft(ritNow())), shared: door, card: owCard.i,
+  lit: [...ritLitSet()].length, x: Math.round(me.x), y: Math.round(me.y)
 });
-
 
 // ===== Ember, the campfire spirit =====
 // The fire has a spirit, asleep in the coals (watch for the little z's). Anyone at the
@@ -6366,7 +6539,6 @@ function drawSpiritOverlay(t, now) {
   const d = dist(me.x, me.y, FIRE.x, FIRE.y);
   if (d > 430) return;
   if (spirit.ph === 'sleep') {
-    if (ritDoorShowing()) return; // the z's would drift through the door
     ctx.save(); ctx.fillStyle = '#ffe7b8'; ctx.textAlign = 'center';
     for (let i = 0; i < 3; i++) {
       const p = (t * 0.32 + i / 3) % 1, [sx, sy] = w2s(FIRE.x + 12 + p * 22 + Math.sin(p * 6 + i) * 4, FIRE.y - 66 - p * 60);
@@ -6407,6 +6579,7 @@ window.addEventListener('keydown', e => {
   if ((e.key === 'r' || e.key === 'R') && !e.repeat) { smPrimary(); return; }
   if ((e.key === 'f' || e.key === 'F') && !e.repeat) { smServe(false); return; }
   if (/^[1-5]$/.test(e.key) && !e.repeat && ember.shown && spirit.ph === 'song') { spTap(+e.key - 1); return; }
+  if (/^[1-7]$/.test(e.key) && !e.repeat && nearGlade()) { ritStrike(+e.key - 1); return; }
   if ((e.key === 't' || e.key === 'T') && !e.repeat && ember.shown && spirit.ph === 'awake') { e.preventDefault(); if (spCanListen()) spListen(); else $('spInput').focus(); return; }
   const k = e.key.toLowerCase();
   if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { keys.add(k); e.preventDefault(); }
@@ -6440,8 +6613,13 @@ const endTouch = e => {
       if (dist(wx, wy, RIFT.x, RIFT.y - 46) < 60) walkTo(RIFT.x, RIFT.y, 'home');
       else walkTo(wx, wy);
     }
-    // tapped the door (or the fire under it) while it's open: walk in
-    else if (ritDoorOpen() && (dist(wx, wy, FIRE.x, FIRE.y) < 50 || (Math.abs(wx - FIRE.x) < 52 && wy > FIRE.y - RIT_DOOR_H - 72 && wy < FIRE.y))) walkTo(FIRE.x, FIRE.y, 'door');
+    // tapped the door in the stone circle while it's open: walk in
+    else if (ritDoorOpen() && (dist(wx, wy, GLADE.x, GLADE.y) < 50 || (Math.abs(wx - GLADE.x) < 52 && wy > GLADE.y - RIT_DOOR_H - 72 && wy < GLADE.y))) walkTo(GLADE.x, GLADE.y, 'door');
+    // tapped a standing stone: in the glade it sings; from further off, walk over to it
+    else if (RIT_STONES.some(s => Math.abs(wx - s.x) < 17 && wy > s.y - 52 && wy < s.y + 6)) {
+      const s = RIT_STONES.find(q => Math.abs(wx - q.x) < 17 && wy > q.y - 52 && wy < q.y + 6);
+      if (nearGlade()) ritStrike(s.i); else walkTo(s.x + (GLADE.x - s.x) * 0.25, s.y + (GLADE.y - s.y) * 0.25);
+    }
     else {
       const seat = SEATS.findIndex(s => dist(wx, wy, s.x, s.y) < 22);
       if (seat >= 0 && !seatTaken(seat) && dist(me.x, me.y, FIRE.x, FIRE.y) < 230) sitAt(seat);
@@ -6504,7 +6682,8 @@ function nearFire() { return dist(me.x, me.y, FIRE.x, FIRE.y) < 190; }
 function stopFishing() { if (me.fish) { clearTimeout(me.fish.timer); me.fish = null; sentDirty = true; } }
 function doAction() {
   if (smHoldsStick()) return;
-  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 200 && !me.fish) { if (me.sit >= 0) stand(); walkTo(FIRE.x, FIRE.y, 'door'); return; }
+  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) { walkTo(GLADE.x, GLADE.y, 'door'); return; }
+  if (nearGlade() && SING_OK && !ritDoorShowing() && me.sit < 0) { rit.panelHidden = false; if (rit.mic) ritStopSinging(''); else ritStartSinging(); return; }
   if (inOther(me.x)) { if (nearRift()) walkTo(RIFT.x, RIFT.y, 'home'); else { rit.cardHidden = !rit.cardHidden; renderOwCard(true); } return; }
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   if (me.sit >= 0) { stand(); return; }
@@ -6547,7 +6726,8 @@ function updateActionBtn() {
   const b = $('actionBtn');
   let label = null;
   b.classList.remove('bite');
-  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 200 && !me.fish) label = 'Step into the door';
+  if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) label = 'Step into the door';
+  else if (nearGlade() && SING_OK && !ritDoorShowing() && me.sit < 0) label = rit.mic ? 'Stop singing' : 'Sing to the stones';
   else if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
   else if (nearFire()) label = 'Sit by the fire';
@@ -6686,6 +6866,14 @@ function camTarget() {
     ty = Math.min(ty, FIRE.y - (want - VH / 2) / ZOOM);
     tx = clamp(FIRE.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
   }
+  // On phones the stone circle sits right at the bottom edge of the map, under the chat bar:
+  // slide the view (a little past the edge if need be) so the ring shows between the panel and the bar.
+  if (VW <= 640 && joined && inGlade(me.x, me.y)) {
+    const top = !$('sgPanel').hidden && rit.panelBottom ? rit.panelBottom + 10 : 60;
+    const want = (top + VH - 150) / 2 + 20 * ZOOM;
+    ty = Math.max(ty, GLADE.y - (want - VH / 2) / ZOOM);
+    tx = clamp(GLADE.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
+  }
   return [tx, ty];
 }
 function snapCam() { const [x, y] = camTarget(); cam.x = x; cam.y = y; }
@@ -6727,13 +6915,11 @@ function drawFire(g, t) {
   // the spirit changes the fire: smaller while its sparks are away, a colour flash per note, taller and awake with a face
   const st = spFireState(performance.now(), t);
   const layers = [['#e2572b', 30, 62], ['#f39a3c', 22, 48], ['#ffd36b', 14, 32], ['#fff3c4', 7, 16]];
-  // the Circle of Seven tints the flames with the colour of the newest stone to wake
-  const tint = ritFireTint(), grow = 1 + rit.pulse * 0.25 + (tint.k ? 0.04 * ritLitCount() : 0);
   layers.forEach(([c, w0, h], i) => {
-    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i)) * st.s * grow;
+    const hh = h * (0.85 + 0.25 * fl(7 + i * 2.3, i)) * st.s;
     const w = w0 * (1 + (st.s - 1) * 0.55);
     const sway = Math.sin(t * 3.1 + i) * 4;
-    g.fillStyle = tint.k ? mixHex(c, tint.rgb, tint.k * [0.9, 0.8, 0.55, 0.15][i]) : c;
+    g.fillStyle = c;
     g.beginPath(); g.moveTo(-w, -2);
     g.quadraticCurveTo(-w * 0.9, -hh * 0.55, sway, -hh);
     g.quadraticCurveTo(w * 0.9, -hh * 0.55, w, -2);
@@ -6812,7 +6998,7 @@ function drawNameTag(g, sx, sy, name, mine, holder, mic, champ) {
   g.restore();
 }
 function drawFloatCard(g, t) {
-  if (!story.text || me.sit >= 0 || ritDoorShowing()) return;
+  if (!story.text || me.sit >= 0) return;
   if (spirit.ph === 'awake' && (ember.cur || spFireState(performance.now(), t).think)) return; // Ember is talking up there
   if (dist(me.x, me.y, FIRE.x, FIRE.y) > 340) return;
   const [sx, sy] = w2s(FIRE.x, FIRE.y - 120 + Math.sin(t * 1.5) * 3);
@@ -6881,7 +7067,7 @@ function darkPass(fill, holes, vignette, shade) {
 function render(t) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const inside = joined && inChurch(me.x), other = joined && inOther(me.x);
-  ctx.fillStyle = inside ? '#0c0b12' : other ? '#0b0722' : '#141a2e'; ctx.fillRect(0, 0, VW, VH);
+  ctx.fillStyle = inside ? '#0c0b12' : other ? '#0b0722' : '#26402d'; ctx.fillRect(0, 0, VW, VH);   // past the map's edge: dark woods
   if (other) drawOtherSky(t);
   const people = buildPeople(inside);
   // the ground shakes when the seventh stone wakes
@@ -6920,6 +7106,12 @@ function render(t) {
     for (const s of OW_STONES) items.push({ y: s.y, d: () => drawOwStone(ctx, s) });
   } else {
     ctx.drawImage(ground, 0, 0);
+    // the bottom edge of the map fades into dark woods (phones can see past it at the stone circle)
+    if (cam.y + VH / 2 / ZOOM > H - 80) {
+      const eg = ctx.createLinearGradient(0, H - 80, 0, H + 2);
+      eg.addColorStop(0, 'rgba(38,64,45,0)'); eg.addColorStop(1, 'rgba(38,64,45,1)');
+      ctx.fillStyle = eg; ctx.fillRect(0, H - 80, W, 82);
+    }
     // lake shimmer
     ctx.strokeStyle = 'rgba(220,240,255,0.35)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
     for (let i = 0; i < 9; i++) {
@@ -6941,6 +7133,7 @@ function render(t) {
     items.push({ y: CHURCH.y, d: () => drawChurch(ctx, t) });
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });
     for (const s of RIT_STONES) items.push({ y: s.y, d: () => drawRitStone(ctx, s) });
+    items.push({ y: GLADE.y - 12, d: () => drawGladeHeart(ctx) });
   }
   for (const p of people) items.push({ y: p.y, d: () => drawPerson(p, t) });
   items.sort((a, b) => a.y - b.y);
@@ -6975,8 +7168,7 @@ function lightCamp(t, people) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const [fx, fy] = w2s(FIRE.x, FIRE.y - 20);
   const gr = ctx.createRadialGradient(fx, fy, 0, fx, fy, 240 * ZOOM * flick);
-  const fg = rit.glow.map(v => Math.round(v)).join(',');   // shifts with the Circle of Seven
-  gr.addColorStop(0, `rgba(${fg},0.32)`); gr.addColorStop(1, `rgba(${fg},0)`);
+  gr.addColorStop(0, 'rgba(255,150,60,0.32)'); gr.addColorStop(1, 'rgba(255,120,40,0)');
   ctx.fillStyle = gr; ctx.fillRect(fx - 260 * ZOOM, fy - 260 * ZOOM, 520 * ZOOM, 520 * ZOOM);
   for (const L of LIGHTS) {
     const [lx, ly] = w2s(L.x, L.y);
