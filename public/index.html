@@ -427,7 +427,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .cp-done svg { filter: drop-shadow(0 0 14px rgba(255,207,107,0.75)); animation: talRise 1.4s ease-out; }
 @keyframes talRise { from { opacity: 0; transform: translateY(14px) scale(0.7); } to { opacity: 1; transform: none; } }
 /* ---------- the Otherwhere: the story card on the floating island ---------- */
-#owPanel, #sgPanel {
+#owPanel {
   top: calc(60px + env(safe-area-inset-top, 0px));
   right: max(12px, env(safe-area-inset-right, 0px));
   width: min(330px, calc(100vw - 24px)); box-sizing: border-box;
@@ -436,7 +436,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 40px rgba(150,100,255,0.18);
 }
 @media (max-width: 640px) {
-  #owPanel, #sgPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+  #owPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
 }
 #owPanel .story-head h2 { color: #d8c4ff; }
 .ow-sub { margin: 0; font-size: 13px; line-height: 1.4; color: #c8bde6; }
@@ -444,14 +444,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .ow-card .card-deck, .ow-card .card-by { color: #6b5a96; }
 .ow-card .card-text { color: #2c2245; }
 .ow-next { background: linear-gradient(180deg, #d4b8ff, #a77bff); color: #1c0f38; }
-#sgPanel .story-head h2 { color: #ffe2b8; }
-#sgPanel .ow-sub { color: #e8dccb; }
-.sg-dots { display: flex; gap: 6px; justify-content: center; }
-.sg-dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,235,210,0.35); transition: background .3s, box-shadow .3s; }
-.sg-dots i.on { border-color: transparent; box-shadow: 0 0 8px currentColor; }
-.sg-meter { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
-.sg-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffd23f, #ff8a3d); transition: width .08s; }
-#sgPanel button:disabled { opacity: 0.45; cursor: default; }
 /* ---------- pipe organ keyboard ---------- */
 #orgPanel {
   left: 50%; transform: translateX(-50%);
@@ -708,20 +700,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   </div>
 </div>
 
-<div class="hud" id="sgPanel" hidden>
-  <div class="story-head">
-    <h2>The singing stones</h2>
-    <button class="btn-ghost small" id="sgHide" type="button">Hide</button>
-  </div>
-  <p class="ow-sub" id="sgText"></p>
-  <div class="sg-dots" id="sgDots" aria-hidden="true"></div>
-  <div class="sg-meter" id="sgMeter" hidden><i id="sgLevel"></i></div>
-  <div class="story-row">
-    <button class="btn-warm ow-next" id="sgSing" type="button">🎤 Sing to the stones</button>
-    <button class="btn-ghost small" id="sgTune" type="button">Hear the tune</button>
-  </div>
-</div>
-
 <div class="hud" id="owPanel" hidden>
   <div class="story-head">
     <h2>The Otherwhere</h2>
@@ -846,7 +824,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
     <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back. Each lap wakes a spark that circles the flames; on the seventh, Ember wakes up. Talk to it by typing in its panel, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you. "Let Ember sleep" puts it back to sleep.</p>
-    <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. Sing them the first line of Amazing Grace, or play it on the stones (tap them, or press 1 to 7), and see what opens. The microphone is only on while the stones are listening, and nothing is recorded or sent.</p>
+    <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. With your mic on, stand inside the ring and sing them the first line of Amazing Grace (or play it on the stones: tap them, or press 1 to 7), and see what opens. The stones only listen while your mic is on and you're inside the ring, and what they hear stays on your device.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Forest scares</span>
@@ -2462,7 +2440,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.10';
+const VERSION = 'v0.10.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -4864,24 +4842,21 @@ function blockedRitStone(x, y) { for (const s of RIT_STONES) if (dist(x, y, s.x,
 // ---- state ----
 const ritNow = () => performance.now() / 1000;
 const ritDoorStars = n => Array.from({ length: n }, () => ({ a: Math.random() * 6.283, r: 0.1 + Math.random() * 0.9, sp: 0.2 + Math.random() * 0.3 }));
-const SING_OK = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext !== false;
 const rit = {
   door: RitualCore.createPortal({ x: GLADE.x, y: GLADE.y }, { openSeconds: 60, enterRadius: 34 }),
   lastPhase: 'closed', fx: [], fxRoom: 'camp', sparkAcc: 0, trailAcc: 0, noteAcc: 0, shake: 0, flashAt: -1e9,
-  fadeAt: -1e9, fadeRgb: '226,210,255', enterAfter: 0, visited: false, cardHidden: false, panelHidden: false,
+  fadeAt: -1e9, fadeRgb: '226,210,255', enterAfter: 0, visited: false, cardHidden: false,
   hum: null, humLvl: 0, owBus: null, owInp: null, bellT: 2,
   taps: [], tapAt: 0, tapProg: 0,      // my stone taps (as notes) and how far through the line they get
   mic: null, singProg: 0,              // while the stones are listening to me sing
-  demo: null,                          // "Hear the tune": the stones playing the line by themselves
   ssEv: 0, ssList: [],                 // my recent taps, for presence (so friends hear them)
-  panelKey: '',
   doorStars: ritDoorStars(36), riftStars: ritDoorStars(18),
   sky: Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.2, ph: Math.random() * 6.283, sp: 0.6 + Math.random() * 1.6 }))
 };
 let door = { v: 0, id: '', by: '', bn: '', at: 0, h: '' };              // shared: presence 'pt'
 let owCard = { v: 0, i: Math.floor(Math.random() * OW_PROMPTS.length), by: '' }; // shared: presence 'ow'
 me.rp = 0;   // how far through the tune I am, 0-9 (presence 'rp')
-me.sg = 0;   // 1 while the stones are listening to me (presence 'sg')
+me.sg = 0;   // 1 while the stones can hear me singing (presence 'sg')
 function ritPhase() { return rit.door.phase(ritNow()); }
 function ritDoorOpen() { return ritPhase() === 'open'; }
 function ritDoorShowing() { return ritPhase() !== 'closed'; }
@@ -4907,7 +4882,7 @@ function ritStrikeFx(i, vol) {
   ritSoundStone(i, vol);
 }
 function ritStrike(i) {
-  if (!nearGlade() || rit.mic) return;
+  if (!nearGlade()) return;
   ritStrikeFx(i, 1);
   rit.ssEv++; rit.ssList.push([rit.ssEv, i]);
   if (rit.ssList.length > 6) rit.ssList.shift();
@@ -4926,53 +4901,34 @@ function ritSetProgress() {
   const k = Math.max(rit.tapProg, rit.mic ? rit.singProg : 0);
   if (k !== me.rp) { me.rp = k; sentDirty = true; }
 }
-// "Hear the tune": the stones play the first line by themselves (it doesn't count, and not while listening)
-function ritPlayDemo() {
-  if (rit.mic || !nearGlade()) return;
-  getAC();
-  rit.demo = { i: 0, at: performance.now() + 300 };
-}
-function ritDemoTick() {
-  const d = rit.demo;
-  if (!d) return;
-  if (rit.mic || !nearGlade()) { rit.demo = null; return; }
-  if (performance.now() < d.at) return;
-  ritStrikeFx(GRACE_STONES[d.i], 0.8);
-  d.at += GRACE_BEATS[d.i] * 60000 / 76;
-  if (++d.i >= GRACE_STONES.length) rit.demo = null;
-}
-
 // ---- singing to the stones ----
-async function ritStartSinging() {
-  if (rit.mic || rit.micAsking || !SING_OK || !ritCanPlay()) return;
+// No buttons: if your mic is on (the voice-chat mic) and you're standing inside the ring, the stones
+// listen in on it and follow along. They never ask for the mic themselves, and what they hear stays
+// on your device. About 20 times a second they find the note being sung and see how far through the
+// first line of Amazing Grace it has got.
+function inCircle(x, y) { return inGlade(x, y) && Math.hypot(x - GLADE.x, (y - GLADE.y) / RIT_Y) < RIT_STONE_R + 6; }
+function ritShouldListen() {
+  return joined && voice.micOn && !!voice.micStream && inCircle(me.x, me.y) && me.sit < 0 && rit.door.ready(ritNow());
+}
+function ritListenOn() {
+  if (rit.mic) return;
   const ac = getAC();
   if (!ac) return;
-  rit.demo = null; rit.micAsking = true; renderGladePanel(true);
-  let stream = null;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: true } }); }
-  catch (e) { showToast("The stones couldn't hear your microphone. You can play the tune on them instead: tap the stones, or press 1 to 7.", 6500); }
-  rit.micAsking = false;
-  if (!stream) { renderGladePanel(true); return; }
-  if (!ritCanPlay()) { stream.getTracks().forEach(t => t.stop()); renderGladePanel(true); return; }
-  try { if (ac.state === 'suspended') await ac.resume(); } catch (e) { }
-  const src = ac.createMediaStreamSource(stream), an = ac.createAnalyser();
-  an.fftSize = 2048; src.connect(an);
-  rit.mic = { stream, src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), t0: performance.now(), heardAt: 0, acc: 0, level: 0 };
-  rit.singProg = 0; me.sg = 1; rit.panelHidden = false;
-  sentDirty = true; pushPresence(true);
-  renderGladePanel(true);
+  try {
+    const src = ac.createMediaStreamSource(voice.micStream), an = ac.createAnalyser();
+    an.fftSize = 2048; src.connect(an);
+    rit.mic = { src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), heardAt: 0, acc: 0, level: 0 };
+    rit.singProg = 0;
+  } catch (e) { rit.mic = null; }
 }
-function ritStopSinging(why) {
+function ritListenOff() {
   const m = rit.mic;
   if (!m) return;
-  try { m.src.disconnect(); } catch (e) { }
-  m.stream.getTracks().forEach(t => t.stop());
-  rit.mic = null; rit.singProg = 0; me.sg = 0;
-  ritSetProgress(); sentDirty = true;
-  if (why === 'timeout') showToast(m.heardAt ? "The stones didn't quite catch it. Try again, nice and slow, or play it on the stones." : "The stones couldn't hear anything. Is your microphone on? You can also play the tune on the stones.", 6000);
-  renderGladePanel(true);
+  try { m.src.disconnect(); } catch (e) { }   // only our listening ear: the voice-chat mic itself stays as it was
+  rit.mic = null; rit.singProg = 0;
+  if (me.sg) { me.sg = 0; sentDirty = true; }
+  ritSetProgress();
 }
-// About 20 times a second: read the mic, find the note being sung, and see how far through the line it is.
 function ritListen(dt) {
   const m = rit.mic;
   if (!m) return;
@@ -4983,15 +4939,19 @@ function ritListen(dt) {
   for (let i = 0; i < 1024; i++) m.half[i] = 0.5 * (m.buf[2 * i] + m.buf[2 * i + 1]);
   const p = RitualSong.detectPitch(m.half, m.an.context.sampleRate / 2);
   m.level = m.level * 0.6 + Math.min(1, p.rms * 9) * 0.4;
-  if (p.f) m.heardAt = performance.now();
+  const now = performance.now();
+  if (p.f) m.heardAt = now;
+  // a long quiet starts the tune afresh
+  if (m.heardAt && now - m.heardAt > 8000 && m.listener.notes.length) { m.listener.reset(); rit.singProg = 0; ritSetProgress(); }
+  const sg = m.heardAt && now - m.heardAt < 1200 ? 1 : 0;   // friends see the little notes while I'm actually singing
+  if (sg !== me.sg) { me.sg = sg; sentDirty = true; }
   m.listener.push(p.f);
   const k = RitualSong.progress(m.listener.notes);
   if (k !== rit.singProg) {
     if (k > rit.singProg && k >= 1) ritStrikeFx(GRACE_STONES[k - 1], 0);   // the stone for that note lights up (silently)
     rit.singProg = k; ritSetProgress();
   }
-  if (k >= RitualSong.STEPS) { ritSung('sang'); return; }
-  if (performance.now() - m.t0 > 45000 || (m.heardAt && performance.now() - m.heardAt > 12000)) ritStopSinging('timeout');
+  if (k >= RitualSong.STEPS) ritSung('sang');
 }
 
 // ---- the door opens ----
@@ -5000,12 +4960,11 @@ function ritSung(how) {
   if (!rit.door.ready(now)) return;
   door = { v: door.v + 1, id: Math.random().toString(36).slice(2, 10), by: myPeer || 'me', bn: me.name, at: Date.now(), h: how === 'sang' ? 's' : 'p' };
   rit.door.open(now, door.by);
-  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; rit.demo = null; ritSetProgress();
+  ritListenOff(); rit.taps = []; rit.tapProg = 0; ritSetProgress();
   ritOpenFx(1);
   addLog(null, `You ${how} Amazing Grace to the standing stones. A door has opened among them! ✨`, true);
   showToast('A door to the Otherwhere has opened in the middle of the stones. Step in! Friends can come too.', 6000);
   sentDirty = true; pushPresence(true);
-  renderGladePanel(true);
 }
 function ritOpenFx(vol) {
   rit.flashAt = performance.now(); rit.shake = REDUCED_MOTION ? 0 : vol;
@@ -5033,7 +4992,7 @@ function resolveDoor(freshPeers) {
   const elapsed = late ? (Date.now() - next.at) / 1000 : 0;
   if (elapsed >= life || elapsed < -30) return;
   rit.door.restore({ open: true, openedBy: next.by, elapsed: clamp(elapsed, 0, life) }, ritNow());
-  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; ritSetProgress();
+  ritListenOff(); rit.taps = []; rit.tapProg = 0; ritSetProgress();
   if (late) return;
   const who = next.bn || 'Someone', here = roomOf(me.x);
   addLog(null, `${who} ${next.h === 'p' ? 'played' : 'sang'} Amazing Grace to the standing stones. A door has opened among them! ✨`, true);
@@ -5073,7 +5032,7 @@ function ritPeer(o, pr) {
   }
   o.rp = clamp(num(pr.rp, 0) | 0, 0, RitualSong.STEPS);
   const sg = !!pr.sg;
-  if (!o.fresh && joined && sg && !o.sg && here === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 800) addLog(null, `${name} is singing to the standing stones…`, true);
+  if (!o.fresh && joined && sg && !o.sg && here === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 800 && performance.now() - (o.sgLogAt || -1e9) > 60000) { o.sgLogAt = performance.now(); addLog(null, `${name} is singing to the standing stones…`, true); }
   o.sg = sg;
   const wasThere = o.ritRoom;
   if (!o.fresh && joined && wasThere && wasThere !== there) {
@@ -5091,7 +5050,7 @@ function enterOther() {
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   stopFishing();
   me.sit = -1;
-  ritStopSinging(''); rit.taps = []; rit.tapProg = 0; ritSetProgress();
+  ritListenOff(); rit.taps = []; rit.tapProg = 0; ritSetProgress();
   Object.assign(me, { x: OW_SPAWN.x + (Math.random() - 0.5) * 120, y: OW_SPAWN.y + (Math.random() - 0.5) * 30, face: 1, target: null, arrive: null, via: [], moving: false });
   snapCam();
   rit.fx.length = 0;
@@ -5104,7 +5063,7 @@ function enterOther() {
     addLog(null, 'You step into the light between the stones and fall upward, into the Otherwhere. The orange rift leads home.', true);
   }
   sentDirty = true; pushPresence(true);
-  renderStory(false); renderOwCard(false); renderGladePanel(true);
+  renderStory(false); renderOwCard(false);
 }
 function exitOther() {
   if (roomOf(me.x) !== 'other') return;
@@ -5114,7 +5073,7 @@ function exitOther() {
   rit.fadeAt = performance.now(); rit.fadeRgb = '255,206,150'; rit.enterAfter = performance.now() + 1500;
   ritSoundWhoosh(); otherAudio(false);
   sentDirty = true; pushPresence(true);
-  renderOwCard(false); renderGladePanel(true);
+  renderOwCard(false);
 }
 function nearRift() { return roomOf(me.x) === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 110; }
 
@@ -5155,53 +5114,20 @@ function renderOwCard(flip) {
 $('owNext').addEventListener('click', nextOwCard);
 $('owHide').addEventListener('click', () => { rit.cardHidden = true; renderOwCard(false); updateActionBtn(); });
 
-// ---- the panel in the glade ----
-function renderGladePanel(force) {
-  const box = $('sgPanel');
-  const show = nearGlade() && !ritDoorShowing() && !rit.panelHidden;
-  const ready = rit.door.ready(ritNow()), m = rit.mic;
-  const prog = ritGladeProg(), key = [show, ready, !!m, !!rit.micAsking, prog].join('|');
-  if (m) $('sgLevel').style.width = Math.round(m.level * 100) + '%';
-  if (!force && key === rit.panelKey) return;
-  rit.panelKey = key;
-  box.hidden = !show;
-  if (!show) return;
-  requestAnimationFrame(() => { rit.panelBottom = box.hidden ? 0 : box.getBoundingClientRect().bottom; });
-  const dots = $('sgDots');
-  if (dots.children.length !== RitualSong.STEPS) { dots.innerHTML = ''; for (let i = 0; i < RitualSong.STEPS; i++) dots.appendChild(document.createElement('i')); }
-  [...dots.children].forEach((d, i) => { const on = i < prog; d.classList.toggle('on', on); d.style.background = on ? RIT_STONES[GRACE_STONES[i]].color : ''; });
-  $('sgText').innerHTML = !ready ? 'The stones are resting…'
-    : m ? 'Listening… sing <b>“Amazing grace, how sweet the sound”</b>. Nothing is recorded or sent.'
-    : rit.micAsking ? 'Allow the microphone, then sing.'
-    : `Sing them the first line of <b>Amazing Grace</b>, or play it on the stones: tap them${HAS_KEYS ? ', or press 1 to 7' : ''}.`;
-  $('sgMeter').hidden = !m;
-  const sing = $('sgSing');
-  sing.hidden = !SING_OK;
-  sing.disabled = !ready || !!rit.micAsking;
-  sing.textContent = m ? 'Stop listening' : '🎤 Sing to the stones';
-  $('sgTune').disabled = !ready || !!m;
-}
-const HAS_KEYS = !matchMedia('(pointer: coarse)').matches;
-$('sgSing').addEventListener('click', () => { if (rit.mic) ritStopSinging(''); else ritStartSinging(); });
-$('sgTune').addEventListener('click', ritPlayDemo);
-$('sgHide').addEventListener('click', () => { rit.panelHidden = true; renderGladePanel(true); updateActionBtn(); });
-
 // ---- every frame ----
 function ritStep(dt) {
   const now = ritNow(), here = roomOf(me.x), ph = rit.door.phase(now);
   if (ph !== rit.lastPhase) { const prev = rit.lastPhase; rit.lastPhase = ph; ritOnPhase(ph, prev); }
   if (here === 'camp') {
     if (ph === 'open' && performance.now() > rit.enterAfter && rit.door.canEnter(me.x, me.y, now)) enterOther();
-    if (rit.mic && !ritCanPlay()) ritStopSinging('');
+    if (ritShouldListen()) ritListenOn(); else ritListenOff();
     ritListen(dt);
   } else {
-    if (rit.mic) ritStopSinging('');
+    ritListenOff();
     if (here === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 30 && performance.now() > rit.enterAfter) exitOther();
   }
   if (rit.tapProg && performance.now() - rit.tapAt > 4000) { rit.tapProg = 0; rit.taps = []; }
-  if (!nearGlade() && rit.panelHidden) rit.panelHidden = false;   // the panel comes back next visit
   ritSetProgress();
-  ritDemoTick();
   const there = roomOf(me.x);
   if (there !== rit.fxRoom) { rit.fx.length = 0; rit.fxRoom = there; }
   if (there === 'camp') {
@@ -5210,7 +5136,7 @@ function ritStep(dt) {
     while (rit.noteAcc > 1) {
       rit.noteAcc -= 1;
       const singers = [];
-      if (rit.mic && performance.now() - rit.mic.heardAt < 400) singers.push([me.x, me.y]);
+      if (rit.mic && rit.mic.heardAt && performance.now() - rit.mic.heardAt < 400) singers.push([me.x, me.y]);
       for (const o of others.values()) if (o.sg && roomOf(o.rx) === 'camp') singers.push([o.rx, o.ry]);
       for (const [x, y] of singers) ritEmit({ x: x + (Math.random() - 0.5) * 20, y, h: 56, vx: (Math.random() - 0.5) * 16, vh: 26 + Math.random() * 14, life: 1.8, size: 10, color: rnd(['#fff1c9', '#e9dcff', '#c9f0ff']), glyph: rnd(['♪', '♫']), fadeIn: true, wob: 2, ph: Math.random() * 6 });
     }
@@ -5239,7 +5165,6 @@ function ritStep(dt) {
     hum = (ph === 'opening' ? 0.08 : ph === 'open' ? 0.045 : 0.02) * k;
   }
   ritHum(hum);
-  renderGladePanel(false);
 }
 function otherTick(dt) {
   // the spirit fire burns downward from logs floating in the air
@@ -5408,6 +5333,12 @@ function ritLightCamp(t) {
     // a faint thread of light to the middle of the ring
     g.strokeStyle = `rgba(${s.rgb.join(',')},${0.12 * s.light})`; g.lineWidth = Math.max(1, 1.5 * ZOOM);
     g.beginPath(); g.moveTo(rx, ry); g.lineTo(cx, cy); g.stroke();
+  }
+  if (rit.mic) {
+    // a soft ring on the ground that brightens with your voice while the stones listen
+    const [rx0, ry0] = w2s(GLADE.x, GLADE.y), lv = rit.mic.level;
+    g.globalAlpha = 1; g.strokeStyle = `rgba(255,236,200,${0.06 + 0.3 * lv + 0.03 * Math.sin(t * 2)})`; g.lineWidth = Math.max(2, 10 * ZOOM);
+    g.beginPath(); g.ellipse(rx0, ry0, 70 * ZOOM, 56 * ZOOM, 0, 0, Math.PI * 2); g.stroke();
   }
   const e = rit.door.elapsed(ritNow());
   if (e !== null && e < 3.6) {
@@ -5640,7 +5571,7 @@ function otherAudio(on) {
 }
 // For quick checks from the browser console, like the church and voice ones.
 window.campfireRitualDebug = () => ({
-  room: roomOf(me.x), glade: nearGlade(), prog: me.rp, taps: rit.taps.length, singing: !!rit.mic,
+  room: roomOf(me.x), glade: nearGlade(), circle: inCircle(me.x, me.y), mic: voice.micOn, prog: me.rp, taps: rit.taps.length, singing: !!rit.mic,
   heard: rit.mic ? rit.mic.listener.notes.map(n => Math.round(n * 10) / 10) : [],
   door: ritPhase(), timeLeft: Math.round(rit.door.timeLeft(ritNow())), shared: door, card: owCard.i,
   lit: [...ritLitSet()].length, x: Math.round(me.x), y: Math.round(me.y)
@@ -6531,7 +6462,6 @@ function stopFishing() { if (me.fish) { clearTimeout(me.fish.timer); me.fish = n
 function doAction() {
   if (smHoldsStick()) return;
   if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) { walkTo(GLADE.x, GLADE.y, 'door'); return; }
-  if (nearGlade() && SING_OK && !ritDoorShowing() && me.sit < 0) { rit.panelHidden = false; if (rit.mic) ritStopSinging(''); else ritStartSinging(); return; }
   if (inOther(me.x)) { if (nearRift()) walkTo(RIFT.x, RIFT.y, 'home'); else { rit.cardHidden = !rit.cardHidden; renderOwCard(true); } return; }
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   if (me.sit >= 0) { stand(); return; }
@@ -6575,7 +6505,6 @@ function updateActionBtn() {
   let label = null;
   b.classList.remove('bite');
   if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) label = 'Step into the door';
-  else if (nearGlade() && SING_OK && !ritDoorShowing() && me.sit < 0) label = rit.mic ? 'Stop singing' : 'Sing to the stones';
   else if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
   else if (nearFire()) label = 'Sit by the fire';
@@ -6714,10 +6643,9 @@ function camTarget() {
     tx = clamp(FIRE.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
   }
   // On phones the stone circle sits right at the bottom edge of the map, under the chat bar:
-  // slide the view (a little past the edge if need be) so the ring shows between the panel and the bar.
+  // slide the view (a little past the edge if need be) so the ring shows above the bar.
   if (VW <= 640 && joined && inGlade(me.x, me.y)) {
-    const top = !$('sgPanel').hidden && rit.panelBottom ? rit.panelBottom + 10 : 60;
-    const want = (top + VH - 150) / 2 + 20 * ZOOM;
+    const want = (60 + VH - 150) / 2 + 20 * ZOOM;
     ty = Math.max(ty, GLADE.y - (want - VH / 2) / ZOOM);
     tx = clamp(GLADE.x, Math.min(viewW / 2, W / 2), Math.max(W - viewW / 2, W / 2));
   }
