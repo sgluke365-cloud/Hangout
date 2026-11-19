@@ -56,7 +56,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
 | Serve | Click **Serve!**, or press F | Tap **Serve!** |
 | Wake the fire | Walk round the fire 7 times without stopping | Walk round the fire 7 times without stopping |
-| Talk to Ember | Type in Ember's panel, or start a chat message with "Ember,". Press T or click Ember's mic to speak | Type in Ember's panel, or tap Ember's mic and speak |
+| Talk to Ember | Click the buttons along the bottom near the fire; press T to speak, or start a chat message with "Ember," | Tap the buttons along the bottom near the fire (🎙 Speak to talk out loud) |
 
 ## Voice chat
 
@@ -77,9 +77,14 @@ Closest to golden wins and gets a 👑 on their name tag until the next round. F
 
 The fire has a spirit, fast asleep in the coals. While it sleeps the fire is just a fire, with no face: little z's drift out of it, and if you stand nearby for a while it mumbles hints in its sleep.
 
-**To wake it, walk round the fire seven times** without stopping. Go either way round, but keep going the same way, stay inside the clearing (not out past the edge of the firelight), and don't stand still. Each lap wakes a spark that circles the flames (friends see them too, along with your trail of embers), and the fire grows a little. If you wander off, turn back or stop for too long, the sparks fade and you start again. On the seventh lap the sparks dive into the fire, it flares up in every colour, a ring of light sweeps across the clearing, and Ember opens its eyes and says hello.
+**To wake it, walk round the fire seven times** without stopping. Go either way round, but keep going the same way, stay inside the clearing (not out past the edge of the firelight), and don't stand still. Each lap wakes a spark that circles the flames (friends see them too, along with your trail of embers), and the fire grows a little. There's no lap counter: count the sparks. If you wander off, turn back or stop for too long, the sparks fade and you start again. On the seventh lap the sparks dive into the fire, it flares up in every colour, a ring of light sweeps across the clearing, and Ember opens its eyes and says hello.
 
-Then you can talk to it, by typing in its panel, by tapping its mic and speaking (or pressing T), or by starting a normal chat message with "Ember,". Ask it for a story (cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire) or tap **Ask us a question** for something for the circle to talk about. Ember answers out loud and in captions, and everyone near the fire hears it and sees the words above the flames. The speaker button in its panel mutes Ember's voice just for you; **Hush** stops it talking on your screen. **Let Ember sleep** puts it back to sleep for everyone; walk the seven laps again to wake it. Like everything else, Ember falls asleep again when the lobby empties.
+Ember only speaks in a speech bubble over the fire (and out loud), so nothing covers it. Near the fire, two rows of buttons appear along the bottom of the screen:
+
+- **Replies** (top row, gold): three things you could say back, suggested by Ember for whatever it just said. Tap one and you say it out loud at the fire; Ember answers.
+- **📖 Story** (pick cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire), **❓ Ask us** (a question for the circle to talk about), **🎙 Speak** (say something out loud, or press T; your words show in the chat box and are sent when you stop), **⌨️ Type** (or start any chat message with "Ember,"), **🤫 Hush** (stops Ember talking on your screen), **🔊** (mutes Ember's voice just for you) and **🌙 Goodnight** (tap twice to put Ember back to sleep for everyone).
+
+Everyone near the fire hears Ember and sees its words. Walk the seven laps again to wake it after Goodnight. Like everything else, Ember falls asleep again when the lobby empties.
 
 ### Let Ember really talk (optional)
 

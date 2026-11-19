@@ -20,7 +20,7 @@
     us: { label: 'About us', guide: 'a story starring the friends at the fire tonight, by name. Give everyone present a part, be affectionate and a little teasing, and weave in anything they have told you tonight' }
   };
 
-  const LIMITS = { talk: 240, question: 150, wake: 200, story: 680, bye: 120 };
+  const LIMITS = { talk: 290, question: 200, wake: 250, story: 730, bye: 120 };
 
   const PERSONA = [
     'You are Ember, the spirit who lives in the campfire of Campfire, a cozy online campsite where close friends meet at night to hang out and tell each other stories about their lives.',
@@ -89,6 +89,10 @@
       lines.push('Say your very first words: a little groggy, then delighted. Introduce yourself as Ember, greet them, and let them know they can talk to you or ask for a story. 2 or 3 sentences. If anyone has woken you on an earlier night, greet them as an old friend.');
     } else if (q.kind === 'bye') {
       lines.push(`${q.who} is letting you go back to sleep. Say a short, sleepy goodnight. One sentence.`);
+    }
+    if (q.kind !== 'bye') {
+      lines.push('');
+      lines.push(`Then, on a new last line, write OPTIONS: followed by three short things the friends could say back to you, separated by |. Each is 2 to 6 words, in the friend's own voice, and different from each other${q.kind === 'story' ? ' (for example a reaction, a question about the story, and asking for another)' : q.kind === 'question' ? ' (for example offering to go first, asking for a different question, and asking you to answer it yourself)' : ''}. They appear as buttons on the friends' screens and are never read aloud, so nothing else goes on that line.`);
     }
     return {
       system: PERSONA,
@@ -183,9 +187,41 @@
     return s.replace(/\{who\}/g, q.who).replace(/\{all\}/g, all).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
   }
 
-  // A full answer without any AI: a story, a question, a wake-up line or a simple reply.
+  // Buttons the friends can tap to answer, when there's no AI to suggest them.
+  const OPTIONS = {
+    talk: ['Tell us a story', 'Who are you, Ember?', 'Ask us a question', 'Tell me a joke', 'How old are you?', 'What have you seen here?'],
+    story: ['Tell another one!', 'Is that true?', 'That gave me chills', 'Ha! Loved it', 'Ask us a question'],
+    question: ['I\'ll go first', 'Ask something else', 'You answer first, Ember'],
+    wake: ['Hello, Ember!', 'Who are you?', 'Tell us a story']
+  };
+  function pickOptions(kind) {
+    const pool = (OPTIONS[kind] || OPTIONS.talk).slice(), out = [];
+    while (pool.length && out.length < 3) out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    return out;
+  }
+  // Split Ember's answer into what it says and the reply buttons on its "OPTIONS:" line.
+  // While the answer is still arriving, a half-written "OPTI…" at the end is held back.
+  function parse(raw) {
+    let text = String(raw == null ? '' : raw), options = [];
+    const m = text.match(/(^|\n|[.!?\u2026"\u201d]\s*)\s*OPTIONS\s*:/i);
+    if (m) {
+      options = text.slice(m.index + m[0].length).split('\n')[0].split('|')
+        .map(o => clean(o, 60).replace(/^["'\u201c\u2018\s-]+|["'\u201d\u2019\s]+$/g, '').slice(0, 40)).filter(Boolean).slice(0, 3);
+      text = text.slice(0, m.index + m[1].length);
+    } else {
+      const t = text.match(/\n[ \t]*([A-Za-z]{1,7})$/);
+      if (t && 'OPTIONS'.startsWith(t[1].toUpperCase())) text = text.slice(0, t.index);
+    }
+    return { text: text.trim(), options };
+  }
+
+  // A full answer without any AI: a story, a question, a wake-up line or a simple reply,
+  // with reply buttons on an OPTIONS line like the AI's.
   function offline(input) {
-    const q = tidy(input);
+    const q = tidy(input), say = offlineText(q);
+    return q.kind === 'bye' ? say : say + '\nOPTIONS: ' + pickOptions(q.kind).join(' | ');
+  }
+  function offlineText(q) {
     if (q.kind === 'story') return fill(pick(STORIES[q.genre] || STORIES.cozy), q);
     if (q.kind === 'question') {
       const asked = new Set(q.history.map(h => h.t));
@@ -204,5 +240,5 @@
     return fill(pick(GENERIC), q);
   }
 
-  return { GENRES, LIMITS, PERSONA, build, offline, tidy, clean };
+  return { GENRES, LIMITS, PERSONA, build, offline, parse, pickOptions, tidy, clean };
 });
