@@ -10,7 +10,8 @@ Friends join from a link or QR code. No accounts, no app install: it runs in any
 | --- | --- |
 | `public/index.html` | The whole game (graphics, controls, chat, story cards) |
 | `public/spirit-brain.js` | Ember, the campfire spirit: its personality, how it's asked things, and its storybook for when there's no AI |
-| `server.js` | Small Node.js server: serves the game, relays players between friends in the same campfire, helps voice connections start, and passes questions for Ember to Claude |
+| `server.js` | Small Node.js server: serves the game, relays players between friends in the same campfire, helps voice connections start, and passes questions for Ember to an AI |
+| `ember-brains.js` | Ember's AI brains (Groq, Gemini, Claude) and switching to the next one when one hits its limit |
 | `package.json` | Tells Node what to install (`ws`, the WebSocket library) |
 | `render.yaml` | One-click settings for free hosting on Render |
 
@@ -86,21 +87,34 @@ Ember only speaks in a speech bubble over the fire (and out loud), so nothing co
 
 Everyone near the fire hears Ember and sees its words. Walk the seven laps again to wake it after Goodnight. Like everything else, Ember falls asleep again when the lobby empties.
 
-### Let Ember really talk (optional)
+### Let Ember really talk (optional, free)
 
-Out of the box Ember is in **storybook mode**: it tells a set of built-in stories, asks story-circle questions and gives simple answers. To let it hold real conversations, give the server an Anthropic API key:
+Out of the box Ember is in **storybook mode**: it tells a set of built-in stories, asks story-circle questions and gives simple answers. To let it hold real conversations, give the server one or more AI keys. Two services have free tiers:
 
-1. Get a key at [console.anthropic.com](https://console.anthropic.com) (Settings → API keys). Add a little credit to the account.
-2. On Render, open the campfire service, go to **Environment**, add `ANTHROPIC_API_KEY` with your key, and save. Render restarts the game in a minute or two.
+1. **Groq** (free, fast, doesn't train on what you send): sign in at [console.groq.com](https://console.groq.com), open **API Keys**, and create a key.
+2. **Google Gemini** (free, good storyteller; on the free tier Google may use what's sent to improve its products): sign in at [aistudio.google.com](https://aistudio.google.com), click **Get API key**, and create one.
+3. On Render, open the campfire service, go to **Environment**, add `GROQ_API_KEY` and/or `GEMINI_API_KEY` with your keys, and save. Render restarts the game in a minute or two.
 
-Ember then talks through Claude Haiku, the fastest and cheapest Claude model, and each answer costs a small fraction of a cent. To keep the bill small no matter who finds your link, the server only answers lobbies that have someone in them, limits how often each lobby and each person can ask, and stops at 400 answers a day (then Ember quietly goes back to its storybook until the next day). Optional settings, also under **Environment**:
+**Ember switches brains by itself.** Every model on every service has its own limits, so Ember lines them all up in a chain:
+
+Groq Llama 3.3 70B → Groq GPT-OSS 120B → Groq GPT-OSS 20B → Groq Llama 3.1 8B → Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Gemini 3.6 Flash → Gemini 3.1 Flash-Lite
+
+Each question goes to the first brain that isn't resting. When a brain says it's had too many requests, it rests until its limit resets (for Groq usually under a minute; Gemini's daily limits reset at midnight Pacific time, which is 3 or 4 pm in Singapore), and Ember uses the next one. Only when every brain is resting does Ember fall back to its storybook for a little while. To see which brains are ready or resting, open `/spirit-status` on your game's address (for example `https://campfire-74jx.onrender.com/spirit-status`).
+
+You can also add **Claude** with `ANTHROPIC_API_KEY` (from [console.anthropic.com](https://console.anthropic.com); new accounts get a small free credit, then it's paid). Claude goes first in the chain and is capped at 400 answers a day; past that, Ember carries on with the free brains.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `SPIRIT_DAILY_LIMIT` | `400` | Most answers per day for the whole server. `0` means no limit |
-| `SPIRIT_MODEL` | `claude-haiku-5-5` | Which Claude model Ember uses |
+| `GROQ_API_KEY` | (none) | Free Groq key |
+| `GEMINI_API_KEY` | (none) | Free Gemini key |
+| `ANTHROPIC_API_KEY` | (none) | Claude key (paid after the starter credit) |
+| `SPIRIT_ORDER` | `anthropic,groq,gemini` | Which services to try first |
+| `GROQ_MODELS` | `llama-3.3-70b-versatile,openai/gpt-oss-120b,openai/gpt-oss-20b,llama-3.1-8b-instant` | Groq models to use, in order |
+| `GEMINI_MODELS` | `gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.6-flash,gemini-3.1-flash-lite` | Gemini models to use, in order |
+| `SPIRIT_MODEL` | `claude-haiku-5-5` | Which Claude model to use |
+| `SPIRIT_DAILY_LIMIT` | `400` | Most Claude answers per day. `0` means no limit. Free brains aren't counted |
 
-The key stays on the server; players' browsers never see it. If Ember still sounds like a storybook after you add the key, look in Render's **Logs** for a line starting with "Ember could not reach Claude": it says what went wrong (for example a mistyped key or no credit). Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
+The keys stay on the server; players' browsers never see them. To stop strangers who find your link from using up the limits, the server only answers lobbies that have someone in them and limits how often each lobby and each person can ask. Render's **Logs** show a line whenever Ember switches brains and why (for example "Ember: Groq llama-3.3-70b-versatile too many requests; resting 12s, switching to Groq openai/gpt-oss-120b"), and a line if a key is wrong or a model has been retired. Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
 
 **Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead.
 

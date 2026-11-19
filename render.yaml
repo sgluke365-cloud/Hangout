@@ -7,7 +7,12 @@ services:
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
-      # Optional: lets Ember, the campfire spirit, really talk (through Claude).
-      # Leave it empty and Ember uses its built-in storybook.
+      # Optional: let Ember, the campfire spirit, really talk. Groq and Gemini have free tiers;
+      # Ember switches between them when one hits its limit. Leave them all empty and Ember
+      # uses its built-in storybook.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
       - key: ANTHROPIC_API_KEY
         sync: false

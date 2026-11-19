@@ -16,13 +16,12 @@ const MAX_PRESENCE_BYTES = 6 * 1024;
 const MSGS_PER_SECOND = 60; // per player, with a burst of 2x
 const MAX_SIGNAL_BYTES = 16 * 1024;
 
-// Ember, the campfire spirit. With an Anthropic API key set on the host, Ember
-// really talks (through Claude). Without one, it uses its storybook in the browser.
+// Ember, the campfire spirit. With AI keys set on the host (free Groq and Gemini, or paid
+// Claude), Ember really talks, switching to the next AI when one hits its limit (ember-brains.js).
+// Without any, it uses its storybook in the browser.
 const Brain = require('./public/spirit-brain.js');
-const AI_KEY = process.env.ANTHROPIC_API_KEY || '';
-const AI_MODEL = process.env.SPIRIT_MODEL || 'claude-haiku-5-5';
-const AI_BASE = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/+$/, '');
-// Most questions Ember will answer per day across the whole server (keeps the bill small).
+const Brains = require('./ember-brains.js');
+// Most answers per day from the paid brain, Claude (keeps the bill small). Free brains have their own limits.
 const SPIRIT_DAILY_LIMIT = Math.max(0, parseInt(process.env.SPIRIT_DAILY_LIMIT || '400', 10) || 0);
 
 const TYPES = {
@@ -44,7 +43,7 @@ const server = http.createServer((req, res) => {
   }
   if (url.pathname === '/spirit-status') {
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
-    return res.end(JSON.stringify({ ai: !!AI_KEY }));
+    return res.end(JSON.stringify({ ai: Brains.chain.length > 0, brains: Brains.status() }));
   }
   if (url.pathname === '/spirit') {
     if (req.method !== 'POST') { res.writeHead(405); return res.end(); }
@@ -180,9 +179,10 @@ wss.on('connection', ws => {
 // ---------- Ember, the campfire spirit ----------
 // A player at the fire asks Ember something. The page sends who is at the fire and
 // what was said tonight; this server writes the actual prompt (so the link can't be
-// used as a free chatbot), asks Claude, and streams the words straight back as plain
-// text. That player's browser then shares the answer with everyone at the fire.
-const spiritDay = { day: '', count: 0 };
+// used as a free chatbot), asks the first AI brain that isn't resting, and streams the
+// words straight back as plain text. That player's browser then shares the answer with
+// everyone at the fire. If every brain is resting, the browser uses Ember's storybook.
+const spiritDay = { day: '', count: 0 }; // paid (Claude) answers today
 const spiritRooms = new Map(); // room code -> { times: [], inflight }
 const spiritIps = new Map();   // ip -> { times: [], last }
 const TEN_MIN = 10 * 60 * 1000;
@@ -191,10 +191,16 @@ setInterval(() => {
   for (const [k, v] of spiritRooms) if (!v.inflight && !recent(v.times).length) spiritRooms.delete(k);
   for (const [k, v] of spiritIps) if (!recent(v.times).length) spiritIps.delete(k);
 }, TEN_MIN);
+function paidAllowed() {
+  const day = new Date().toISOString().slice(0, 10);
+  if (spiritDay.day !== day) { spiritDay.day = day; spiritDay.count = 0; }
+  return !SPIRIT_DAILY_LIMIT || spiritDay.count < SPIRIT_DAILY_LIMIT;
+}
+const canUse = b => !b.paid || paidAllowed();
 
 function spiritHandler(req, res) {
   const reply = (code, obj) => { if (!res.headersSent) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); } };
-  if (!AI_KEY) return reply(503, { error: 'no_ai' });
+  if (!Brains.chain.length) return reply(503, { error: 'no_ai' });
   let body = '', tooBig = false;
   req.setEncoding('utf8');
   req.on('data', c => { body += c; if (body.length > 16 * 1024 && !tooBig) { tooBig = true; reply(413, { error: 'too_big' }); req.destroy(); } });
@@ -207,9 +213,7 @@ function spiritHandler(req, res) {
     const code = String(input.room || '').toLowerCase();
     if (!ROOM_RE.test(code) || !rooms.has(code)) return reply(403, { error: 'no_room' });
     const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?').split(',')[0].trim();
-    const now = Date.now(), day = new Date(now).toISOString().slice(0, 10);
-    if (spiritDay.day !== day) { spiritDay.day = day; spiritDay.count = 0; }
-    if (SPIRIT_DAILY_LIMIT && spiritDay.count >= SPIRIT_DAILY_LIMIT) return reply(429, { error: 'daily_limit' });
+    const now = Date.now();
     const ru = spiritRooms.get(code) || { times: [], inflight: 0 };
     const iu = spiritIps.get(ip) || { times: [], last: 0 };
     spiritRooms.set(code, ru); spiritIps.set(ip, iu);
@@ -217,39 +221,17 @@ function spiritHandler(req, res) {
     if (recent(ru.times).length >= 60 || recent(iu.times).length >= 40) return reply(429, { error: 'limit' });
 
     const p = Brain.build(input);
-    ru.inflight++; ru.times.push(now); iu.times.push(now); iu.last = now; spiritDay.count++;
+    ru.inflight++; ru.times.push(now); iu.times.push(now); iu.last = now;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 45000);
     res.on('close', () => { if (!res.writableFinished) ctrl.abort(); });
     try {
-      const r = await fetch(AI_BASE + '/v1/messages', {
-        method: 'POST',
-        headers: { 'x-api-key': AI_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: AI_MODEL, max_tokens: p.maxTokens, system: p.system, messages: p.messages, stream: true }),
-        signal: ctrl.signal
-      });
-      if (!r.ok || !r.body) {
-        let detail = '';
-        try { detail = (await r.text()).slice(0, 300); } catch { }
-        console.warn(`Ember could not reach Claude (HTTP ${r.status}): ${detail}`);
-        return reply(502, { error: 'upstream', status: r.status });
-      }
-      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no' });
-      const dec = new TextDecoder();
-      let buf = '';
-      for await (const chunk of r.body) {
-        buf += dec.decode(chunk, { stream: true });
-        let nl;
-        while ((nl = buf.indexOf('\n')) >= 0) {
-          const line = buf.slice(0, nl).trim();
-          buf = buf.slice(nl + 1);
-          if (!line.startsWith('data:')) continue;
-          let ev;
-          try { ev = JSON.parse(line.slice(5)); } catch { continue; }
-          if (ev && ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta' && typeof ev.delta.text === 'string') res.write(ev.delta.text);
-          else if (ev && ev.type === 'error') console.warn('Ember stream error:', JSON.stringify(ev.error || ev).slice(0, 300));
-        }
-      }
+      const got = await Brains.ask(p, ctrl.signal, canUse);
+      if (!got) return reply(429, { error: 'resting', retry: Brains.retryIn(canUse) });
+      if (got.brain.paid) spiritDay.count++;
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'X-Ember-Brain': got.brain.id });
+      res.write(got.first);
+      for await (const piece of got.rest) res.write(piece);
       res.end();
     } catch (e) {
       if (!res.headersSent) reply(502, { error: 'upstream' });
@@ -273,7 +255,5 @@ setInterval(() => {
 
 server.listen(PORT, () => {
   console.log(`Campfire is running on http://localhost:${PORT}`);
-  console.log(AI_KEY
-    ? `Ember the campfire spirit talks through Claude (${AI_MODEL}), up to ${SPIRIT_DAILY_LIMIT || 'unlimited'} answers a day.`
-    : 'Ember the campfire spirit is in storybook mode. Set ANTHROPIC_API_KEY to let it really talk.');
+  console.log(Brains.describe());
 });
