@@ -105,8 +105,8 @@ Seven old standing stones stand in a ring in a glade in the **south-west (bottom
 
 Sing them **the first line of Amazing Grace** ("A-ma-zing grace, how sweet the sound") and a door opens in the middle of the ring. There are two ways:
 
-- **Sing it:** tap **🎤 Sing to the stones** (or press E in the glade). The stones listen through your microphone in any key, and they forgive a wobbly note. They light up as you go and little notes rise over your head. The mic is only on while they listen, and nothing is recorded or sent.
-- **Play it:** tap the stones in order (or press 1 to 7 on a keyboard). **Hear the tune** makes the stones play it for you first; it's the same tune the church organ teaches.
+- **Sing it:** turn your mic on (the voice-chat mic), step inside the ring and sing. There's no button: the stones simply listen while your mic is on and you're inside the ring, in any key, and they forgive a wobbly note. A soft ring on the ground brightens with your voice, the stones light up as you go, and little notes rise over your head. They never ask for the mic themselves, and what they hear stays on your device. With your mic off, they don't listen.
+- **Play it:** tap the stones in order (or press 1 to 7 on a keyboard). It's the same tune the church organ teaches.
 
 When the line is sung, every stone beams into the middle, a pillar of light goes up, and a **door** opens for about a minute. Anyone can walk into it, tap it, or press E (**Step into the door**). After it closes, the stones rest for 20 seconds before they'll listen again. Friends hear your stone notes, watch the stones light up, and get a message when the door opens.
 
