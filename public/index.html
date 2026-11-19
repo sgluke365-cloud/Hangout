@@ -940,8 +940,9 @@ function blockedIn(x, y) {
   if (lx < 44 || lx > IN.w - 44 || ly > IN.h - 26) return true;
   if (ly < TR.foot + 22 && (lx < AP.cl || lx > AP.cr)) return true;   // transept walls, chancel sides
   if (ly < AP.foot + 22) return true;                                // the apse's back wall
-  if (lx < AP.l && ly < AP.sideY - (lx - AP.cl) * (AP.sideY - AP.foot) / (AP.l - AP.cl) + 22) return true;   // its angled walls
-  if (lx > AP.r && ly < AP.foot + (lx - AP.r) * (AP.sideY - AP.foot) / (AP.cr - AP.r) + 22) return true;
+  // its angled walls (only between the chancel's corners; past them the transept walls take over)
+  if (lx >= AP.cl && lx < AP.l && ly < AP.sideY - (lx - AP.cl) * (AP.sideY - AP.foot) / (AP.l - AP.cl) + 22) return true;
+  if (lx > AP.r && lx <= AP.cr && ly < AP.foot + (lx - AP.r) * (AP.sideY - AP.foot) / (AP.cr - AP.r) + 22) return true;
   if (Math.abs(x - ALTAR.x) < ALTAR.w / 2 + 6 && y < ALTAR.y + 8) return true;
   if (Math.abs(x - SIDE_ALTAR.x) < SIDE_ALTAR.w / 2 + 6 && y < SIDE_ALTAR.y + 8) return true;
   if (Math.abs(x - RACK.x) < 44 && y > RACK.y - 24 && y < RACK.y + 8) return true;
@@ -2411,7 +2412,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.11.1';
+const VERSION = 'v0.11.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6809,6 +6810,8 @@ function step(dt, t) {
     let movedAny = false;
     if (!blocked(nx, me.y)) { me.x = nx; movedAny = true; }
     if (!blocked(me.x, ny)) { me.y = ny; movedAny = true; }
+    // standing inside something (so every step is blocked)? step out to the nearest open floor
+    if (!movedAny && blocked(me.x, me.y) && unstick()) movedAny = true;
     if (!movedAny && me.target) { me.target = null; me.via = []; arrived(); }
     me.face = Math.abs(vx) > Math.abs(vy) ? (vx < 0 ? 2 : 3) : (vy < 0 ? 1 : 0);
     me.moving = movedAny;
@@ -6878,6 +6881,16 @@ function camTarget() {
   return [tx, ty];
 }
 function snapCam() { const [x, y] = camTarget(); cam.x = x; cam.y = y; }
+// Move to the nearest spot that isn't inside anything (rings outward, up to 80 px away).
+function unstick() {
+  for (let r = 4; r <= 80; r += 4) {
+    for (let k = 0; k < 16; k++) {
+      const a = k / 16 * Math.PI * 2, x = me.x + Math.cos(a) * r, y = me.y + Math.sin(a) * r;
+      if (!blocked(x, y)) { me.x = x; me.y = y; sentDirty = true; return true; }
+    }
+  }
+  return false;
+}
 // Walk to a spot. Inside the church, if something's in the way, find a route round it.
 function segBlocked(x0, y0, x1, y1) {
   const n = Math.max(1, Math.ceil(dist(x0, y0, x1, y1) / 8));
