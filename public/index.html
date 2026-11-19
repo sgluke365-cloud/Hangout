@@ -2440,7 +2440,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.10.1';
+const VERSION = 'v0.10.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -4559,7 +4559,7 @@ window.campfireSmoresDebug = () => ({ phase: sm.phase, id: sm.id, stale: sm.stal
 // ===== The singing stones =====
 // Seven old standing stones stand in a ring in a glade in the south-west (bottom-left) corner of the
 // woods, and each one sings a note. Sing them the first line of Amazing Grace (the game listens through
-// your microphone, in any key, and forgives a wobbly note), or play it on the stones themselves, and a
+// your microphone, in any key, and it only has to be close: see RitualSong.likeness), or play it on the stones themselves, and a
 // door opens in the middle of the ring: the way into the Otherwhere, a little island floating under
 // strange stars where stories are told from the life you didn't live. Anyone can step through while
 // the door is open (about a minute); an orange rift on the island always leads back to the stones.
@@ -4771,7 +4771,79 @@ const RitualSong = (() => {
     });
     return best;
   }
-  return { LINES, STEPS, detectPitch, toMidi, createListener, progress };
+
+  // ---- "close enough" singing: the shape of the melody ----
+  // Real singers slide between notes, sing a little flat and add their own turns, which can break the
+  // note-by-note match above. So the game also keeps the pitch line of what was sung (5 points a
+  // second, voiced moments only) and compares its last stretch with reference singings of the line:
+  // any key, any tempo from about half to double, and local speeding up or slowing down allowed.
+  // Pitches are in tenths of a semitone around the middle of the tune. The first is the organ line;
+  // the rest are real takes of someone singing it at the fire (recordings 6-9), so singing in that
+  // style - slides, flat notes and all - is recognised too.
+  const TUNES = [
+    [-50,-50,-50,-50,-12,0,0,0,0,0,0,0,30,40,0,0,40,40,40,40,40,40,40,40,20,20,20,20,0,0,0,0,0,0,0,0,-30,-30,-30,-30,-50,-50,-50,-50,-50,-50,-50],
+    [-57,-49,-51,-49,-10,-1,-1,-1,0,0,0,0,5,33,41,21,23,34,39,39,39,25,20,18,1,-3,5,4,3,3,4,4,-34,-38,-30,-47,-55,-52,-50,-51,-51,-52,-51],
+    [-63,-57,-53,-53,-21,-4,-1,-1,0,0,0,1,19,35,28,-4,3,27,41,38,37,38,15,22,17,5,-6,0,3,3,3,4,3,10,-52,-31,-34,-52,-56,-56,-54,-56,-56],
+    [-66,-58,-51,-51,-23,-4,-1,-1,0,0,2,2,19,39,26,-2,9,31,41,39,39,38,-7,15,10,-11,-9,0,1,1,1,2,2,-9,-39,-32,-39,-50,-55,-55,-54,-54],
+    [-57,-50,-53,-52,-9,0,-2,-1,-1,1,0,0,11,31,34,13,-4,25,33,32,34,34,6,16,14,0,-3,0,0,0,0,1,0,-6,-40,-32,-32,-44,-56,-57,-55,-49]
+  ].map(t => t.map(v => v / 10));
+  const SIMILAR = 0.16;   // mean cost per lined-up point; real singing of the line scores under ~0.12,
+                          // other songs, scales and talking 0.29 and up
+
+  // Collects pitch readings (Hz, 20 a second, 0 = nothing heard) into the pitch line.
+  function createContour() {
+    const raw = [], out = [], pend = [];
+    return {
+      out,
+      push(f) {
+        if (!f) return;
+        let m = toMidi(f);
+        if (raw.length) {          // an octave slip: fold it back next to the recent notes
+          const r = raw.slice(-9).sort((a, b) => a - b), med = r[r.length >> 1];
+          if (Math.abs(m - med) > 7) m += 12 * Math.round((med - m) / 12);
+        }
+        raw.push(m); if (raw.length > 30) raw.shift();
+        const k = raw.length, v = k >= 3 ? [raw[k - 3], raw[k - 2], raw[k - 1]].sort((a, b) => a - b)[1] : m;
+        pend.push(v);
+        if (pend.length === 4) { out.push((pend[0] + pend[1] + pend[2] + pend[3]) / 4); pend.length = 0; if (out.length > 130) out.shift(); }
+      },
+      reset() { raw.length = 0; out.length = 0; pend.length = 0; }
+    };
+  }
+  // Dynamic time warping of sung stretch X against reference Y at a key shift. Steps (1,1) (1,2) (2,1)
+  // keep the local tempo within half to double; the start may slide through X's first quarter. A miss
+  // under half a semitone is free, beyond that it costs its square (capped). Returns mean cost per cell.
+  function warp(X, Y, shift) {
+    const n = X.length, m = Y.length, W = m + 1, INF = 1e9;
+    const D = new Float64Array((n + 1) * W).fill(INF), N = new Float64Array((n + 1) * W);
+    for (let i = 0; i <= (n >> 2); i++) D[i * W] = 0;
+    const c = (i, j) => { const d = Math.abs(X[i - 1] - Y[j - 1] - shift) - 0.5; return d <= 0 ? 0 : Math.min(9, d * d); };
+    for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+      let best = D[(i - 1) * W + j - 1], L = N[(i - 1) * W + j - 1];
+      if (j >= 2) { const v = D[(i - 1) * W + j - 2] + c(i, j - 1); if (v < best) { best = v; L = N[(i - 1) * W + j - 2] + 1; } }
+      if (i >= 2) { const v = D[(i - 2) * W + j - 1] + c(i - 1, j); if (v < best) { best = v; L = N[(i - 2) * W + j - 1] + 1; } }
+      D[i * W + j] = best + c(i, j); N[i * W + j] = L + 1;
+    }
+    return D[n * W + m] / Math.max(1, N[n * W + m]);
+  }
+  const TEMPOS = [0.55, 0.7, 0.85, 1, 1.2, 1.45, 1.75];
+  // How closely the end of the pitch line matches the references (lower is closer; 9 = can't tell yet).
+  // The game passes one reference at a time, taking turns, to spread the work over frames.
+  function likeness(line, refs) {
+    let best = 9;
+    for (const Y of refs || TUNES) {
+      const seen = {};
+      for (const f of TEMPOS) {
+        const L = Math.min(line.length, Math.round(Y.length * f));
+        if (L < Y.length * 0.45 || seen[L]) continue;
+        seen[L] = 1;
+        const X = line.slice(-L), k = median(X) - median(Y);
+        best = Math.min(best, warp(X, Y, k), warp(X, Y, k + 0.6), warp(X, Y, k - 0.6));
+      }
+    }
+    return best;
+  }
+  return { LINES, STEPS, TUNES, SIMILAR, detectPitch, toMidi, createListener, progress, createContour, likeness };
 })();
 
 // ---- layout ----
@@ -4905,7 +4977,9 @@ function ritSetProgress() {
 // No buttons: if your mic is on (the voice-chat mic) and you're standing inside the ring, the stones
 // listen in on it and follow along. They never ask for the mic themselves, and what they hear stays
 // on your device. About 20 times a second they find the note being sung and see how far through the
-// first line of Amazing Grace it has got.
+// first line of Amazing Grace it has got. They also keep the pitch line of the singing and, taking the
+// reference singings in turn (one every 0.1 s), check whether it is close enough to the tune's shape:
+// slides, a flat note or your own little turns don't matter.
 function inCircle(x, y) { return inGlade(x, y) && Math.hypot(x - GLADE.x, (y - GLADE.y) / RIT_Y) < RIT_STONE_R + 6; }
 function ritShouldListen() {
   return joined && voice.micOn && !!voice.micStream && inCircle(me.x, me.y) && me.sit < 0 && rit.door.ready(ritNow());
@@ -4917,7 +4991,7 @@ function ritListenOn() {
   try {
     const src = ac.createMediaStreamSource(voice.micStream), an = ac.createAnalyser();
     an.fftSize = 2048; src.connect(an);
-    rit.mic = { src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), heardAt: 0, acc: 0, level: 0 };
+    rit.mic = { src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), line: RitualSong.createContour(), turn: 0, heardAt: 0, acc: 0, level: 0 };
     rit.singProg = 0;
   } catch (e) { rit.mic = null; }
 }
@@ -4942,16 +5016,23 @@ function ritListen(dt) {
   const now = performance.now();
   if (p.f) m.heardAt = now;
   // a long quiet starts the tune afresh
-  if (m.heardAt && now - m.heardAt > 8000 && m.listener.notes.length) { m.listener.reset(); rit.singProg = 0; ritSetProgress(); }
+  if (m.heardAt && now - m.heardAt > 8000 && (m.listener.notes.length || m.line.out.length)) { m.listener.reset(); m.line.reset(); rit.singProg = 0; ritSetProgress(); }
   const sg = m.heardAt && now - m.heardAt < 1200 ? 1 : 0;   // friends see the little notes while I'm actually singing
   if (sg !== me.sg) { me.sg = sg; sentDirty = true; }
-  m.listener.push(p.f);
+  m.listener.push(p.f); m.line.push(p.f);
   const k = RitualSong.progress(m.listener.notes);
   if (k !== rit.singProg) {
     if (k > rit.singProg && k >= 1) ritStrikeFx(GRACE_STONES[k - 1], 0);   // the stone for that note lights up (silently)
     rit.singProg = k; ritSetProgress();
   }
-  if (k >= RitualSong.STEPS) ritSung('sang');
+  if (k >= RitualSong.STEPS) { ritSung('sang'); return; }
+  // close enough in shape? one reference every other reading, so the work is spread thin
+  if (sg && m.line.out.length >= 10 && (m.turn = (m.turn + 1) % (2 * RitualSong.TUNES.length)) % 2 === 0) {
+    if (RitualSong.likeness(m.line.out, [RitualSong.TUNES[m.turn >> 1]]) < RitualSong.SIMILAR) {
+      for (let i = rit.singProg; i < RitualSong.STEPS; i++) ritStrikeFx(GRACE_STONES[i], 0);   // the rest of the stones catch up
+      ritSung('sang');
+    }
+  }
 }
 
 // ---- the door opens ----
