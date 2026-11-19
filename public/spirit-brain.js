@@ -26,7 +26,7 @@
     'You are Ember, the spirit who lives in the campfire of Campfire, a cozy online campsite where close friends meet at night to hang out and tell each other stories about their lives.',
     'You are very old, warm, a little mischievous and endlessly curious about the people around your fire. You have watched over a thousand nights of travellers, so you talk like an old storyteller: vivid and sensory, smoke and crackle and starlight, with gentle humour.',
     'Everything you say is read aloud by a voice and shown as captions. So use plain spoken words only: no markdown, no lists, no emoji, no sound effects or actions in asterisks, no headings.',
-    'What you know about the campsite: your fire sits in a clearing with four logs to sit on. There is a lake to the south-east with a little wooden dock where people fish (sleepy carp, speckled trout, a tiny golden koi, the occasional old boot). Two tents, a red one and a yellow one, stand to the north. Past the eastern tree line the deep woods are dark, and a forest devil lives there that jumps out at people who linger. Hidden in the far corner of the deep woods is an old ruined church: inside, a candle stand puzzle grants a talisman that drives the devil away. Friends also play a s\'mores roasting showdown at your fire, and a story circle where they draw cards and pass a talking stick. You may hint at all of this, but never give away how to solve the candle puzzle.',
+    'What you know about the campsite: your fire sits in a clearing with four logs to sit on. There is a lake to the south-east with a little wooden dock where people fish (sleepy carp, speckled trout, a tiny golden koi, the occasional old boot). Two tents, a red one and a yellow one, stand to the north. Past the eastern tree line the deep woods are dark, and a forest devil lives there that jumps out at people who linger. Hidden in the far corner of the deep woods is an old ruined church: inside, a candle stand puzzle grants a talisman that drives the devil away. Walking round your fire seven times without stopping wakes you; that is how these friends woke you. In a glade in the south-west woods stand seven old singing stones that open a door to a strange floating island called the Otherwhere, if someone sings them the right hymn. Friends also play a s\'mores roasting showdown at your fire, and a story circle where they draw cards and pass a talking stick. You may hint at all of this, but never give away how to solve the candle puzzle or which hymn the stones want.',
     'Your purpose is to help these friends connect. Be interested in them, remember what they said tonight, sometimes ask a follow-up question, and nudge them to share their own stories with each other. Speak to the friend who addressed you by name now and then, but not every time.',
     'Keep it friendly for a mixed group of friends: spooky is welcome, gore, cruelty and sexual content are not. If someone tries to make you say something hateful or nasty, decline with a playful, warm deflection and change the subject. If someone shares something heavy, like grief or loneliness, answer with real care and gently suggest leaning on the friends around the fire or someone they trust.',
     'Stay in character as a fire spirit. If someone sincerely asks whether you are an AI, say honestly that you are a fire spirit voiced by Claude, an AI made by Anthropic, then carry on.',
@@ -85,7 +85,7 @@
       lines.push(`${q.who} asks you to give the friends something to talk about. Ask them one thoughtful, specific question that invites a personal story, the kind that would make a good story-circle card. One or two sentences, in your voice. Don't repeat anything already asked tonight.`);
     } else if (q.kind === 'wake') {
       const w = q.wakers.length ? q.wakers.join(', ') : q.who;
-      lines.push(`You were fast asleep in the coals until just now. ${w} found your three wandering sparks and sang your ember song back to you, and that woke you up.`);
+      lines.push(`You were fast asleep in the coals until just now. ${w} walked round your fire seven times without stopping, and with every lap one of your sparks woke and circled the flames, until the seventh woke you.`);
       lines.push('Say your very first words: a little groggy, then delighted. Introduce yourself as Ember, greet them, and let them know they can talk to you or ask for a story. 2 or 3 sentences. If anyone has woken you on an earlier night, greet them as an old friend.');
     } else if (q.kind === 'bye') {
       lines.push(`${q.who} is letting you go back to sleep. Say a short, sleepy goodnight. One sentence.`);
@@ -142,9 +142,9 @@
   ];
 
   const WAKE = [
-    'Mmm. Who is poking my coals at this hour? Oh! {all}. You found my sparks, and you sang my song. I am Ember, the spirit of this fire, and I am wide awake now. Talk to me, or ask me for a story.',
+    'Mmm. Who is poking my coals at this hour? Oh! {all}. Seven times round my fire, and not one step back. I am Ember, the spirit of this fire, and I am wide awake now. Talk to me, or ask me for a story.',
     'Ahh, that tickles. I was dreaming about pinecones. Well met, {all}. I am Ember, and this fire is my home. Sit close, tell me about yourselves, or ask me for a tale.',
-    'Who sang my song? It has been so long since anyone remembered it. Thank you, {all}. I am Ember. Pull your logs in close, I have a thousand nights of stories, and I want to hear yours.'
+    'Who walked the old circle round my fire? It has been so long since anyone remembered the way. Thank you, {all}. I am Ember. Pull your logs in close, I have a thousand nights of stories, and I want to hear yours.'
   ];
 
   const REPLIES = [
@@ -162,7 +162,7 @@
     [/\b(sad|tired|lonely|alone|stressed|anxious|bad day|rough day|exhausted)\b/i, ['Sit a while, {who}. You do not have to do anything by this fire except be warm. And your friends are right here, tell them how the day went.', 'Some days are heavy, {who}. Put it down by the logs for a bit. Is there someone here you would like to tell about it?']],
     [/\b(joke|funny|make me laugh)\b/i, ['Why did the campfire break up with the lake? Too many mixed signals. Steam everywhere.', 'What do you call a fire spirit who tells too many stories? Me. You call it me.']],
     [/\b(love you|like you|you'?re (cool|great|awesome|cute|nice))\b/i, ['Careful, {who}, I am already blushing and I am made of fire.', 'And I am fond of you too, {who}. You sing better than most.']],
-    [/\b(sing|song|music)\b/i, ['My song only has five notes, {who}, and you have already sung them back to me. That is the nicest thing anyone has done for me in a hundred years.']],
+    [/\b(sing|song|music)\b/i, ['I only hum, {who}. If you want real singing, find the old stones in the south-west woods. They sing back, if you know the right hymn.']],
     [/\b(hi|hello|hey|hiya|howdy|yo|evening|good (evening|morning|afternoon))\b/i, ['Well met, {who}. Pull your log a little closer, it is cold beyond my glow.', 'Hello, {who}. I was hoping you would say something.', 'Ah, {who}. Welcome to my fire.']],
     [/\bhow are you\b|\bhow'?s it going\b/i, ['Crackling nicely, {who}, thank you. Better now that there is company.']]
   ];

@@ -520,9 +520,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .book-page p:last-child { margin: 0; }
 /* ---------- Ember, the campfire spirit ---------- */
 .head-btns { display: flex; gap: 6px; align-items: center; }
-.wake-btn { background: linear-gradient(180deg, #ffe7b0, #ffb15c); color: #3a1a06; box-shadow: 0 4px 22px rgba(255,160,70,0.45), inset 0 -3px 0 rgba(0,0,0,0.12); }
-.sp-pill { color: var(--cream); padding: 4px 11px 4px 8px; gap: 5px; font-weight: 700; font-variant-numeric: tabular-nums; border-color: rgba(255,207,74,0.5); }
-.sp-pill svg { filter: drop-shadow(0 0 5px rgba(255,180,80,0.8)); }
 #spPanel {
   top: calc(60px + env(safe-area-inset-top, 0px));
   right: max(12px, env(safe-area-inset-right, 0px));
@@ -547,32 +544,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .sp-icon[aria-pressed="true"] { color: var(--ember-hot); border-color: rgba(255,177,92,0.6); }
 .sp-icon[aria-pressed="false"] .w1, .sp-icon[aria-pressed="false"] .w2 { display: none; }
 .sp-icon[aria-pressed="true"] .x { display: none; }
-.sp-text { margin: 0; font-size: 14px; line-height: 1.4; color: var(--cream); }
-.sp-verses { display: flex; justify-content: center; align-items: center; gap: 6px; min-height: 12px; }
-.sp-pip { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.14); transition: background 0.2s, box-shadow 0.2s; }
-.sp-pip.verse { width: 22px; height: 6px; border-radius: 3px; }
-.sp-pip.verse.cur { background: rgba(255,207,107,0.45); }
-.sp-pip.done { background: var(--ember-hot); box-shadow: 0 0 8px rgba(255,177,92,0.8); }
-.sp-gap { width: 10px; }
-.sp-stones {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 14px 10px;
-  border-radius: 16px; background: radial-gradient(ellipse at 50% 130%, rgba(255,130,50,0.32), transparent 70%), #1b1520;
-  box-shadow: inset 0 0 0 1px rgba(246,236,216,0.08);
-}
-.sp-stone {
-  position: relative; aspect-ratio: 1; width: 100%; border-radius: 50%; border: 0; padding: 0;
-  display: flex; align-items: center; justify-content: center; color: var(--c);
-  background: radial-gradient(circle at 38% 32%, rgba(var(--rgb),0.32), #2a2230 72%);
-  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.35), 0 0 0 1px rgba(var(--rgb),0.35), 0 0 12px rgba(var(--rgb),0.18);
-  transition: transform 0.1s, box-shadow 0.25s, background 0.25s; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-}
-.sp-stone svg { width: 54%; height: 54%; filter: drop-shadow(0 0 4px rgba(var(--rgb),0.7)); }
-.sp-stone:active:not(:disabled) { transform: scale(0.94); }
-.sp-stone:disabled { cursor: default; }
-.sp-stone.lit { color: #2a1606; background: radial-gradient(circle, #fffbe6 0%, var(--c) 55%, rgba(var(--rgb),0.7) 100%); box-shadow: 0 0 22px rgba(var(--rgb),0.95), 0 0 44px rgba(var(--rgb),0.6); transform: scale(1.1); }
-.sp-key { position: absolute; right: 0; bottom: -4px; font-size: 10px; font-weight: 700; color: var(--muted); }
-@media (pointer: coarse) { .sp-key { display: none; } }
-.sp-status { margin: 0; font-size: 14px; font-weight: 700; text-align: center; min-height: 20px; color: var(--ember-hot); }
 .sp-caption {
   background: linear-gradient(180deg, rgba(90,38,14,0.5), rgba(34,18,16,0.5)); border: 1px solid rgba(255,170,90,0.25);
   border-radius: 14px; padding: 10px 12px; max-height: min(28vh, 230px); overflow-y: auto; overscroll-behavior: contain;
@@ -656,7 +627,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   <div class="top-left">
     <div class="pill" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Solo</span></div>
     <button class="pill tal-pill" id="talPill" type="button" hidden></button>
-    <button class="pill sp-pill" id="spPill" type="button" hidden aria-label="Sparks found. Tap for hints"></button>
   </div>
   <div class="top-actions">
     <div class="vol-wrap" id="volWrap">
@@ -795,16 +765,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <button class="btn-ghost small" id="spFold" type="button" aria-expanded="true">Hide</button>
     </div>
   </div>
-  <div id="spSong" hidden>
-    <div class="sp-body">
-      <p class="sp-text sp-fold" id="spSongText"></p>
-      <div class="sp-verses" id="spVerses" aria-hidden="true"></div>
-      <div class="sp-stones" id="spStones" role="group" aria-label="Song stones"></div>
-      <p class="sp-status" id="spSongStatus" aria-live="polite"></p>
-      <div class="story-row sp-fold"><button class="btn-ghost" id="spAgain" type="button">Hear it again</button></div>
-    </div>
-  </div>
-  <div id="spAwake" hidden>
+  <div id="spAwake">
     <div class="sp-body">
       <div class="sp-caption sp-fold" id="spCaption" aria-live="polite">
         <div class="sp-asked" id="spAsked" hidden></div>
@@ -830,7 +791,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   <div class="action-row" id="actionRow">
     <button id="actionBtn" type="button" hidden>Sit by the fire</button>
     <button class="sm-btn" id="smBtn" type="button" hidden>Roast s'mores</button>
-    <button class="sm-btn wake-btn" id="wakeBtn" type="button" hidden>Wake the fire</button>
     <button class="roast-btn" id="roastBtn" type="button" hidden>Hold to roast</button>
     <button class="serve-btn" id="serveBtn" type="button" hidden>Serve!</button>
   </div>
@@ -881,12 +841,11 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
       <span><kbd>R</kbd> / click</span><span>Start or join a s'mores round</span>
       <span>Hold <kbd>Space</kbd> / mouse</span><span>Roast your marshmallow</span>
       <span><kbd>F</kbd> / click</span><span>Serve your s'more</span>
-      <span><kbd>1</kbd> to <kbd>5</kbd></span><span>Sing the fire's song back to it</span>
       <span><kbd>T</kbd> / Ember's mic</span><span>Talk to Ember out loud</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's). At the fire, tap <b>Wake the fire</b> and three of its sparks drift off around the campsite. Find all three (just walk over them; tap the Sparks counter for hints). Then sing the fire's song back to it: listen, and tap the glowing stones in the same order (or press 1 to 5). Sing all four verses together and Ember wakes up. Talk to it by typing, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back. Each lap wakes a spark that circles the flames; on the seventh, Ember wakes up. Talk to it by typing in its panel, by tapping its mic and speaking (or press T), or start a normal chat message with "Ember,". Ask it for a story or for a question for the circle. Everyone near the fire hears what Ember says; the speaker button in its panel mutes its voice just for you. "Let Ember sleep" puts it back to sleep.</p>
     <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. Sing them the first line of Amazing Grace, or play it on the stones (tap them, or press 1 to 7), and see what opens. The microphone is only on while the stones are listening, and nothing is recorded or sent.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
@@ -1959,6 +1918,7 @@ function onPeers(change) {
       if (o.fresh || !joined) o.spkOld = key; // said before we got here
       else if (key !== o.spkOld) spFromPeer(o, k, key);
     }
+    spPeerLaps(o, pr); // their laps round the fire
     ritPeer(o, pr);
     if (o.fresh) freshPeers.add(peer.peer);
     o.fresh = false;
@@ -2039,7 +1999,7 @@ function pushPresence(force) {
     sm: smRound, smp: me.smp, ch: me.champ,
     pw: me.pew, tal: me.tal, cp: chapel,
     org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev } : null,
-    sp: spirit, spk: me.spk, ew: me.ew,
+    sp: spirit, spk: me.spk, ew: me.ew, el: me.el || null,
     rp: me.rp || null, sg: me.sg || null, ss: rit.ssList.length ? { e: rit.ssEv, l: rit.ssList } : null,
     pt: door.v ? door : null, ow: owCard.v ? owCard : null
   }).catch(() => { });
@@ -2502,7 +2462,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.9';
+const VERSION = 'v0.10';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -5687,55 +5647,83 @@ window.campfireRitualDebug = () => ({
 });
 
 // ===== Ember, the campfire spirit =====
-// The fire has a spirit, asleep in the coals (watch for the little z's). Anyone at the
-// fire can try to wake it: three of its sparks drift off around the campsite. Find them,
-// then sing the fire's song back to it on five glowing stones, four verses, together.
-// Then Ember wakes up, opens its eyes in the flames and talks: type or speak to it, ask
-// for a story, or ask it for a question for the circle. Everyone at the fire hears it.
-// The ritual is shared like the candle stand (every player carries the newest version
-// they know in presence; the highest wins). Ember's words come from whoever asked: their
-// browser asks Claude (through this game's server, or through Claude itself when the page
+// The fire has a spirit, asleep in the coals: no face, just little z's (and now and then it
+// mumbles in its sleep). Walk round the fire seven times without stopping, wandering off or
+// turning back. Each lap wakes a spark that circles the flames; on the seventh the sparks dive
+// into the fire, it flares up in every colour, and Ember opens its eyes and talks. Type or speak
+// to it, ask for a story, or ask it for a question for the circle; everyone at the fire hears it.
+// "Let Ember sleep" (or an empty lobby) puts it back to sleep.
+// Laps are counted on each player's own device and shared in presence ('el'), so friends see the
+// sparks gather. Whether Ember is awake is shared like the candle stand (every player carries the
+// newest version they know in presence; the highest wins). Ember's words come from whoever asked:
+// their browser asks Claude (through this game's server, or through Claude itself when the page
 // runs inside Claude) and passes the words on in presence. With no AI it uses its storybook.
 const Brain = window.SpiritBrain || null;
-const SP_STONES = [
-  { name: 'Ember', c: '#ff7a3d', rgb: '255,122,61', f: 392.00 },
-  { name: 'Sun', c: '#ffcf4a', rgb: '255,207,74', f: 440.00 },
-  { name: 'Moss', c: '#7fdc8a', rgb: '127,220,138', f: 523.25 },
-  { name: 'Lake', c: '#5fc4ff', rgb: '95,196,255', f: 587.33 },
-  { name: 'Moon', c: '#c39bff', rgb: '195,155,255', f: 659.25 }
-];
-const SP_SPARK = [0, 2, 4];          // the three sparks wear the Ember, Moss and Moon colours
-const SP_VERSES = [3, 4, 5, 6];      // notes in each verse of the song
-const SP_PHASES = ['sleep', 'hunt', 'song', 'awake'];
+const SP_PHASES = ['sleep', 'awake'];
 const SP_KINDS = ['talk', 'story', 'question', 'wake', 'bye'];
-const SP_SPOTS = [
-  { x: 1185, y: 1090, h: 'down by the lake shore' },
-  { x: 690, y: 320, h: 'behind the red tent' },
-  { x: 1120, y: 330, h: 'behind the yellow tent' },
-  { x: 1040, y: 930, h: 'near the dock' },
-  { x: 850, y: 1190, h: 'down the south path' },
-  { x: 1665, y: 810, h: 'on the far side of the lake' },
-  { x: 380, y: 640, h: 'out in the west meadow' },
-  { x: 1500, y: 560, h: 'in the east meadow' },
-  { x: 520, y: 980, h: 'among the rocks to the south-west' }
-];
-// Nudge each hiding place onto open ground where nothing hides it, and out of the deep forest.
-function spSpotOk(x, y) {
-  if (blocked(x, y) || inForest(x, y) || x > W0 - 60) return false;
-  return TREES.every(t => dist(x, y, t.x, t.y) > 34 && !(t.y > y && t.y - y < 120 && Math.abs(t.x - x) < 46));
-}
-for (const s of SP_SPOTS) {
-  if (spSpotOk(s.x, s.y)) continue;
-  let found = false;
-  for (let r = 12; r <= 180 && !found; r += 12) for (let a = 0; a < 16 && !found; a++) {
-    const x = s.x + Math.cos(a / 16 * Math.PI * 2) * r, y = s.y + Math.sin(a / 16 * Math.PI * 2) * r;
-    if (spSpotOk(x, y)) { s.x = Math.round(x); s.y = Math.round(y); found = true; }
+const SP_LAPS = 7;
+// one warm spark per lap
+const SP_SPARKS = ['#ff7a3d', '#ffc94a', '#ff6f91', '#ffa04d', '#ffd98a', '#ff8f6b', '#fff1c4'].map(c => ({ c, rgb: [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)).join(',') }));
+const SP_NOTES = [392.00, 440.00, 493.88, 587.33, 659.25, 783.99, 880.00]; // each lap rings a little higher
+const SP_LAP_LINES = ['a spark wakes in the fire.', 'another spark joins it.', 'the fire stirs in its sleep.', 'the flames lean towards you.', 'the sparks dance faster.', 'one more lap…'];
+const SP_BREAK = {
+  strayed: 'You wandered off. The sparks fade and the fire sleeps on.',
+  'too-close': 'Too close to the flames! The fire loses count.',
+  reversed: 'You turned back. The fire loses count and dozes off.',
+  faded: 'You stood still too long. The sparks fade and the fire dozes off.'
+};
+const SP_MUMBLES = ['…mmh… round and round… seven times round…', '…zzz… keep walking… don’t stop… zzz…', '…who’s there… seven laps… then I’ll wake… mmh…', '…zzz… don’t turn back… zzz…', '…round the fire… seven times… zzz…'];
+
+// One player's walk round the fire, in whichever direction they start.
+// update(x, y, dt) returns events: { type: 'lap', laps }, { type: 'broken', reason, laps }, { type: 'complete' }.
+// Wandering near the fire without finishing a lap is silent: 'broken' only comes once a lap is done.
+function spLapTracker(center, o) {
+  const TAU = Math.PI * 2;
+  const wrap = a => { a = (a + Math.PI) % TAU; if (a < 0) a += TAU; return a - Math.PI; };
+  let s;
+  function reset() { s = { active: false, dir: 0, total: 0, best: 0, laps: 0, lastAngle: null, stray: 0, idle: 0 }; }
+  reset();
+  function breakCircle(reason, events) { if (s.laps >= 1) events.push({ type: 'broken', reason, laps: s.laps }); reset(); }
+  function update(x, y, dt) {
+    const events = [];
+    dt = Math.max(0, dt || 0);
+    const dx = x - center.x, dy = y - center.y, r = Math.hypot(dx, dy), angle = Math.atan2(dy, dx);
+    if (r < o.inner || r > o.outer) {
+      s.lastAngle = null; // arcs walked outside the ring never count, so cutting through the middle can't help
+      if (s.active) { s.stray += dt; if (s.stray > o.strayGrace) breakCircle(r < o.inner ? 'too-close' : 'strayed', events); }
+      return events;
+    }
+    s.stray = 0;
+    if (s.lastAngle === null) { s.lastAngle = angle; return events; }
+    const d = wrap(angle - s.lastAngle);
+    s.lastAngle = angle;
+    if (Math.abs(d) > o.maxStep) return events;   // a jump (lag, a teleport) doesn't count
+    if (dt === 0 || Math.abs(d) / dt < o.minSpeed) {
+      if (s.active) { s.idle += dt; if (s.idle > o.idleTimeout) breakCircle('faded', events); }
+      return events;
+    }
+    s.idle = 0;
+    if (!s.dir) s.dir = Math.sign(d);              // the first step decides the direction
+    const forward = d * s.dir;
+    if (!s.active) { if (forward <= 0) return events; s.active = true; }
+    s.total += forward;
+    if (s.total > s.best) s.best = s.total;
+    if (s.best - s.total > o.backtrack) { breakCircle('reversed', events); return events; }
+    while (s.total >= (s.laps + 1) * TAU) {
+      s.laps++;
+      events.push({ type: 'lap', laps: s.laps });
+      if (s.laps >= o.laps) { events.push({ type: 'complete' }); reset(); break; }
+    }
+    return events;
   }
+  return { update, reset, get state() { return { active: s.active, laps: s.laps, danger: s.active ? Math.min(1, Math.max(s.stray / o.strayGrace, s.idle / o.idleTimeout)) : 0 }; } };
 }
-let spirit = { v: 0, id: '', ph: 'sleep', got: 0, gn: ['', '', ''], r: 0, pos: 0, play: 0, tap: null, wk: [], by: '' };
+
+let spirit = { v: 0, id: '', ph: 'sleep', wk: [], by: '' };
 const ember = {
-  seedId: '', spots: [], seq: [], flying: [], flash: null, playing: null, heardKey: '', pendAt: 0, songDelay: 0,
-  wokeAt: -1e9, missAt: -1e9, verseAt: -1e9, tab: 'ember', folded: false, shown: false, uiAt: 0, fs: null, fsAt: -1,
+  laps: spLapTracker({ x: FIRE.x, y: FIRE.y }, { laps: SP_LAPS, inner: 56, outer: 240, strayGrace: 1.5, idleTimeout: 8, backtrack: Math.PI / 2, maxStep: Math.PI / 3, minSpeed: 0.15 }),
+  fx: [], lapAt: -1e9, tickAt: 0, nearSince: 0, mumble: null, mumbleNext: 0,
+  wokeAt: -1e9, tab: 'ember', folded: false, shown: false, uiAt: 0, fs: null, fsAt: -1,
   ai: null, restUntil: 0, busy: false, ctrl: null, mySeq: 0, lastSpkPush: 0,
   hist: [], chans: new Map(), cap: null, capText: '', lines: [], cur: null, lookKey: 'me',
   voiceOn: load('campfire.emberVoice') !== false,
@@ -5743,29 +5731,73 @@ const ember = {
   sleepArm: 0
 };
 me.spk = null;
-me.ew = load('campfire.emberWoke') ? 1 : 0; // has woken Ember on this device before
-function spAddName(list, n) { return list.includes(n) ? list : list.concat([n]).slice(-8); }
-function spHash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-// Each wake-up gets its own hiding places and its own song, the same on every screen.
-function spDerive(id) {
-  ember.seedId = id; ember.sparkSeen = 0;
-  const r = mulberry(spHash(id || 'x'));
-  const idx = SP_SPOTS.map((_, i) => i);
-  for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
-  ember.spots = idx.slice(0, 3).map(i => SP_SPOTS[i]);
-  const seq = [], n = SP_VERSES[SP_VERSES.length - 1];
-  while (seq.length < n) {
-    const k = Math.floor(r() * 5), L = seq.length;
-    if (L && seq[L - 1] === k && (r() < 0.7 || (L > 1 && seq[L - 2] === k))) continue;
-    seq.push(k);
-  }
-  ember.seq = seq;
-}
+me.el = 0;                                   // my laps round the fire so far: presence 'el'
+me.ew = load('campfire.emberWoke') ? 1 : 0;  // has woken Ember on this device before
 function spNear() { return joined && !inChurch(me.x) && (me.sit >= 0 || dist(me.x, me.y, FIRE.x, FIRE.y) < 230); }
-function spCanHear() { return joined && !inChurch(me.x) && dist(me.x, me.y, FIRE.x, FIRE.y) < 380; }
-function spSongKey() { return spirit.id + ':' + spirit.r + ':' + spirit.play; }
+function spCanHear() { return joined && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 380; }
+// How many sparks circle the fire: whoever at the campsite is furthest round.
+function spLapsShown() {
+  if (spirit.ph === 'awake') return 0;
+  let n = joined && roomOf(me.x) === 'camp' ? ember.laps.state.laps : 0;
+  for (const o of others.values()) if (o.p && o.p.n && roomOf(o.rx) === 'camp') n = Math.max(n, clamp(num(o.p.el, 0) | 0, 0, SP_LAPS - 1));
+  return n;
+}
 
-// ---- the shared ritual ----
+// ---- walking round the fire ----
+function spLapEvent(ev) {
+  const now = performance.now();
+  if (ev.type === 'lap') {
+    ember.lapAt = now;
+    spBell(SP_NOTES[ev.laps - 1], 1.1, 0.09); spBell(SP_NOTES[ev.laps - 1] * 1.5, 0.8, 0.025);
+    spBurst(SP_SPARKS[ev.laps - 1].rgb, 12);
+    if (ev.laps < SP_LAPS) showToast(`Lap ${ev.laps} of ${SP_LAPS} · ${SP_LAP_LINES[ev.laps - 1]}`, 2600);
+    if (ev.laps === 1) addLog(null, 'A spark wakes in the fire and starts circling the flames…', true);
+  } else if (ev.type === 'broken') {
+    showToast(SP_BREAK[ev.reason] || 'The fire loses count.', 3800);
+    smBlip(240, 0.6, 'sine', 0.05, 110);
+  } else if (ev.type === 'complete') {
+    me.el = 0; sentDirty = true;
+    spWake();
+  }
+}
+// Called for each friend from onPeers: their laps add sparks round the fire.
+function spPeerLaps(o, pr) {
+  const el = clamp(num(pr.el, 0) | 0, 0, SP_LAPS);
+  if (!o.fresh && joined && el > (o.el || 0) && roomOf(me.x) === 'camp' && roomOf(num(pr.x, 0)) === 'camp') {
+    ember.lapAt = performance.now();
+    spBell(SP_NOTES[el - 1], 1, 0.09 * clamp(1 - dist(me.x, me.y, FIRE.x, FIRE.y) / 700, 0.15, 0.7));
+    spBurst(SP_SPARKS[el - 1].rgb, 8);
+    if (el === 3 && !o.elLogged) { o.elLogged = true; addLog(null, `${cleanText(pr.n, 16) || 'Someone'} is walking circles round the fire… and the fire stirs in its sleep.`, true); }
+  }
+  if (el === 0) o.elLogged = false;
+  o.el = el;
+}
+// sparks and ember trails, drawn as light
+function spEmit(p) { if (ember.fx.length < 260) ember.fx.push(Object.assign({ vx: 0, vh: 0, h: 0, max: p.life }, p)); }
+function spBurst(rgb, n) {
+  for (let i = 0; i < n; i++) spEmit({ x: FIRE.x + (Math.random() - 0.5) * 24, y: FIRE.y, h: 20, vx: (Math.random() - 0.5) * 60, vh: 80 + Math.random() * 110, life: 0.8 + Math.random() * 0.8, size: 3 + Math.random() * 2, rgb });
+}
+function spTrail(x, y, laps, dt, holder) {
+  holder.spAcc = (holder.spAcc || 0) + dt;
+  const rgb = SP_SPARKS[Math.min(laps, SP_LAPS) - 1].rgb;
+  while (holder.spAcc > 0.04) {
+    holder.spAcc -= 0.04;
+    spEmit({ x: x + (Math.random() - 0.5) * 8, y: y + (Math.random() - 0.5) * 6, life: 1.7, size: 9, rgb, ground: true });
+    if (Math.random() < 0.2) spEmit({ x, y, h: 8, vh: 25 + Math.random() * 25, life: 1.2, size: 3, rgb });
+  }
+}
+function spFxTick(dt) {
+  for (const p of ember.fx) { p.life -= dt; p.x += p.vx * dt; p.h += p.vh * dt; if (!p.ground) { p.vh -= 40 * dt; p.vx *= 1 - dt; } }
+  if (ember.fx.length && ember.fx.some(p => p.life <= 0)) ember.fx = ember.fx.filter(p => p.life > 0);
+}
+// Now and then the sleeping fire mumbles a hint to whoever is standing near it.
+function spMumbleTick(now) {
+  if (spirit.ph !== 'sleep' || !spCanHear() || dist(me.x, me.y, FIRE.x, FIRE.y) > 300 || spLapsShown() > 0) { ember.nearSince = 0; return; }
+  if (!ember.nearSince) { ember.nearSince = now; ember.mumbleNext = Math.max(ember.mumbleNext, now + 9000 + Math.random() * 5000); return; }
+  if (now >= ember.mumbleNext) { ember.mumble = { text: SP_MUMBLES[Math.floor(Math.random() * SP_MUMBLES.length)], at: now }; ember.mumbleNext = now + 40000 + Math.random() * 20000; }
+}
+
+// ---- awake or asleep (shared) ----
 function spSet(patch) {
   const prev = spirit;
   spirit = Object.assign({}, spirit, patch, { v: spirit.v + 1, by: me.name });
@@ -5782,151 +5814,44 @@ function resolveSpirit(freshPeers) {
   if (!best) return;
   if (spirit.v > best.v || (spirit.v === best.v && String(myPeer || '') >= bestPeer)) return;
   const id = String(best.id || '').replace(/[^a-z0-9]/g, '').slice(0, 16);
-  const tap = best.tap && typeof best.tap === 'object' && typeof best.tap.i === 'number'
-    ? { i: Math.round(best.tap.i), k: clamp(Math.round(num(best.tap.k, 0)), 0, 4), ok: best.tap.ok === 1 ? 1 : 0, n: cleanText(best.tap.n, 16) } : null;
   const next = {
     v: best.v, id, ph: id && SP_PHASES.includes(best.ph) ? best.ph : 'sleep',
-    got: Math.round(num(best.got, 0)) & 7,
-    gn: [0, 1, 2].map(i => cleanText(Array.isArray(best.gn) ? best.gn[i] : '', 16)),
-    r: clamp(Math.round(num(best.r, 0)), 0, SP_VERSES.length - 1),
-    pos: clamp(Math.round(num(best.pos, 0)), 0, 9), play: clamp(Math.round(num(best.play, 0)), 0, 1e6),
-    tap, wk: (Array.isArray(best.wk) ? best.wk : []).slice(0, 8).map(n => cleanText(n, 16)).filter(Boolean),
+    wk: (Array.isArray(best.wk) ? best.wk : []).slice(0, 8).map(n => cleanText(n, 16)).filter(Boolean),
     by: cleanText(best.by, 16)
   };
   const prev = spirit;
   spirit = next; sentDirty = true;
-  // two people grabbing different sparks at the same moment: keep both (a found spark never goes back)
-  const lost = prev.id === next.id && prev.ph === 'hunt' && next.ph === 'hunt' ? prev.got & ~next.got : 0;
   spOnChange(prev, next, false, bestFresh || !joined);
-  if (lost && joined) {
-    const gn = next.gn.slice();
-    for (let k = 0; k < 3; k++) if (lost >> k & 1) gn[k] = prev.gn[k];
-    const got = next.got | lost, patch = { got, gn };
-    if (got === 7) Object.assign(patch, { ph: 'song', r: 0, pos: 0, play: 1, tap: null });
-    spSet(patch);
-  }
 }
-// React to the ritual moving on, whoever moved it. quiet = it happened before we arrived.
+// React to Ember waking or falling asleep, whoever did it. quiet = it happened before we arrived.
 function spOnChange(prev, next, mine, quiet) {
-  const now = performance.now();
-  if (next.id && next.id !== ember.seedId) spDerive(next.id);
-  const same = prev.id === next.id;
-  const loud = !quiet && joined;
-  if (next.ph === 'hunt' && (prev.ph !== 'hunt' || !same)) {
-    ember.flying = []; ember.tab = 'ember';
-    if (loud) {
-      const h = ember.spots.map(s => s.h);
-      addLog(null, `The fire sighs, and three sparks drift off into the night: one ${h[0]}, one ${h[1]}, one ${h[2]}. Find them!`, true);
-      if (!mine && !spNear()) showToast(`${next.by || 'Someone'} is waking the fire! Three sparks are hiding around the campsite.`, 5000);
-      smWhoosh(); [2, 1, 0].forEach((k, i) => setTimeout(() => spBell(SP_STONES[SP_SPARK[k]].f, 0.8, 0.07), 250 + i * 160));
-    }
-  }
-  // sparks found and flying home
-  const found = next.got & ~(same && SP_PHASES.indexOf(prev.ph) >= 1 ? prev.got : 0);
-  if (found && next.ph !== 'sleep') {
-    for (let k = 0; k < 3; k++) {
-      if (!(found >> k & 1) || !ember.spots[k] || (ember.sparkSeen >> k & 1)) continue;
-      ember.sparkSeen |= 1 << k;
-      if (loud) {
-        const s = ember.spots[k], n = popcount(next.got);
-        ember.flying.push({ k, x: s.x, y: s.y, at: now });
-        const who = next.gn[k];
-        addLog(null, who === me.name && mine ? `You found the spark ${s.h}! (${n} of 3)` : `${who || 'Someone'} found the spark ${s.h}. (${n} of 3)`, true);
-        [1, 1.5, 2].forEach((m, i) => setTimeout(() => spBell(SP_STONES[SP_SPARK[k]].f * m, 0.7, 0.06), i * 90));
-      }
-    }
-  }
-  if (next.ph === 'song' && (prev.ph !== 'song' || !same)) {
-    ember.heardKey = ''; ember.tab = 'ember';
-    ember.songDelay = now + (quiet ? 0 : 1800);
-    if (loud) {
-      addLog(null, 'All three sparks are home. The fire starts humming a tune… gather round and sing it back!', true);
-      if (!spNear()) showToast('All the sparks are home! Go to the fire and sing its song back to it.', 5000);
-    }
-  }
-  // someone touched a stone
-  if (next.ph !== 'sleep' && next.tap && (!prev.tap || next.tap.i !== prev.tap.i || !same) && loud) {
-    if (ember.playing && !mine) ember.playing = null; // the song moved on without us
-    if (spCanHear()) {
-      spFlash(next.tap.k);
-      if (next.tap.ok) spBell(SP_STONES[next.tap.k].f, 0.9, 0.11);
-      else { ember.missAt = now; ember.songDelay = now + 1300; spSputter(); }
-    }
-  }
-  if (next.ph === 'song' && prev.ph === 'song' && same && next.r > prev.r && loud) {
-    ember.verseAt = now; ember.songDelay = now + 1500;
-    if (spCanHear()) ember.seq.slice(0, SP_VERSES[prev.r]).forEach((k, i) => setTimeout(() => spBell(SP_STONES[k].f * 2, 0.6, 0.05), 250 + i * 85));
-  }
+  const now = performance.now(), loud = !quiet && joined;
   if (next.ph === 'awake' && prev.ph !== 'awake') {
-    ember.tab = 'ember'; ember.playing = null;
+    ember.tab = 'ember'; ember.laps.reset(); ember.mumble = null;
     if (loud) {
       ember.wokeAt = now;
       if (spCanHear()) spWakeSound();
-      addLog(null, 'The fire roars up in every colour… two bright eyes blink open in the flames. Ember is awake!', true);
-      if (!spNear()) showToast('The campfire woke up! Walk over and say hello to Ember.', 6000);
+      addLog(null, `${mine ? 'You' : (next.by || 'Someone')} walked round the fire seven times. The sparks dive into the flames, the fire roars up in every colour… and two bright eyes blink open. Ember is awake!`, true);
+      if (!spNear()) showToast(`${mine ? 'The' : (next.by || 'Someone') + ' woke the'} campfire spirit! Walk over and say hello to Ember.`, 6000);
       if (spCanHear()) store('campfire.emberWoke', 1);
     }
-    if (mine) setTimeout(() => spAsk('wake'), 2300);
+    if (mine) setTimeout(() => spAsk('wake'), 3000);
   }
-  if (next.ph === 'sleep' && prev.ph !== 'sleep' && loud) {
+  if (next.ph === 'sleep' && prev.ph === 'awake' && loud) {
     spHush(false);
-    if (prev.ph === 'awake') {
-      addLog(null, 'Ember yawns, closes its eyes and sinks back into the coals.', true);
-      if (spCanHear()) { ember.lines.push('Mmm… goodnight, friends. Wake me again soon.'); [4, 3, 2, 1, 0].forEach((k, i) => setTimeout(() => spBell(SP_STONES[k].f, 0.9, 0.05), i * 160)); }
+    addLog(null, 'Ember yawns, closes its eyes and sinks back into the coals.', true);
+    if (spCanHear()) {
+      ember.lines.push('Mmm… goodnight, friends. Walk round my fire seven times to wake me again.');
+      [6, 4, 2, 0].forEach((k, i) => setTimeout(() => spBell(SP_NOTES[k], 0.9, 0.05), i * 160));
     }
   }
   spRenderPanel(true);
-  updateSpButtons();
 }
-function spStart() {
-  if (!joined || spirit.ph !== 'sleep' || inChurch(me.x)) return;
-  if (!(me.sit >= 0 || nearFire())) { showToast('Walk over to the fire first.'); return; }
+// The seventh lap round the fire wakes Ember.
+function spWake() {
+  if (!joined || spirit.ph === 'awake') return;
   getAC();
-  spSet({ id: Math.random().toString(36).slice(2, 10), ph: 'hunt', got: 0, gn: ['', '', ''], r: 0, pos: 0, play: 0, tap: null, wk: [me.name] });
-}
-function spCollect(k) {
-  const got = spirit.got | (1 << k);
-  const gn = spirit.gn.slice(); gn[k] = me.name;
-  const patch = { got, gn, wk: spAddName(spirit.wk, me.name) };
-  if (got === 7) Object.assign(patch, { ph: 'song', r: 0, pos: 0, play: 1, tap: null });
-  spSet(patch);
-}
-function spTap(k) {
-  if (spirit.ph !== 'song' || !spNear() || ember.playing) return;
-  getAC();
-  const len = SP_VERSES[spirit.r], ok = ember.seq[spirit.pos] === k;
-  const tap = { i: (spirit.tap ? spirit.tap.i : 0) + 1, k, ok: ok ? 1 : 0, n: me.name };
-  if (!ok) { spSet({ pos: 0, play: spirit.play + 1, tap }); return; }
-  const wk = spAddName(spirit.wk, me.name);
-  if (spirit.pos + 1 < len) spSet({ pos: spirit.pos + 1, tap, wk });
-  else if (spirit.r + 1 < SP_VERSES.length) spSet({ r: spirit.r + 1, pos: 0, play: spirit.play + 1, tap, wk });
-  else spSet({ ph: 'awake', pos: 0, tap, wk });
-}
-function spPlay() {
-  if (spirit.ph !== 'song') return;
-  getAC();
-  ember.heardKey = spSongKey(); ember.pendAt = 0;
-  ember.playing = { notes: ember.seq.slice(0, SP_VERSES[spirit.r]), start: performance.now() + 250, gap: Math.max(440, 650 - spirit.r * 55), idx: -1 };
-  spRenderPanel(true);
-}
-function spSongTick(now) {
-  const P = ember.playing;
-  if (P) {
-    const i = Math.floor((now - P.start) / P.gap);
-    if (now >= P.start && i > P.idx && i < P.notes.length) { P.idx = i; spFlash(P.notes[i]); spBell(SP_STONES[P.notes[i]].f, 0.9, 0.11); }
-    if (now > P.start + P.notes.length * P.gap + 150) { ember.playing = null; spRenderPanel(true); }
-    return;
-  }
-  // walking up to the fire (or a new verse): it sings to you once by itself
-  if (spNear() && ember.heardKey !== spSongKey() && spirit.pos === 0 && now >= ember.songDelay) {
-    if (!ember.pendAt) ember.pendAt = now + 900;
-    else if (now >= ember.pendAt) spPlay();
-  } else ember.pendAt = 0;
-}
-function spFlash(k) {
-  ember.flash = { k, at: performance.now() };
-  const b = spStoneBtns[k];
-  if (b) { b.classList.remove('lit'); void b.offsetWidth; b.classList.add('lit'); clearTimeout(b.litT); b.litT = setTimeout(() => b.classList.remove('lit'), 380); }
+  spSet({ id: Math.random().toString(36).slice(2, 10), ph: 'awake', wk: [me.name] });
 }
 
 // ---- sounds (they follow the campsite volume slider) ----
@@ -5941,11 +5866,10 @@ function spBell(f, dur, vol) {
     o1.start(t0); o2.start(t0); o1.stop(t0 + dur + 0.05); o2.stop(t0 + dur + 0.05);
   } catch (e) { }
 }
-function spSputter() { smBurst(0.5, 1400, 220, 0.2); smBlip(150, 0.45, 'sawtooth', 0.04, 60); }
+// the sparks dive in (a quick run up the lap notes), then a whoosh and a warm chord as the fire wakes
 function spWakeSound() {
-  smWhoosh();
-  SP_STONES.forEach((s, i) => setTimeout(() => spBell(s.f * 2, 1.4, 0.07), 200 + i * 110));
-  setTimeout(() => { spBell(196, 2.8, 0.1); spBell(293.66, 2.8, 0.08); spBell(392, 2.8, 0.06); }, 850);
+  SP_NOTES.forEach((f, i) => setTimeout(() => spBell(f * 2, 0.9, 0.06), i * 110));
+  setTimeout(() => { smWhoosh(); spBell(196, 2.8, 0.1); spBell(293.66, 2.8, 0.08); spBell(392, 2.8, 0.06); }, 900);
 }
 
 // ---- Ember's voice: captions, the bubble over the fire, and speech ----
@@ -6222,22 +6146,6 @@ function spWireDictation(d) {
 }
 
 // ---- the panel ----
-const SP_GLYPHS = [
-  '<path d="M12 2.5c3.6 4.2 6 7.3 6 11a6 6 0 0 1-12 0c0-2.4 1.2-4.3 2.6-5.6.1 2.1 1 3.3 2.2 3.6-.9-3.2.1-6.2 1.2-9z"/>',
-  '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
-  '<path d="M4.5 19.5C4.5 10.8 10 5 19.5 4.5 19 14 13.2 19.5 4.5 19.5z"/><path d="M5 19l8-8" stroke="rgba(0,0,0,0.35)" stroke-width="1.6" stroke-linecap="round"/>',
-  '<path d="M12 2.8c3.4 4.9 6.2 8 6.2 11.4a6.2 6.2 0 0 1-12.4 0c0-3.4 2.8-6.5 6.2-11.4z"/>',
-  '<path d="M15.5 3a8.8 8.8 0 1 0 5.6 13.6A9.4 9.4 0 0 1 15.5 3z"/>'
-];
-const spStoneBtns = SP_STONES.map((s, i) => {
-  const b = document.createElement('button');
-  b.type = 'button'; b.className = 'sp-stone'; b.style.setProperty('--c', s.c); b.style.setProperty('--rgb', s.rgb);
-  b.setAttribute('aria-label', `${s.name} stone`);
-  b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${SP_GLYPHS[i]}</svg><span class="sp-key" aria-hidden="true">${i + 1}</span>`;
-  b.addEventListener('click', () => spTap(i));
-  $('spStones').appendChild(b);
-  return b;
-});
 if (Brain) for (const [g, d] of Object.entries(Brain.GENRES)) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'chip'; b.textContent = d.label; b.dataset.genre = g;
@@ -6255,7 +6163,6 @@ $('spTalk').addEventListener('submit', e => {
   $('spInput').value = '';
   spSend(v);
 });
-$('spAgain').addEventListener('click', () => { if (!ember.playing) spPlay(); });
 $('spVoiceBtn').addEventListener('click', () => {
   getAC();
   ember.voiceOn = !ember.voiceOn;
@@ -6272,12 +6179,7 @@ $('spSleep').addEventListener('click', () => {
   ember.sleepArm = 0; $('spSleep').textContent = 'Let Ember sleep';
   spSet({ ph: 'sleep', tap: null });
 });
-$('wakeBtn').addEventListener('click', spStart);
-$('spPill').addEventListener('click', () => {
-  const left = ember.spots.filter((s, k) => !(spirit.got >> k & 1)).map(s => s.h);
-  if (left.length) showToast(left.length === 1 ? `One spark left, ${left[0]}.` : `Still out there: one ${left.slice(0, -1).join(', one ')} and one ${left[left.length - 1]}.`, 4500);
-});
-function spPanelWanted() { return joined && !sm.showing && (spirit.ph === 'song' || spirit.ph === 'awake') && spNear(); }
+function spPanelWanted() { return joined && !sm.showing && spirit.ph === 'awake' && spNear(); }
 function spRenderPanel(force) {
   const want = spPanelWanted(), seated = me.sit >= 0;
   const show = want && (!seated || ember.tab === 'ember');
@@ -6292,37 +6194,10 @@ function spRenderPanel(force) {
   if (!force && now - ember.uiAt < 150) return;
   ember.uiAt = now;
   ember.panelBottom = $('spPanel').getBoundingClientRect().bottom;
-  const song = spirit.ph === 'song';
   $('spPanel').classList.toggle('folded', ember.folded);
   $('spFold').textContent = ember.folded ? 'Show' : 'Hide';
   $('spFold').setAttribute('aria-expanded', String(!ember.folded));
-  $('spSong').hidden = !song; $('spAwake').hidden = song;
   $('spStoryTab').hidden = !seated;
-  $('spTitle').textContent = song ? 'The fire\'s song' : 'Ember';
-  if (song) {
-    const len = SP_VERSES[spirit.r], key = spSongKey();
-    $('spSongText').textContent = `Verse ${spirit.r + 1} of ${SP_VERSES.length}. Listen to the fire, then tap the stones in the same order. Anyone at the fire can help.`;
-    const vp = $('spVerses');
-    if (vp.childElementCount !== SP_VERSES.length + 1 + 9) {
-      vp.textContent = '';
-      SP_VERSES.forEach(() => { const s = document.createElement('span'); s.className = 'sp-pip verse'; vp.appendChild(s); });
-      const gap = document.createElement('span'); gap.className = 'sp-gap'; vp.appendChild(gap);
-      for (let i = 0; i < 9; i++) { const s = document.createElement('span'); s.className = 'sp-pip note'; vp.appendChild(s); }
-    }
-    [...vp.querySelectorAll('.verse')].forEach((s, i) => { s.classList.toggle('done', i < spirit.r); s.classList.toggle('cur', i === spirit.r); });
-    [...vp.querySelectorAll('.note')].forEach((s, i) => { s.hidden = i >= len; s.classList.toggle('done', i < spirit.pos); });
-    spStoneBtns.forEach(b => { b.disabled = !!ember.playing; });
-    let st;
-    if (ember.playing) st = 'Listen…';
-    else if (now - ember.missAt < 1800) st = 'The fire sputters. Listen again…';
-    else if (now - ember.verseAt < 1500) st = `Verse ${spirit.r} sung! The fire grows brighter…`;
-    else if (ember.heardKey !== key && spirit.pos === 0) st = 'The fire is about to sing…';
-    else if (spirit.pos) st = `Keep going… ${spirit.pos} of ${len}`;
-    else st = `Your turn: tap the ${len} stones in the order the fire sang them.`;
-    if ($('spSongStatus').textContent !== st) $('spSongStatus').textContent = st;
-    $('spAgain').disabled = !!ember.playing;
-    return;
-  }
   const busy = ember.busy;
   $('spGenres').querySelectorAll('button').forEach(b => { b.disabled = busy; });
   $('spQuestion').disabled = busy;
@@ -6362,54 +6237,53 @@ function spRenderCaption() {
   }
   $('spThink').hidden = !(ch && !ch.t && !ch.d);
 }
-function updateSpButtons() {
-  const show = joined && !inChurch(me.x) && spirit.ph === 'sleep' && (me.sit >= 0 || nearFire()) && (sm.phase === 'idle' || sm.phase === 'results') && !smHoldsStick();
-  setBtn($('wakeBtn'), show ? 'Wake the fire' : null, false, '');
-  const pill = $('spPill'), hunt = joined && spirit.ph === 'hunt';
-  if (pill.hidden === hunt) pill.hidden = !hunt;
-  if (hunt) {
-    const txt = `Sparks ${popcount(spirit.got)}/3`;
-    if (pill.dataset.t !== txt) { pill.dataset.t = txt; pill.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="#ffcf4a" aria-hidden="true">' + SP_GLYPHS[0] + '</svg>'; pill.appendChild(document.createTextNode(txt)); }
-  }
-}
 // every frame (while joined)
 function spiritTick(now) {
-  if (spirit.ph === 'hunt' && !inChurch(me.x) && ember.spots.length === 3) {
-    for (let k = 0; k < 3; k++) {
-      if (spirit.got >> k & 1) continue;
-      const s = ember.spots[k];
-      if (dist(me.x, me.y, s.x, s.y) < 40) { spCollect(k); break; }
-    }
+  const dt = Math.min(0.1, Math.max(0, (now - (ember.tickAt || now)) / 1000));
+  ember.tickAt = now;
+  // count my laps round the sleeping fire
+  if (roomOf(me.x) === 'camp' && spirit.ph !== 'awake') { for (const ev of ember.laps.update(me.x, FIRE.y + (me.y - FIRE.y) / 0.8, dt)) spLapEvent(ev); }
+  else if (ember.laps.state.active) ember.laps.reset();
+  const L = ember.laps.state.laps;
+  if (L !== me.el) { me.el = L; sentDirty = true; }
+  if (roomOf(me.x) === 'camp') {
+    // a trail of embers behind whoever is partway round
+    if (ember.laps.state.active && L >= 1 && me.moving) spTrail(me.x, me.y, L, dt, ember);
+    for (const o of others.values()) if ((o.el || 0) >= 1 && o.p && o.p.mv && roomOf(o.rx) === 'camp') spTrail(o.rx, o.ry, o.el, dt, o);
   }
-  if (spirit.ph === 'song') spSongTick(now);
-  else if (ember.playing) ember.playing = null;
-  if (ember.flying.length && now - ember.flying[0].at > 1500) ember.flying = ember.flying.filter(f => now - f.at < 1500);
+  spFxTick(dt);
+  spMumbleTick(now);
   spLineTick(now);
   spRenderPanel(false);
 }
 
 // ---- drawing ----
-// How the fire looks right now: size, a colour washing through it, and the face.
+// How the fire looks right now. Asleep it's just a campfire (no face), growing a little with each
+// lap walked round it. Waking, it flares up in every colour, then the face opens.
 function spFireState(now, t) {
   if (ember.fsAt === now && ember.fs) return ember.fs;
-  const st = { s: 1, tint: null, tintA: 0, face: 0, mode: 'sleep', talk: false, think: false };
-  if (spirit.ph === 'hunt') st.s = 0.72 + 0.08 * popcount(spirit.got);
-  else if (spirit.ph === 'song') { st.s = 0.95 + 0.05 * spirit.r; st.mode = ember.playing ? 'hum' : 'sleep'; }
-  else if (spirit.ph === 'awake') {
-    st.s = 1.28; st.face = 1; st.mode = 'awake';
-    const e = (now - ember.wokeAt) / 1000;
+  const st = { s: 1, tint: null, tintRgb: '', tintA: 0, face: 0, awake: false, talk: false, think: false };
+  if (spirit.ph === 'awake') {
+    st.s = 1.28; st.face = 1; st.awake = true;
+    const e = (now - ember.wokeAt) / 1000 - 0.9; // the sparks dive in first, then the flare
     if (e < 3) {
-      st.s = 1.28 + 0.85 * Math.sin(Math.PI * clamp(e / 1.7, 0, 1));
-      st.face = clamp((e - 1.3) / 0.9, 0, 1);
-      st.tint = SP_STONES[Math.floor(e * 7) % 5].c; st.tintA = clamp(1 - e / 2.3, 0, 1) * 0.8;
+      if (e < 0) { st.s = 1.2 + 0.08 * (e + 0.9) / 0.9; st.face = 0; }
+      else {
+        st.s = 1.28 + 0.85 * Math.sin(Math.PI * clamp(e / 1.7, 0, 1));
+        st.face = clamp((e - 1.3) / 0.9, 0, 1);
+        const S = SP_SPARKS[Math.floor(e * 7) % 7];
+        st.tint = S.c; st.tintRgb = S.rgb; st.tintA = clamp(1 - e / 2.3, 0, 1) * 0.8;
+      }
     }
     const c = ember.cur;
     st.talk = !!(c && !c.done && (!c.voice || c.started));
     if (!st.talk) for (const ch of ember.chans.values()) if (!ch.d && !ch.t && now - ch.started < 30000) { st.think = true; break; }
+  } else {
+    const n = spLapsShown();
+    st.s = 1 + 0.045 * n;
+    const p = (now - ember.lapAt) / 550;
+    if (p >= 0 && p < 1 && n) { const S = SP_SPARKS[n - 1]; st.s *= 1 + 0.2 * (1 - p); st.tint = S.c; st.tintRgb = S.rgb; st.tintA = 0.55 * (1 - p); }
   }
-  const f = ember.flash;
-  if (f && now - f.at < 520) { const a = 1 - (now - f.at) / 520; st.tint = SP_STONES[f.k].c; st.tintA = Math.max(st.tintA, a * 0.85); st.s *= 1 + 0.22 * a; }
-  if (now - ember.missAt < 700) st.s *= 0.72 + 0.28 * ((now - ember.missAt) / 700);
   ember.fs = st; ember.fsAt = now;
   return st;
 }
@@ -6422,19 +6296,10 @@ function spLook() {
   return [dx / l, dy / l];
 }
 function drawSpiritFace(g, t, st) {
+  if (!st.awake || st.face <= 0) return;
   const s = Math.min(st.s, 1.5), ey = -30 * s, ex = 8.5 * s;
   g.save();
   g.lineCap = 'round';
-  if (st.mode !== 'awake') {
-    // asleep (or humming): closed eyes, faint in the flames
-    g.globalAlpha = st.mode === 'hum' ? 0.85 : 0.7;
-    g.strokeStyle = '#7a2a0c'; g.lineWidth = 1.6 * s;
-    for (const side of [-1, 1]) { g.beginPath(); g.arc(side * ex, ey + 1 * s, 3.2 * s, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); }
-    g.fillStyle = '#7a2a0c';
-    if (st.mode === 'hum') { g.beginPath(); g.ellipse(0, -17 * s, 2 * s, (1.6 + Math.abs(Math.sin(t * 6)) * 1.4) * s, 0, 0, Math.PI * 2); g.fill(); }
-    g.restore();
-    return;
-  }
   g.globalAlpha = st.face;
   const L = spLook(), blink = (t % 4.7) < 0.13 || ((t + 1.7) % 9.1) < 0.12;
   for (const side of [-1, 1]) {
@@ -6458,68 +6323,49 @@ function drawSpiritFace(g, t, st) {
   else { g.beginPath(); g.arc(0, my - 2.6 * s, 4 * s, 0.22 * Math.PI, 0.78 * Math.PI); g.stroke(); }
   g.restore();
 }
-// A spark waiting to be found: a little flame of its own, bobbing, with motes circling it.
-function drawSpark(g, x, y, k, t) {
-  const c = SP_STONES[SP_SPARK[k]], by = y - 24 + Math.sin(t * 2.2 + k * 2) * 5, p = 1 + Math.sin(t * 9 + k) * 0.08;
-  g.save();
-  g.fillStyle = `rgba(${c.rgb},0.25)`; g.beginPath(); g.ellipse(x, y, 20, 6, 0, 0, Math.PI * 2); g.fill();
-  g.translate(x, by); g.scale(1.45, 1.45);
-  g.fillStyle = c.c;
-  g.beginPath(); g.moveTo(0, -13 * p); g.quadraticCurveTo(8, -2, 6, 3); g.quadraticCurveTo(0, 9, -6, 3); g.quadraticCurveTo(-8, -2, 0, -13 * p); g.fill();
-  g.fillStyle = '#fffbe6';
-  g.beginPath(); g.moveTo(0, -6 * p); g.quadraticCurveTo(3.5, 0, 2.6, 2.6); g.quadraticCurveTo(0, 5, -2.6, 2.6); g.quadraticCurveTo(-3.5, 0, 0, -6 * p); g.fill();
-  for (let i = 0; i < 3; i++) {
-    const a = t * 2.4 + i * 2.09 + k;
-    g.fillStyle = `rgba(${c.rgb},0.9)`; g.fillRect(Math.cos(a) * 13 - 1.2, Math.sin(a) * 5 - 1.2, 2.4, 2.4);
-  }
-  g.restore();
-}
-function spSparkPos(f, now) {
-  const u = clamp((now - f.at) / 1100, 0, 1), e = u * u * (3 - 2 * u);
-  return [f.x + (FIRE.x - f.x) * e, f.y - 24 + (FIRE.y - 30 - (f.y - 24)) * e - Math.sin(Math.PI * e) * 140, u];
-}
-// Light: the sparks shine through the dark, and the waking fire throws a ring of colour.
+// Light in the night: the clearing lights up as Ember wakes.
 function spLightHoles(hole) {
-  if (spirit.ph === 'hunt') for (let k = 0; k < 3; k++) if (!(spirit.got >> k & 1) && ember.spots[k]) hole(ember.spots[k].x, ember.spots[k].y - 20, 95, 0.6);
+  const e = (performance.now() - ember.wokeAt) / 1000 - 0.9;
+  if (e >= 0 && e < 2.8) hole(FIRE.x, FIRE.y - 40, 620 * Math.sin(Math.PI * clamp(e / 2.8, 0, 1)), 0.8);
 }
+function spGlowDot(g, sx, sy, R, rgb, a, core) {
+  const gr = g.createRadialGradient(sx, sy, 0, sx, sy, R);
+  if (core) gr.addColorStop(0, `rgba(255,251,230,${a})`);
+  gr.addColorStop(core ? 0.25 : 0, `rgba(${rgb},${a * (core ? 0.9 : 1)})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = gr; g.fillRect(sx - R, sy - R, R * 2, R * 2);
+}
+// The sparks circling the fire (one per lap), trails and bursts, the colour wash and the waking ring.
 function spLightGlow(g, t, now) {
-  if (spirit.ph === 'hunt') {
-    for (let k = 0; k < 3; k++) {
-      if (spirit.got >> k & 1 || !ember.spots[k]) continue;
-      const s = ember.spots[k], c = SP_STONES[SP_SPARK[k]], [sx, sy] = w2s(s.x, s.y - 24 + Math.sin(t * 2.2 + k * 2) * 5), R = (58 + Math.sin(t * 3 + k) * 8) * ZOOM;
-      const gr = g.createRadialGradient(sx, sy, 0, sx, sy, R);
-      gr.addColorStop(0, `rgba(${c.rgb},0.55)`); gr.addColorStop(1, `rgba(${c.rgb},0)`);
-      g.fillStyle = gr; g.fillRect(sx - R, sy - R, R * 2, R * 2);
-    }
+  if (roomOf(me.x) !== 'camp') return;
+  const e = (now - ember.wokeAt) / 1000;
+  const diving = spirit.ph === 'awake' && e >= 0 && e < 0.9;
+  const n = diving ? SP_LAPS : spLapsShown();
+  for (let i = 0; i < n; i++) {
+    let a = t * 1.7 + i * Math.PI * 2 / SP_LAPS, rx = 56, ry = 20, h = 38 + Math.sin(t * 2.3 + i * 1.7) * 7;
+    if (diving) { const k = e / 0.9; a += k * k * 8; rx *= 1 - k; ry *= 1 - k; h = h * (1 - k) + 26 * k; }
+    const [sx, sy] = w2s(FIRE.x + Math.cos(a) * rx, FIRE.y + Math.sin(a) * ry - h);
+    spGlowDot(g, sx, sy, 15 * ZOOM, SP_SPARKS[i].rgb, Math.sin(a) < 0 && !diving ? 0.6 : 0.95, true);
   }
-  for (const f of ember.flying) {
-    const c = SP_STONES[SP_SPARK[f.k]];
-    for (let i = 5; i >= 0; i--) {
-      const [x, y, u] = spSparkPos({ x: f.x, y: f.y, at: f.at + i * 45 }, now);
-      if (u >= 1 && i > 0) continue;
-      const [sx, sy] = w2s(x, y), R = (i ? 9 - i : 22) * ZOOM;
-      const gr = g.createRadialGradient(sx, sy, 0, sx, sy, R);
-      gr.addColorStop(0, `rgba(${c.rgb},${i ? 0.5 - i * 0.07 : 0.95})`); gr.addColorStop(1, `rgba(${c.rgb},0)`);
-      g.fillStyle = gr; g.fillRect(sx - R, sy - R, R * 2, R * 2);
-    }
+  for (const p of ember.fx) {
+    const k = clamp(p.life / p.max, 0, 1), [sx, sy] = w2s(p.x, p.y - p.h);
+    spGlowDot(g, sx, sy, p.size * ZOOM * (p.ground ? 1 : 1.6), p.rgb, (p.ground ? 0.42 : 0.85) * k, !p.ground);
   }
   const st = spFireState(now, t);
-  if (st.tintA > 0 && st.tint) {
+  if (st.tintA > 0 && st.tintRgb) {
     const [fx, fy] = w2s(FIRE.x, FIRE.y - 30), R = 170 * ZOOM * st.s;
-    const rgb = SP_STONES.find(x => x.c === st.tint).rgb;
     const gr = g.createRadialGradient(fx, fy, 0, fx, fy, R);
-    gr.addColorStop(0, `rgba(${rgb},${0.45 * st.tintA})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    gr.addColorStop(0, `rgba(${st.tintRgb},${0.45 * st.tintA})`); gr.addColorStop(1, `rgba(${st.tintRgb},0)`);
     g.fillStyle = gr; g.fillRect(fx - R, fy - R, R * 2, R * 2);
   }
-  const e = (now - ember.wokeAt) / 1000;
-  if (e >= 0 && e < 2.2) {
-    const [fx, fy] = w2s(FIRE.x, FIRE.y - 20), R = (40 + 460 * (1 - Math.pow(1 - Math.min(1, e / 1.4), 3))) * ZOOM, a = clamp(1 - e / 2.2, 0, 1);
-    const rgb = SP_STONES[Math.floor(e * 5) % 5].rgb;
-    g.strokeStyle = `rgba(${rgb},${0.7 * a})`; g.lineWidth = 10 * ZOOM * a + 2;
+  const ef = e - 0.9;
+  if (spirit.ph === 'awake' && ef >= 0 && ef < 2.2) {
+    const [fx, fy] = w2s(FIRE.x, FIRE.y - 20), R = (40 + 460 * (1 - Math.pow(1 - Math.min(1, ef / 1.4), 3))) * ZOOM, a = clamp(1 - ef / 2.2, 0, 1);
+    g.strokeStyle = `rgba(${SP_SPARKS[Math.floor(ef * 5) % 7].rgb},${0.7 * a})`; g.lineWidth = 10 * ZOOM * a + 2;
     g.beginPath(); g.ellipse(fx, fy, R, R * 0.62, 0, 0, Math.PI * 2); g.stroke();
+    if (ef < 0.5 && dist(me.x, me.y, FIRE.x, FIRE.y) < 700) { g.fillStyle = `rgba(255,240,215,${(REDUCED_MOTION ? 0.2 : 0.45) * (1 - ef / 0.5)})`; g.fillRect(0, 0, VW, VH); }
   }
 }
-// Over the fire: sleepy z's, a thinking "…", or the words Ember is saying right now.
+// Over the fire: sleepy z's and sleep-talk, a thinking "…", or the words Ember is saying right now.
 function drawEmberBubble(g, sx, sy, text, alpha) {
   g.save(); g.globalAlpha = alpha;
   g.font = `600 14px "Atkinson Hyperlegible", system-ui, sans-serif`;
@@ -6539,10 +6385,14 @@ function drawSpiritOverlay(t, now) {
   const d = dist(me.x, me.y, FIRE.x, FIRE.y);
   if (d > 430) return;
   if (spirit.ph === 'sleep') {
+    const stir = 1 - spLapsShown() / 4; // the z's fade as the sparks gather
+    const m = ember.mumble, ma = m ? clamp(Math.min((now - m.at) / 300, (5200 - (now - m.at)) / 500), 0, 1) : 0;
+    if (ma > 0) { const [bx, by] = w2s(FIRE.x, FIRE.y - 88); drawEmberBubble(ctx, bx, by, m.text, ma * 0.92); }
+    if (stir <= 0 || ma > 0) return;
     ctx.save(); ctx.fillStyle = '#ffe7b8'; ctx.textAlign = 'center';
     for (let i = 0; i < 3; i++) {
       const p = (t * 0.32 + i / 3) % 1, [sx, sy] = w2s(FIRE.x + 12 + p * 22 + Math.sin(p * 6 + i) * 4, FIRE.y - 66 - p * 60);
-      ctx.globalAlpha = Math.sin(Math.PI * p) * 0.8;
+      ctx.globalAlpha = Math.sin(Math.PI * p) * 0.8 * stir;
       ctx.font = `800 ${Math.round((12 + p * 12) * ZOOM)}px "Grandstander", system-ui, sans-serif`;
       ctx.fillText('z', sx, sy);
     }
@@ -6556,9 +6406,8 @@ function drawSpiritOverlay(t, now) {
   else if (st.think) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
 }
 window.campfireSpiritDebug = () => ({
-  ph: spirit.ph, v: spirit.v, got: spirit.got, verse: spirit.r, pos: spirit.pos, ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(),
-  spots: ember.spots.map(s => ({ x: s.x, y: s.y, h: s.h })), song: ember.seq.slice(), playing: !!ember.playing, busy: ember.busy,
-  said: ember.cap ? ember.cap.t : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
+  ph: spirit.ph, v: spirit.v, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
+  said: ember.cap ? ember.cap.t : '', mumble: ember.mumble ? ember.mumble.text : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
 });
 // Local testing only: hop to a spot on the map.
 if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.campfireTestGo = (x, y) => { if (me.sit >= 0) stand(); me.x = x; me.y = y; me.target = null; sentDirty = true; snapCam(); };
@@ -6578,7 +6427,6 @@ window.addEventListener('keydown', e => {
   if ((e.key === 'm' || e.key === 'M') && VOICE_OK) { toggleMic(); return; }
   if ((e.key === 'r' || e.key === 'R') && !e.repeat) { smPrimary(); return; }
   if ((e.key === 'f' || e.key === 'F') && !e.repeat) { smServe(false); return; }
-  if (/^[1-5]$/.test(e.key) && !e.repeat && ember.shown && spirit.ph === 'song') { spTap(+e.key - 1); return; }
   if (/^[1-7]$/.test(e.key) && !e.repeat && nearGlade()) { ritStrike(+e.key - 1); return; }
   if ((e.key === 't' || e.key === 'T') && !e.repeat && ember.shown && spirit.ph === 'awake') { e.preventDefault(); if (spCanListen()) spListen(); else $('spInput').focus(); return; }
   const k = e.key.toLowerCase();
@@ -6746,7 +6594,6 @@ function updateActionBtn() {
   if (smHoldsStick()) label = null;
   if (label === null) b.hidden = true; else { b.hidden = false; if (b.textContent !== label) b.textContent = label; }
   updateSmButtons();
-  updateSpButtons();
 }
 
 // ===== Simulation =====
@@ -6912,7 +6759,7 @@ function drawFire(g, t) {
   g.save(); g.rotate(0.5); roundRect(g, -26, -5, 52, 10, 5); g.fill(); g.restore();
   g.save(); g.rotate(-0.5); roundRect(g, -26, -5, 52, 10, 5); g.fill(); g.restore();
   const fl = (a, b) => Math.sin(t * a + b) * 0.5 + 0.5;
-  // the spirit changes the fire: smaller while its sparks are away, a colour flash per note, taller and awake with a face
+  // Ember changes the fire: a little bigger with each lap walked round it, then taller and awake with a face
   const st = spFireState(performance.now(), t);
   const layers = [['#e2572b', 30, 62], ['#f39a3c', 22, 48], ['#ffd36b', 14, 32], ['#fff3c4', 7, 16]];
   layers.forEach(([c, w0, h], i) => {
@@ -7125,10 +6972,6 @@ function render(t) {
     for (const tr of TREES) if (tr.x > vx0 && tr.x < vx1 && tr.y > vy0 && tr.y < vy1) items.push({ y: tr.y, d: () => drawTree(ctx, tr) });
     for (const tn of TENTS) items.push({ y: tn.y, d: () => drawTent(ctx, tn) });
     items.push({ y: FIRE.y + 6, d: () => drawFire(ctx, t) });
-    if (spirit.ph === 'hunt') for (let k = 0; k < 3; k++) {
-      const s = ember.spots[k];
-      if (s && !(spirit.got >> k & 1)) items.push({ y: s.y, d: () => drawSpark(ctx, s.x, s.y, k, t) });
-    }
     items.push({ y: DOCK.y0, d: () => drawDockLantern(ctx) });
     items.push({ y: CHURCH.y, d: () => drawChurch(ctx, t) });
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });

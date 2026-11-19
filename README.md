@@ -55,8 +55,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Start or join a s'mores round | R, or click **Roast s'mores** / **Grab a stick!** | Tap **Roast s'mores** / **Grab a stick!** |
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
 | Serve | Click **Serve!**, or press F | Tap **Serve!** |
-| Wake the fire | Click **Wake the fire** at the fire | Tap **Wake the fire** |
-| Sing the fire's song | Click the stones, or press 1 to 5 | Tap the stones |
+| Wake the fire | Walk round the fire 7 times without stopping | Walk round the fire 7 times without stopping |
 | Talk to Ember | Type in Ember's panel, or start a chat message with "Ember,". Press T or click Ember's mic to speak | Type in Ember's panel, or tap Ember's mic and speak |
 
 ## Voice chat
@@ -76,13 +75,11 @@ Closest to golden wins and gets a 👑 on their name tag until the next round. F
 
 ## The campfire spirit (Ember)
 
-The fire has a spirit, fast asleep in the coals (walk up and you'll see little z's drifting out of it). Anyone at the fire can try to wake it:
+The fire has a spirit, fast asleep in the coals. While it sleeps the fire is just a fire, with no face: little z's drift out of it, and if you stand nearby for a while it mumbles hints in its sleep.
 
-1. **Find the sparks.** Click or tap **Wake the fire**. The fire dims and three of its sparks drift off around the campsite (by the tents, the lake, the meadows…). Everyone in the lobby can hunt for them; just walk over a spark to send it home. The **Sparks 1/3** counter in the top left gives hints when you tap it.
-2. **Sing the fire's song.** When all three are home, gather at the fire. It sings a short tune: each note flashes a colour through the flames and lights one of five stones (Ember, Sun, Moss, Lake, Moon). Tap the stones in the same order (or press 1 to 5). Anyone at the fire can tap, so you can sing it together. A wrong note makes the fire sputter and sing the verse again. There are four verses, each one note longer.
-3. **Ember wakes up.** The fire flares up in every colour, opens its eyes, and says hello.
+**To wake it, walk round the fire seven times** without stopping. Go either way round, but keep going the same way, stay inside the clearing (not out past the edge of the firelight), and don't stand still. Each lap wakes a spark that circles the flames (friends see them too, along with your trail of embers), and the fire grows a little. If you wander off, turn back or stop for too long, the sparks fade and you start again. On the seventh lap the sparks dive into the fire, it flares up in every colour, a ring of light sweeps across the clearing, and Ember opens its eyes and says hello.
 
-Then you can talk to it, by typing in its panel, by tapping its mic and speaking (or pressing T), or by starting a normal chat message with "Ember,". Ask it for a story (cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire) or tap **Ask us a question** for something for the circle to talk about. Ember answers out loud and in captions, and everyone near the fire hears it and sees the words above the flames. The speaker button in its panel mutes Ember's voice just for you; **Hush** stops it talking on your screen. **Let Ember sleep** puts it back to sleep for everyone. Like everything else, Ember falls asleep again when the lobby empties.
+Then you can talk to it, by typing in its panel, by tapping its mic and speaking (or pressing T), or by starting a normal chat message with "Ember,". Ask it for a story (cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire) or tap **Ask us a question** for something for the circle to talk about. Ember answers out loud and in captions, and everyone near the fire hears it and sees the words above the flames. The speaker button in its panel mutes Ember's voice just for you; **Hush** stops it talking on your screen. **Let Ember sleep** puts it back to sleep for everyone; walk the seven laps again to wake it. Like everything else, Ember falls asleep again when the lobby empties.
 
 ### Let Ember really talk (optional)
 
