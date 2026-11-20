@@ -226,6 +226,8 @@ function spiritHandler(req, res) {
     const iu = spiritIps.get(ip) || { times: [], last: 0 };
     spiritRooms.set(code, ru); spiritIps.set(ip, iu);
     if (ru.inflight >= 2 || now - iu.last < 1500) return reply(429, { error: 'busy' });
+    // Ember joining in by itself: at most once every 12 s per lobby, even if two players ask
+    if (input.kind === 'chime') { if (now - (ru.chimeAt || 0) < 12000) return reply(429, { error: 'busy' }); ru.chimeAt = now; }
     if (recent(ru.times).length >= 60 || recent(iu.times).length >= 40) return reply(429, { error: 'limit' });
 
     const p = Brain.build(input);
@@ -237,8 +239,20 @@ function spiritHandler(req, res) {
       const got = await Brains.ask(p, ctrl.signal, canUse);
       if (!got) return reply(429, { error: 'resting', retry: Brains.retryIn(canUse) });
       if (got.brain.paid) spiritDay.count++;
+      let first = got.first;
+      if (p.kind === 'chime') {
+        // Ember may decide to stay quiet ("PASS"): read a little first, and answer 204 if so
+        while (first.replace(/\s/g, '').length < 6) { const n = await got.rest.next(); if (n.done) break; first += n.value; }
+        const head = first.trim();
+        if (!head || /^\W*PASS\b/.test(head) || /^\W*pass(\W*$|\s*\n)/i.test(head)) {
+          ctrl.abort();
+          res.writeHead(204, { 'Cache-Control': 'no-cache' }); res.end();
+          console.log(`Ember listened and stayed quiet (${Brains.label(got.brain)}, ${((Date.now() - now) / 1000).toFixed(1)}s).`);
+          return;
+        }
+      }
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'X-Ember-Brain': got.brain.id });
-      res.write(got.first);
+      res.write(first);
       for await (const piece of got.rest) res.write(piece);
       res.end();
       console.log(`Ember answered (${String(p.kind || 'talk').replace(/[^a-z]/g, '').slice(0, 12)}) with ${Brains.label(got.brain)} in ${((Date.now() - now) / 1000).toFixed(1)}s.`);

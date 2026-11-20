@@ -82,6 +82,8 @@ The fire has a spirit, fast asleep in the coals. While it sleeps the fire is jus
 
 Ember only speaks in a speech bubble over the fire (and out loud), so nothing covers it.
 
+**Ember joins the conversation.** It follows what's said around the awake fire, both typed chat and what people with their mic on say out loud, and when the friends pause it decides whether it has something worth adding: a warm or funny reaction, a question about what someone shared, a little tale the topic reminds it of. Most of the time it stays quiet (it answers "PASS" to itself and nobody sees a thing). One device at the fire does the deciding, and the server allows one try every 12 seconds per lobby, so Ember never answers twice; it waits at least 12 seconds after it last spoke and 20 seconds between tries. Anyone can turn off **Ember joins the conversation** in the **?** panel: then their words only reach Ember when they speak to it, and their device never asks Ember to join in. Spoken words are shared with the other players' games as text (not shown, only for Ember), and only near the awake fire.
+
 **Talking to Ember:**
 
 - **Just talk, with your mic on.** When your voice-chat mic is on and you're near the awake fire, Ember listens too (a little flame shows on the mic button). Anything you say with "Ember" in it goes to Ember; everything else stays between friends. Ember ignores its own voice, and a friend's voice coming out of your speakers isn't sent twice.

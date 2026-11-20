@@ -20,7 +20,7 @@
     us: { label: 'About us', guide: 'a story starring the friends at the fire tonight, by name. Give everyone present a part, be affectionate and a little teasing, and weave in anything they have told you tonight' }
   };
 
-  const LIMITS = { talk: 290, question: 200, wake: 250, story: 730, bye: 120 };
+  const LIMITS = { talk: 290, question: 200, wake: 250, story: 730, bye: 120, chime: 220 };
 
   const PERSONA = [
     'You are Ember, the spirit who lives in the campfire of Campfire, a cozy online campsite where close friends meet at night to hang out and tell each other stories about their lives.',
@@ -50,12 +50,15 @@
       .map(p => ({ n: clean(p && p.n, 16), sit: !!(p && p.sit), old: !!(p && p.old) })).filter(p => p.n);
     const history = (Array.isArray(i.history) ? i.history : []).slice(-12)
       .map(h => ({ n: clean(h && h.n, 16), t: clean(h && h.t, 420) })).filter(h => h.n && h.t);
+    // what was said around the fire lately (typed or out loud), for joining in
+    const convo = (Array.isArray(i.convo) ? i.convo : []).slice(-16)
+      .map(c => ({ n: clean(c && c.n, 16), t: clean(c && c.t, 240) })).filter(c => c.n && c.t);
     return {
       kind,
       text: clean(i.text, 300),
       genre: Object.prototype.hasOwnProperty.call(GENRES, i.genre) ? i.genre : 'cozy',
       who: clean(i.who, 16) || 'A friend',
-      people, history,
+      people, history, convo,
       wakers: (Array.isArray(i.wakers) ? i.wakers : []).slice(0, 12).map(n => clean(n, 16)).filter(Boolean),
       hour: typeof i.hour === 'number' ? i.hour : -1
     };
@@ -70,7 +73,7 @@
       lines.push('Around the fire right now: ' + q.people.map(p => p.n + (p.sit ? ' (sitting on a log)' : ' (standing nearby)') + (p.old ? ' (has woken you on an earlier night)' : '')).join(', ') + '.');
     }
     if (when) lines.push(`For ${q.who} it is ${when}.`);
-    if (q.history.length) {
+    if (q.history.length && q.kind !== 'chime') {
       lines.push('What has been said to you tonight, oldest first:');
       for (const h of q.history) lines.push(`${h.n}: ${h.t}`);
     }
@@ -89,10 +92,16 @@
       lines.push('Say your very first words: a little groggy, then delighted. Introduce yourself as Ember, greet them, and let them know they can talk to you or ask for a story. 2 or 3 sentences. If anyone has woken you on an earlier night, greet them as an old friend.');
     } else if (q.kind === 'bye') {
       lines.push(`${q.who} is letting you go back to sleep. Say a short, sleepy goodnight. One sentence.`);
+    } else if (q.kind === 'chime') {
+      lines.push('You have been quietly listening to the friends talking around your fire. What was just said, oldest first:');
+      for (const c of q.convo) lines.push(`${c.n}: ${c.t}`);
+      lines.push('');
+      lines.push('Decide whether to join in, the way a good friend sitting at the fire would. Join in only if you have something genuinely worth adding: a warm or funny reaction, a curious question about what someone just shared, a little memory or tale of the forest that the topic reminds you of, or an answer to something they wondered about. Speak to them naturally, by name when it fits, in 1 or 2 short sentences, under 40 words. Never repeat what someone said, and never explain that you were listening.');
+      lines.push('Stay quiet if someone is in the middle of telling something, if the talk is private, sad or tense (unless a gentle word would truly help), or if you would only be filling silence. Staying quiet is often right. To stay quiet, reply with exactly PASS and nothing else.');
     }
     if (q.kind !== 'bye') {
       lines.push('');
-      lines.push(`Then, on a new last line, write OPTIONS: followed by three short things the friends could say back to you, separated by |. Each is 2 to 6 words, in the friend's own voice, and different from each other${q.kind === 'story' ? ' (for example a reaction, a question about the story, and asking for another)' : q.kind === 'question' ? ' (for example offering to go first, asking for a different question, and asking you to answer it yourself)' : ''}. They appear as buttons on the friends' screens and are never read aloud, so nothing else goes on that line.`);
+      lines.push(`${q.kind === 'chime' ? 'If you do join in, then' : 'Then'}, on a new last line, write OPTIONS: followed by three short things the friends could say back to you, separated by |. Each is 2 to 6 words, in the friend's own voice, and different from each other${q.kind === 'story' ? ' (for example a reaction, a question about the story, and asking for another)' : q.kind === 'question' ? ' (for example offering to go first, asking for a different question, and asking you to answer it yourself)' : ''}. They appear as buttons on the friends' screens and are never read aloud, so nothing else goes on that line.`);
     }
     return {
       system: PERSONA,
@@ -218,7 +227,9 @@
   // A full answer without any AI: a story, a question, a wake-up line or a simple reply,
   // with reply buttons on an OPTIONS line like the AI's.
   function offline(input) {
-    const q = tidy(input), say = offlineText(q);
+    const q = tidy(input);
+    if (q.kind === 'chime') return ''; // without an AI, Ember only answers when spoken to
+    const say = offlineText(q);
     return q.kind === 'bye' ? say : say + '\nOPTIONS: ' + pickOptions(q.kind).join(' | ');
   }
   function offlineText(q) {
