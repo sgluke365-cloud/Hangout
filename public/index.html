@@ -2494,7 +2494,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.12';
+const VERSION = 'v0.12.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -5922,18 +5922,18 @@ window.campfireRitualDebug = () => ({
 
 // ===== The windows above the altar =====
 // Three stained-glass windows behind the altar keep the campsite's secrets: the sleeping fire, the singing
-// stones and the song that opens their door. They stay dark until someone plays Amazing Grace on the organ.
+// stones (and the song that opens their door), and the devil of the deep wood. They stay dark until someone plays Amazing Grace on the organ.
 // Then the seven niches in the gilded screen sing the line back in the stones' voices and colours, the
 // windows fill with light, and anyone can walk up to the altar to look at them. Remembered on this device.
 // Each window is painted once per size into its own canvas, the way real stained glass is made:
 // flat pieces of coloured glass, each outlined in dark lead, then a pass that gives the glass its
 // streaks and seeds. Positions are fractions of the window's height (v) and sizes are fractions of
 // its width (k), so the same picture fits the narrow lancets on the church wall and the big view.
-const AW_KINDS = ['fire', 'stones', 'song'];
+const AW_KINDS = ['fire', 'stones', 'devil'];
 const AW_LEAD = '#1a120f';
-const AW_BANNER = ['SEVEN TIMES ROUND', 'SEVEN STONES', 'ONE SONG'];
+const AW_BANNER = ['SEVEN TIMES ROUND', 'SEVEN STONES', 'NINE CANDLES'];
 // the windows' main colours, for the light they throw on the floor
-const AW_TINT = ['255,170,80', '170,150,255', '255,110,140'];
+const AW_TINT = ['255,170,80', '170,150,255', '255,205,120'];
 function awShade(hex, d) {
   const n = parseInt(hex.slice(1), 16), f = c => Math.max(0, Math.min(255, Math.round(c + d * 255)));
   return `rgb(${f(n >> 16 & 255)},${f(n >> 8 & 255)},${f(n & 255)})`;
@@ -5947,7 +5947,7 @@ function awPaint(kind, w, h, scale) {
   const X = u => u * w, Y = v => v * h, K = k => k * w;
   const LW = Math.max(0.6, w * 0.016);       // lead width
   const pend = [];
-  const meta = { notes: [], gems: [], sparks: [], door: null };
+  const meta = { notes: [], gems: [], sparks: [], eyes: [], door: null, talisman: null };
   // a piece of glass: fill it now, lead it at the next flush
   const piece = (path, col, lw) => { g.beginPath(); path(); g.fillStyle = col; g.fill(); pend.push([path, lw || 1]); };
   const lead = (path, lw) => pend.push([path, lw || 1, true]);
@@ -6151,62 +6151,101 @@ function awPaint(kind, w, h, scale) {
     flush();
     RING.filter(([, a]) => Math.sin(a) >= 0).forEach(stone);
     flush();
-    banner(0.915, AW_BANNER[1]);
-  } else {
-    // ---- III. The song: a singer with an open hymn book, the first line rising off the page ----
-    shards(0, 1, 4, 13, ['#1d2a6e', '#2b2378', '#22307f', '#311f6e', '#1a2462']);
+    // the song that opens it: its nine notes arc over the door, each in the colour of the stone that sings it
+    const STEP = { 60: 0, 62: 1, 65: 3, 67: 4, 69: 5 }, acy = dby - dh * 0.5, AR = K(0.33);
+    lead(() => { for (let j = 0; j <= 30; j++) { const a = Math.PI * (1.1 + 0.8 * j / 30), x = dcx + Math.cos(a) * AR, y = acy + Math.sin(a) * AR * 1.3; j ? g.lineTo(x, y) : g.moveTo(x, y); } }, 0.7);
     flush();
-    const big = (cx, cy, s) => { star(cx, cy, s, '#f6d67a'); piece(ell(cx, cy, s * 0.28, s * 0.28), '#fff3c4', 0.7); };
-    big(X(0.73), Y(0.09), K(0.13));
-    for (const [u, v, s] of [[0.28, 0.12, 0.03], [0.16, 0.28, 0.035], [0.86, 0.36, 0.03], [0.45, 0.04, 0.025]]) star(X(u), Y(v), K(s), '#f2e6a8');
-    flush();
-    // the ground
-    piece(() => { g.moveTo(0, Y(0.83)); g.quadraticCurveTo(X(0.5), Y(0.8), w, Y(0.84)); g.lineTo(w, h); g.lineTo(0, h); g.closePath(); }, '#2f6a3f');
-    piece(() => { g.moveTo(0, Y(0.87)); g.quadraticCurveTo(X(0.4), Y(0.85), w, Y(0.88)); g.lineTo(w, h); g.lineTo(0, h); g.closePath(); }, '#285f3d');
-    flush();
-    // the singer: a long red robe, a blue cloak, a gold halo, face turned up, singing
-    const sx = X(0.36), hy = Y(0.535), hr = K(0.075), fy = Y(0.845);
-    piece(ell(sx + K(0.01), hy - K(0.005), hr * 1.75, hr * 1.75), '#e5b24a');
-    piece(() => { g.moveTo(sx - K(0.12), Y(0.585)); g.quadraticCurveTo(sx - K(0.26), Y(0.72), sx - K(0.24), fy); g.lineTo(sx + K(0.2), fy); g.quadraticCurveTo(sx + K(0.16), Y(0.7), sx + K(0.1), Y(0.585)); g.closePath(); }, '#a8263b');
-    piece(() => { g.moveTo(sx - K(0.02), Y(0.62)); g.quadraticCurveTo(sx + K(0.02), Y(0.74), sx - K(0.02), fy); g.lineTo(sx + K(0.08), fy); g.quadraticCurveTo(sx + K(0.09), Y(0.72), sx + K(0.05), Y(0.62)); g.closePath(); }, '#c23a4c');
-    piece(() => { g.moveTo(sx - K(0.24), fy); g.lineTo(sx + K(0.2), fy); g.lineTo(sx + K(0.2), fy + K(0.025)); g.lineTo(sx - K(0.24), fy + K(0.025)); g.closePath(); }, '#e0b04a');
-    piece(() => { g.moveTo(sx - K(0.1), Y(0.575)); g.quadraticCurveTo(sx - K(0.3), Y(0.68), sx - K(0.27), fy); g.lineTo(sx - K(0.17), fy); g.quadraticCurveTo(sx - K(0.2), Y(0.68), sx - K(0.02), Y(0.6)); g.closePath(); }, '#2a4597');
-    piece(ell(sx, hy, hr, hr * 1.05), '#f0d2b0');
-    piece(() => { g.arc(sx, hy, hr * 1.06, Math.PI * 0.55, Math.PI * 1.62); g.quadraticCurveTo(sx - hr * 0.2, hy - hr * 0.2, sx - hr * 0.25, hy + hr * 0.95); g.closePath(); }, '#5a3420');
-    piece(ell(sx + hr * 0.6, hy + hr * 0.12, hr * 0.17, hr * 0.24), '#5a2020', 0.6);
-    lead(() => { g.moveTo(sx + hr * 0.12, hy - hr * 0.3); g.quadraticCurveTo(sx + hr * 0.3, hy - hr * 0.12, sx + hr * 0.5, hy - hr * 0.32); }, 0.8);
-    // the open hymn book in both hands
-    const bx = sx + K(0.13), by = Y(0.63);
-    piece(poly([[bx - K(0.1), by + K(0.035)], [bx, by + K(0.05)], [bx, by - K(0.04)], [bx - K(0.09), by - K(0.06)]]), '#f3ead2');
-    piece(poly([[bx + K(0.1), by + K(0.025)], [bx, by + K(0.05)], [bx, by - K(0.04)], [bx + K(0.1), by - K(0.07)]]), '#e8dcbc');
-    piece(ell(bx - K(0.09), by + K(0.035), K(0.03), K(0.022)), '#f0d2b0');
-    piece(ell(bx + K(0.09), by + K(0.03), K(0.03), K(0.022)), '#f0d2b0');
-    flush();
-    // the staff, rising off the page in a long curve, with the line's nine notes on it
-    const P0 = [bx + K(0.02), by - K(0.08)], P1 = [X(0.94), Y(0.5)], P2 = [X(0.58), Y(0.2)];
-    const at = s => { const a = (1 - s) * (1 - s), b = 2 * (1 - s) * s, c = s * s; return [a * P0[0] + b * P1[0] + c * P2[0], a * P0[1] + b * P1[1] + c * P2[1]]; };
-    const nrm = s => { const dx = 2 * (1 - s) * (P1[0] - P0[0]) + 2 * s * (P2[0] - P1[0]), dy = 2 * (1 - s) * (P1[1] - P0[1]) + 2 * s * (P2[1] - P1[1]), l = Math.hypot(dx, dy); return [dy / l, -dx / l]; };
-    const half = s => K(0.06 + 0.035 * s), N = 12;
-    const edge = (s, k) => { const [x, y] = at(s), [nx, ny] = nrm(s); return [x + nx * half(s) * k, y + ny * half(s) * k]; };
-    for (let i = 0; i < 4; i++) {
-      const pts = [];
-      for (let j = 0; j <= N; j++) pts.push(edge(i / 4 + j / N / 4, -1.15));
-      for (let j = N; j >= 0; j--) pts.push(edge(i / 4 + j / N / 4, 1.15));
-      piece(poly(pts), ['#efe3c0', '#f4ead0', '#e9dcb6', '#f2e6c6'][i]);
-    }
-    flush();
-    for (let L = -2; L <= 2; L++) lead(() => { for (let j = 0; j <= 40; j++) { const [x, y] = edge(j / 40, L / 2.6); j ? g.lineTo(x, y) : g.moveTo(x, y); } }, 0.45);
-    flush();
-    // C F A F A G F D C, each note in the colour of the stone that sings it
-    const STEP = { 60: 0, 62: 1, 65: 3, 67: 4, 69: 5 };
     GRACE_STONES.forEach((si, i) => {
-      const s = 0.1 + i / 8 * 0.8, step = STEP[RIT_NOTES[si]], k = (step - 2.5) / 2.6 / 1.0;
-      const [x, y] = edge(s, k), q = K(0.034 + 0.012 * s);
+      const a = Math.PI * (1.14 + 0.72 * i / 8), rad = AR + (STEP[RIT_NOTES[si]] - 2.5) * K(0.022);
+      const x = dcx + Math.cos(a) * rad, y = acy + Math.sin(a) * rad * 1.3, q = K(0.036);
       piece(poly([[x, y - q], [x + q, y], [x, y + q], [x - q, y]]), RIT_STONES[si].color, 0.8);
       meta.notes.push({ x: x / w, y: y / h, r: q / w, c: RIT_STONES[si].color, si });
     });
     flush();
-    banner(0.925, AW_BANNER[2]);
+    banner(0.915, AW_BANNER[1]);
+  } else {
+    // ---- III. The devil of the deep wood: antlers among the pines, eyes in the dark, and the talisman's warm light ----
+    shards(0, 1, 4, 13, ['#131d3d', '#18244c', '#101833', '#1c2a55', '#152145']);
+    flush();
+    for (const [u, v, s] of [[0.2, 0.08, 0.03], [0.82, 0.12, 0.035], [0.5, 0.05, 0.025], [0.12, 0.22, 0.025], [0.9, 0.27, 0.025]]) star(X(u), Y(v), K(s), '#e8dca0');
+    flush();
+    // pines, the far ones darker
+    const pine = (u, v, s, col) => { for (const [k, dy] of [[1, 0], [0.78, 0.075], [0.56, 0.14], [0.34, 0.2]]) piece(poly([[X(u) - K(s) * k / 2, Y(v - dy)], [X(u), Y(v - dy) - K(s) * k * 0.95], [X(u) + K(s) * k / 2, Y(v - dy)]]), vary(col, 0.05)); piece(poly([[X(u) - K(0.025), Y(v)], [X(u) + K(0.025), Y(v)], [X(u) + K(0.025), Y(v) + K(0.08)], [X(u) - K(0.025), Y(v) + K(0.08)]]), '#3b2a22', 0.7); };
+    for (const [u, v, s] of [[0.06, 0.5, 0.36], [0.94, 0.47, 0.34], [0.26, 0.6, 0.3], [0.76, 0.58, 0.3]]) pine(u, v, s, '#173a33');
+    flush();
+    // the devil: a ragged dark head, antlers branching up into the arch, burning eyes and a wide grin
+    const hx = X(0.5), hy = Y(0.37), S = K(0.3);
+    const antler = side => {
+      const segs = [];
+      const branch = (x, y, ang, len, wd, depth) => {
+        const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+        segs.push([x, y, x2, y2, wd]);
+        if (depth > 0) { branch(x2, y2, ang - 0.45 * side, len * 0.62, wd * 0.66, depth - 1); branch(x2, y2, ang + 0.5 * side, len * 0.55, wd * 0.62, depth - 1); }
+      };
+      branch(hx + side * S * 0.42, hy - S * 0.58, -Math.PI / 2 + side * 0.55, S * 0.5, S * 0.11, 3);
+      g.lineCap = 'round';
+      g.strokeStyle = AW_LEAD; for (const [x1, y1, x2, y2, wd] of segs) { g.lineWidth = wd + LW * 1.4; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+      g.strokeStyle = '#6e5a49'; for (const [x1, y1, x2, y2, wd] of segs) { g.lineWidth = Math.max(0.5, wd - LW * 0.4); g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+    };
+    antler(-1); antler(1);
+    const rr = mulberry(77), head = [];
+    for (let i = 0; i < 26; i++) {
+      const a = i / 26 * Math.PI * 2, jag = 1 + (rr() - 0.5) * 0.2 + (i % 2 ? 0.07 : -0.05);
+      head.push([hx + Math.cos(a) * S * 0.78 * jag, hy + Math.sin(a) * S * 0.95 * jag + (Math.sin(a) > 0 ? S * 0.1 : 0)]);
+    }
+    piece(poly(head), '#22142a', 1.2);
+    piece(poly(head.map(([x, y]) => [hx + (x - hx) * 0.62, hy - S * 0.1 + (y - hy) * 0.55])), '#2e1a36', 0.6);
+    flush();
+    meta.eyes = [];
+    for (const side of [-1, 1]) {
+      const ex = hx + side * S * 0.3, ey = hy - S * 0.2;
+      piece(() => { g.moveTo(ex - S * 0.19, ey + side * S * 0.03); g.quadraticCurveTo(ex, ey - S * 0.19, ex + S * 0.19, ey - side * S * 0.03); g.quadraticCurveTo(ex, ey + S * 0.16, ex - S * 0.19, ey + side * S * 0.03); g.closePath(); }, '#ff6a1c');
+      piece(ell(ex, ey, S * 0.08, S * 0.065), '#ffd45a', 0.6);
+      lead(() => { g.moveTo(ex, ey - S * 0.07); g.lineTo(ex, ey + S * 0.06); }, 1.1);
+      lead(() => { g.moveTo(ex - side * S * 0.22, ey - S * 0.2); g.lineTo(ex + side * S * 0.14, ey - S * 0.08); }, 1.6);
+      meta.eyes.push({ x: ex / w, y: ey / h, r: S * 0.3 / w });
+    }
+    const my = hy + S * 0.36, mw = S * 0.5, mh = S * 0.22;
+    piece(() => { g.moveTo(hx - mw, my - mh * 0.4); g.quadraticCurveTo(hx, my + mh * 0.2, hx + mw, my - mh * 0.4); g.quadraticCurveTo(hx, my + mh * 1.6, hx - mw, my - mh * 0.4); g.closePath(); }, '#6a0e18');
+    const T = 7;
+    for (let i = 0; i < T; i++) {
+      const u = (i + 0.5) / T * 2 - 1, x = hx + u * mw * 0.8, edge = 1 - u * u, ty = my - mh * 0.4 + mh * 0.6 * (1 - Math.abs(u)) * 0.5, tw = mw / T * 0.9;
+      piece(poly([[x - tw, ty - K(0.004)], [x + tw, ty - K(0.004)], [x, ty + mh * (0.35 + 0.35 * edge)]]), '#efe4c8', 0.55);
+    }
+    flush();
+    // more eyes, watching from the trees
+    for (const [u, v, s] of [[0.16, 0.6, 0.85], [0.84, 0.57, 0.8], [0.34, 0.7, 0.6]]) {
+      for (const side of [-1, 1]) {
+        const ex = X(u) + side * K(0.035 * s), ey = Y(v);
+        piece(() => { g.moveTo(ex - K(0.03 * s), ey); g.quadraticCurveTo(ex, ey - K(0.03 * s), ex + K(0.03 * s), ey); g.quadraticCurveTo(ex, ey + K(0.022 * s), ex - K(0.03 * s), ey); g.closePath(); }, '#ff8a3a', 0.5);
+        meta.eyes.push({ x: ex / w, y: ey / h, r: K(0.06 * s) / w });
+      }
+    }
+    flush();
+    // the ground, a path, and the talisman held up high: warm light the devil won't cross
+    piece(() => { g.moveTo(0, Y(0.8)); g.quadraticCurveTo(X(0.5), Y(0.76), w, Y(0.8)); g.lineTo(w, h); g.lineTo(0, h); g.closePath(); }, '#244d3a');
+    piece(() => { g.moveTo(X(0.42), Y(0.79)); g.quadraticCurveTo(X(0.3), Y(0.9), X(0.2), h); g.lineTo(X(0.62), h); g.quadraticCurveTo(X(0.6), Y(0.88), X(0.56), Y(0.79)); g.closePath(); }, '#a07a4a');
+    flush();
+    const tx = X(0.5), ty = Y(0.665), tr = K(0.1);
+    for (let i = 0; i < 16; i++) {
+      const a0 = i / 16 * Math.PI * 2 - Math.PI / 2, a1 = a0 + Math.PI / 8, R = K(i % 2 ? 0.25 : 0.3);
+      piece(poly([[tx + Math.cos(a0) * tr * 1.25, ty + Math.sin(a0) * tr * 1.25], [tx + Math.cos((a0 + a1) / 2) * R, ty + Math.sin((a0 + a1) / 2) * R], [tx + Math.cos(a1) * tr * 1.25, ty + Math.sin(a1) * tr * 1.25]]), i % 2 ? '#f6d27a' : '#e8a640', 0.7);
+    }
+    piece(ell(tx, ty, tr * 1.25, tr * 1.25), '#ffe9a8', 0.7);
+    lead(() => { g.moveTo(tx - tr * 0.75, ty - tr * 1.95); g.lineTo(tx, ty - tr * 1.1); g.lineTo(tx + tr * 0.75, ty - tr * 1.95); }, 0.8);
+    piece(ell(tx, ty, tr, tr), '#e8b04a');
+    piece(ell(tx, ty, tr * 0.75, tr * 0.75), '#f6d27a', 0.8);
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; lead(() => { g.moveTo(tx + Math.cos(a) * tr * 0.4, ty + Math.sin(a) * tr * 0.4); g.lineTo(tx + Math.cos(a) * tr * 0.68, ty + Math.sin(a) * tr * 0.68); }, 0.6); }
+    piece(ell(tx, ty, tr * 0.25, tr * 0.25), '#c9506a', 0.7);
+    meta.talisman = { x: tx / w, y: ty / h, r: K(0.3) / w };
+    flush();
+    // whoever holds it up: a small cloaked figure on the path, one arm raised
+    const fx = X(0.5), fy = Y(0.86), s = K(0.3);
+    walker(fx, fy, s, '#8f2236', '#2c3f8f');
+    piece(poly([[fx + s * 0.04, fy - s * 0.5], [fx + s * 0.17, fy - s * 0.56], [tx + K(0.035), ty + tr * 1.05], [tx - K(0.01), ty + tr * 1.0]]), '#8f2236', 0.8);
+    piece(ell(tx + K(0.012), ty + tr * 1.02, K(0.026), K(0.02)), '#efd2ae', 0.6);
+    flush();
+    banner(0.935, AW_BANNER[2]);
   }
   flush();
   // the glass itself: brighter at the top, streaky, with a few seeds (bubbles) in it
@@ -6250,7 +6289,7 @@ function awPaint(kind, w, h, scale) {
 }
 
 // ---- the windows on the church wall ----
-const AW_PANES = [   // left to right: the fire, the stones, the song (k is the picture; beam is its moonbeam in BEAMS)
+const AW_PANES = [   // left to right: the fire, the stones, the devil (k is the picture; beam is its moonbeam in BEAMS)
   { k: 0, x: ix(440), y: iy(100), w: 32, h: 100, beam: 1 },
   { k: 1, x: ix(500), y: iy(100), w: 44, h: 122, beam: 0 },
   { k: 2, x: ix(560), y: iy(100), w: 32, h: 100, beam: 2 }
@@ -6259,7 +6298,7 @@ const AW_WALL_TOP = iy(23);                       // glass above the top of the 
 const AW_NICHES = [0, 1, 2, 3, 4, 5, 6].map(i => ({ x: ix(426 + i * 148 / 6), y: iy(230) })); // the seven niches in the gilded screen
 const AW_LOOK = { x: ix(500), y: iy(120) };       // where the view drifts while the windows wake
 // When the windows wake (ms after the hymn's last note): the niches sing the line back, the windows
-// fill with light from the bottom up while they sing (the fire, then the song, the stones last), then a flare.
+// fill with light from the bottom up while they sing (the fire, then the devil, the stones last), then a flare.
 const AW_T = { sing: 1400, beat: 380, fills: [[1400, 3100], [4100, 6200], [2700, 4500]], flare: 6200, look: 9400 };
 const AW_TEXT = [
   { num: 'The first window', title: 'The Sleeping Fire',
@@ -6267,10 +6306,10 @@ const AW_TEXT = [
     how: 'Walk seven laps round the campfire, always the same way, without stopping, turning back or wandering off. Each lap wakes a spark. On the seventh, Ember opens its eyes and talks.' },
   { num: 'The second window', title: 'The Singing Stones',
     verse: 'Seven stones stand in the south-west wood. Sing them the old hymn, and a door opens in their midst.',
-    how: 'Follow the faint trail off the south path to the ring of stones. With your mic on, stand inside the ring and sing, or play the tune on the stones (tap them, or press 1 to 7). Step through the door before it closes, into the Otherwhere.' },
-  { num: 'The third window', title: 'The Song',
-    verse: '“Amazing grace, how sweet the sound”: the first line is the key.',
-    how: 'Sing it in any key, at your own pace. Close is good enough. Each note is the colour of the stone that sings it, and these are the stones to play:' }
+    how: 'Follow the faint trail off the south path to the ring of stones. With your mic on, stand inside the ring and sing the first line of Amazing Grace, in any key (close is good enough). Or tap the stones, or press their numbers, in this order:' },
+  { num: 'The third window', title: 'The Devil of the Deep Wood',
+    verse: 'Something with antlers watches from the thick trees. It hates warm light.',
+    how: 'Linger deep in the forest, away from the paths, and glowing eyes appear; stay too long and the devil jumps out. Light all nine candles on the stand in the side chapel and everyone in the church gets a talisman that drives it back three times. It never comes into the churchyard or the stone circle.' }
 ];
 const aw = {
   seen: !!load('campfire.windowsAwake'),   // this device has seen the windows wake (or looked at them)
@@ -6446,7 +6485,7 @@ function awFocus(i) {
 function awFillCaption(i) {
   const T = AW_TEXT[i];
   $('awNum').textContent = T.num; $('awTitle').textContent = T.title; $('awVerse').textContent = T.verse; $('awHow').textContent = T.how;
-  $('awTune').hidden = i !== 2; $('awHear').hidden = i !== 2;
+  $('awTune').hidden = i !== 1; $('awHear').hidden = i !== 1;
   $('awPrev').disabled = i === 0; $('awNext').disabled = i === 2;
   [...$('awDots').children].forEach((d, j) => d.classList.toggle('on', j === i));
 }
@@ -6527,6 +6566,7 @@ function awFrame() {
   for (let y = 0, row = 0; y < H; y += 38, row++) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); for (let x = (row % 2) * 46; x < W; x += 92) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 38); g.stroke(); } }
   const lit = L.pos.map(p => awEase(clamp((e - v.lightAt[p.i]) / 1100, 0, 1)));
   const foc = L.pos.map(p => 1 - Math.min(1, Math.abs(p.i - v.f)));
+  const dustTo = L.side ? H : Math.max(L.top + L.h + 30, H - (v.capH || 0) + 10);   // the dust stays clear of the words
   // light falling from each window, behind everything
   g.save(); g.globalCompositeOperation = 'lighter';
   for (const p of L.pos) {
@@ -6542,7 +6582,7 @@ function awFrame() {
     // dust turning in the light
     for (let j = 0; j < 14; j++) {
       const ph = (t * 0.05 + j / 14 + p.i * 0.37) % 1, u = Math.sin(j * 12.9 + p.i) * 0.5;
-      const my = p.by + ph * (H - p.by), mx = p.x + u * (W2 * 0.84 + ph * W2 * 1.4) + ph * 30 + Math.sin(t * 0.7 + j) * 6;
+      const my = p.by + ph * (dustTo - p.by), mx = p.x + u * (W2 * 0.84 + ph * W2 * 1.4) + ph * 30 + Math.sin(t * 0.7 + j) * 6;
       g.fillStyle = `rgba(255,244,220,${Math.sin(ph * Math.PI) * 0.5 * a})`; g.beginPath(); g.arc(mx, my, 1.4, 0, Math.PI * 2); g.fill();
     }
   }
@@ -6610,11 +6650,19 @@ function awViewSparkle(g, p, M, lit, x0, y0, w, h, t, now) {
       glow(gm.x, gm.y, gm.r * 1.6, RIT_STONES[gm.i].rgb.join(','), lit * a);
     });
     if (M.door) glow(M.door.x, M.door.y, M.door.w * 1.1, '255,240,200', lit * (0.14 + 0.06 * Math.sin(t * 1.4)));
+    M.notes.forEach((n, i) => {
+      const idle = 0.2 * Math.max(0, Math.sin(t * 1.6 - i * 0.6));
+      glow(n.x, n.y, n.r * 3.2, RIT_STONES[n.si].rgb.join(','), lit * Math.max(H ? 0 : idle, heard(i) * 1.1));
+    });
   }
-  if (p.i === 2) M.notes.forEach((n, i) => {
-    const idle = 0.22 * Math.max(0, Math.sin(t * 1.6 - i * 0.6));
-    glow(n.x, n.y, n.r * 3.2, RIT_STONES[n.si].rgb.join(','), lit * Math.max(H ? 0 : idle, heard(i) * 1.1));
-  });
+  if (p.i === 2) {
+    // the eyes smoulder (and now and then a pair in the trees blinks), the talisman glows warm
+    M.eyes.forEach((ey, i) => {
+      const blink = i >= 2 && Math.sin(t * 0.9 + i * 2.3) > 0.93 ? 0 : 1;
+      glow(ey.x, ey.y, ey.r * (i < 2 ? 1.3 : 1.6), '255,100,40', lit * blink * (0.4 + 0.2 * Math.sin(t * 2.1 + i)));
+    });
+    if (M.talisman) glow(M.talisman.x, M.talisman.y, M.talisman.r * 1.2, '255,214,130', lit * (0.32 + 0.1 * Math.sin(t * 1.3)));
+  }
 }
 // the big view's buttons, keys and swipes
 $('awClose').addEventListener('click', awClose);
