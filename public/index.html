@@ -620,7 +620,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x; scrollbar-width: none; padding: 2px 4px;
 }
 .ember-row:empty { display: none; }
-.ember-row.tools .em-chip { font-size: 13px; padding: 6px 11px; }
 .ember-row::-webkit-scrollbar { display: none; }
 .em-chip {
   flex: none; border-radius: 999px; padding: 8px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap;
@@ -631,7 +630,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .em-chip.on { background: #e2572b; border-color: #e2572b; color: #fff; }
 .em-chip:active:not(:disabled) { transform: scale(0.96); }
 .em-chip:disabled { opacity: 0.45; cursor: default; }
-body.ember-on #log { bottom: calc(206px + env(safe-area-inset-bottom, 0px)); }
+body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
 @media (prefers-reduced-motion: reduce) {
   .card.flip, #actionBtn.bite, .sm-btn.pulse { animation: none; }
   .cp-c[aria-pressed="true"] .cp-flame, .cp-c.hint, .cp-done svg, .tal-pill.flash { animation: none; }
@@ -797,7 +796,7 @@ body.ember-on #log { bottom: calc(206px + env(safe-area-inset-bottom, 0px)); }
 </div>
 
 <div class="hud" id="bottombar" hidden>
-  <div class="ember-rows" id="emberRow" role="group" aria-label="Talk to Ember" hidden><div class="ember-row" id="emberReplies"></div><div class="ember-row tools" id="emberTools"></div></div>
+  <div class="ember-rows" id="emberRow" role="group" aria-label="Reply to Ember" hidden><div class="ember-row" id="emberReplies"></div></div>
   <div class="action-row" id="actionRow">
     <button id="actionBtn" type="button" hidden>Sit by the fire</button>
     <button class="sm-btn" id="smBtn" type="button" hidden>Roast s'mores</button>
@@ -855,9 +854,13 @@ body.ember-on #log { bottom: calc(206px + env(safe-area-inset-bottom, 0px)); }
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play a song from the music book on the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire. Near the fire, buttons along the bottom of the screen let you answer it (it suggests replies), ask for a story or a question for the circle, speak to it (🎙, or press T), or type (or start any chat message with "Ember,"). Everyone near the fire hears what Ember says; 🔊 mutes its voice just for you, and 🌙 Goodnight puts it back to sleep.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire. With your mic on, just talk: anything you say with "Ember" in it goes to Ember ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), and everything else stays between friends. You can also type "Ember, …" in the chat, press T to speak once, or tap one of the replies Ember suggests along the bottom. Turn Ember's voice off for yourself in the settings below.</p>
     <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. With your mic on, stand inside the ring and sing them the first line of Amazing Grace (or play it on the stones: tap them, or press 1 to 7), and see what opens. The stones only listen while your mic is on and you're inside the ring, and what they hear stays on your device.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
+    <div class="setting-row">
+      <span>Ember speaks out loud</span>
+      <button class="chip" id="emberVoiceBtn" type="button" aria-pressed="true">On</button>
+    </div>
     <div class="setting-row">
       <span>Forest scares</span>
       <button class="chip" id="scareBtn" type="button" aria-pressed="true">On</button>
@@ -2004,6 +2007,9 @@ function receiveMsg(o, m) {
   }
   if (m.k === 'e') {
     // said to Ember, out loud at the fire
+    ember.othersSaid.push({ w: spWords(text), at: performance.now() });
+    if (ember.othersSaid.length > 12) ember.othersSaid.shift();
+    if (heard && SP_HUSH.test(text)) spHush(false);
     bubbles.set(o.peer, { text, at: performance.now(), far: !heard });
     if (heard) addLog(name + ' → Ember', text, false, hashColor(name));
     return;
@@ -2494,7 +2500,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.13';
+const VERSION = 'v0.14';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6766,12 +6772,12 @@ let spirit = { v: 0, id: '', ph: 'sleep', wk: [], by: '' };
 const ember = {
   laps: spLapTracker({ x: FIRE.x, y: FIRE.y }, { laps: SP_LAPS, inner: 56, outer: 240, strayGrace: 1.5, idleTimeout: 8, backtrack: Math.PI / 2, maxStep: Math.PI / 3, minSpeed: 0.15 }),
   fx: [], lapAt: -1e9, tickAt: 0, nearSince: 0, mumble: null, mumbleNext: 0,
-  wokeAt: -1e9, rowOn: false, rowKey: '', rowMode: 'main', lastGenre: '', uiAt: 0, fs: null, fsAt: -1,
+  wokeAt: -1e9, rowOn: false, rowKey: '', lastGenre: '', uiAt: 0, fs: null, fsAt: -1, lineEnd: -1e9, othersSaid: [], autoTip: false,
   ai: null, restUntil: 0, busy: false, ctrl: null, mySeq: 0, lastSpkPush: 0,
   hist: [], chans: new Map(), cap: null, lines: [], cur: null, lookKey: 'me',
   voiceOn: load('campfire.emberVoice') !== false,
   listen: { on: false, rec: null, final: '', heard: '' },
-  sleepArm: 0
+  auto: { on: false, rec: null, track: null, restartAt: 0, fails: 0, broken: false }
 };
 me.spk = null;
 me.el = 0;                                   // my laps round the fire so far: presence 'el'
@@ -6869,7 +6875,7 @@ function resolveSpirit(freshPeers) {
 function spOnChange(prev, next, mine, quiet) {
   const now = performance.now(), loud = !quiet && joined;
   if (next.ph === 'awake' && prev.ph !== 'awake') {
-    ember.rowMode = 'main'; ember.laps.reset(); ember.mumble = null;
+    ember.laps.reset(); ember.mumble = null;
     if (loud) {
       ember.wokeAt = now;
       if (spCanHear()) spWakeSound();
@@ -6947,7 +6953,7 @@ function spQueue(text) {
 // One sentence at a time: shown over the fire, and spoken if Ember's voice is on.
 function spLineTick(now) {
   const c = ember.cur;
-  if (c && (c.done || now > c.until)) ember.cur = null;
+  if (c && (c.done || now > c.until)) { ember.cur = null; ember.lineEnd = now; }
   if (ember.cur || !ember.lines.length) return;
   const text = ember.lines.shift();
   const cur = { text, at: now, until: now + Math.max(1800, text.length * 62), done: false, voice: false, started: false };
@@ -7110,10 +7116,25 @@ async function spAskClaude(input, onText, signal) {
   }
 }
 function spAddressed(v) { return spirit.ph === 'awake' && spCanHear() && /^\s*((hey|hi|hello|ok|okay|oh|dear|yo)[\s,!]+)?ember\b/i.test(v); }
+// What someone says to Ember, typed, spoken or tapped. A few things work by just asking:
+// "tell us a (spooky) story", "ask us a question", "shh" and "goodnight".
+const SP_HUSH = /\b(shh+|hush|be quiet|quiet now|stop talking|that's enough)\b/i;
+const SP_SLEEP = /\b(good ?night|go (back )?to sleep|time (to|for) (bed|sleep)|sleep now)\b/i;
+const SP_STORY = /\b(tell|another|one more|got any|know any|share)\b.*\b(story|stories|tale|legend)\b|\b(story|tale) (please|time)\b/i;
+const SP_QUESTION = /\b(ask (us|me|something)|give us a question|another question|something (else )?to talk about)\b/i;
 function spSend(text) {
   const v = cleanText(text, 140);
   if (!v || spirit.ph !== 'awake') return;
+  getAC();
+  if (SP_HUSH.test(v)) { say(v, 'e'); spHush(true); return; }
+  if (SP_SLEEP.test(v)) { say(v, 'e'); spSet({ ph: 'sleep' }); return; }
   if (ember.busy) { showToast('Ember is still answering. Give it a moment.', 2500); return; }
+  const last = ember.cap;
+  if (SP_STORY.test(v) || (last && last.k === 'story' && /\b(another|one more|again)\b/i.test(v))) {
+    const g = /spook|scar|ghost|creep|chill/i.test(v) ? 'spooky' : /funny|silly|laugh/i.test(v) ? 'funny' : /legend|myth/i.test(v) ? 'legend' : /\b(cozy|cosy|sweet|warm)\b/i.test(v) ? 'cozy' : /about (us|everyone)|\bwith us\b/i.test(v) ? 'us' : (ember.lastGenre || 'cozy');
+    ember.lastGenre = g; say(v, 'e'); spAsk('story', '', g); return;
+  }
+  if (SP_QUESTION.test(v)) { say(v, 'e'); spAsk('question'); return; }
   say(v, 'e');
   spAsk('talk', v);
 }
@@ -7143,7 +7164,7 @@ function spListen() {
   if (claudeDict) {
     claudeDict.start().catch(e => {
       ember.listen.on = false; spRenderRow(true);
-      if (e && e.code === 'not_granted') { claudeDict = null; showToast('Ember can\'t hear you here. Tap Type instead.', 4000); }
+      if (e && e.code === 'not_granted') { claudeDict = null; showToast('Ember can\'t hear you here. Type "Ember, …" in the chat instead.', 4000); }
     });
     return;
   }
@@ -7156,9 +7177,9 @@ function spListen() {
     spShowHeard(ember.listen.heard);
   };
   rec.onerror = e => {
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showToast('Ember can\'t hear you: the microphone is blocked for this site. Allow it, or tap Type.', 6000);
-    else if (e.error === 'no-speech') showToast('Ember didn\'t catch that. Tap Speak and try again.', 2500);
-    else if (e.error === 'network') showToast('Speech needs an internet connection. Tap Type instead.', 4000);
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') showToast('Ember can\'t hear you: the microphone is blocked for this site. Allow it, or type "Ember, …" in the chat.', 6000);
+    else if (e.error === 'no-speech') showToast('Ember didn\'t catch that. Try again.', 2500);
+    else if (e.error === 'network') showToast('Speech needs an internet connection. Type "Ember, …" in the chat instead.', 4000);
   };
   rec.onend = () => spListenDone();
   ember.listen.rec = rec;
@@ -7184,6 +7205,79 @@ function spWireDictation(d) {
   d.onState(({ state }) => { if (state === 'idle' && ember.listen.on) spListenDone(); });
 }
 
+// Ember's voice on this device: the setting in the ? panel
+function spVoiceUi() { const b = $('emberVoiceBtn'); b.textContent = ember.voiceOn ? 'On' : 'Off'; b.setAttribute('aria-pressed', String(ember.voiceOn)); }
+$('emberVoiceBtn').addEventListener('click', () => {
+  getAC();
+  ember.voiceOn = !ember.voiceOn;
+  store('campfire.emberVoice', ember.voiceOn);
+  if (!ember.voiceOn) { try { if (claudeTts) claudeTts.stop(); } catch (e) { } try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { } }
+  spVoiceUi();
+});
+spVoiceUi();
+
+// ---- Ember hears you when your microphone is on ----
+// With voice chat on near the awake fire, this device also listens with the browser's speech
+// recognition. Only sentences with "Ember" in them go to Ember; the rest stays between friends.
+// Ember's own voice (and a friend's voice coming out of your speakers) is never taken for yours.
+function spAutoWanted() {
+  return !IN_CLAUDE && !!SR && voice.micOn && !!voice.micTrack && spirit.ph === 'awake' && spCanHear() && !ember.listen.on && !ember.auto.broken && !document.hidden;
+}
+function spAutoTick(now) {
+  const A = ember.auto, want = spAutoWanted();
+  if (!want && A.on) spAutoStop();
+  else if (want && !A.on && now >= A.restartAt) spAutoStart(now);
+}
+function spAutoStart(now) {
+  const A = ember.auto;
+  let rec;
+  try { rec = new SR(); } catch (e) { A.broken = true; return; }
+  rec.lang = navigator.language || 'en-US'; rec.continuous = true; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.onresult = e => { A.fails = 0; for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) spHeardAloud(e.results[i][0].transcript); };
+  rec.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') spAutoGiveUp();
+    else if (e.error !== 'no-speech' && e.error !== 'aborted' && ++A.fails >= 5) spAutoGiveUp();
+  };
+  rec.onend = () => { if (A.rec === rec) { A.rec = null; A.on = false; A.restartAt = performance.now() + (A.fails ? 4000 : 500); } };
+  try { rec.start(); } catch (e) { A.restartAt = now + 3000; return; }
+  A.rec = rec; A.on = true;
+  // On some phones the speech recogniser takes the microphone away from voice chat. If that
+  // happens, stop listening for Ember rather than cut friends off.
+  if (A.track !== voice.micTrack) {
+    A.track = voice.micTrack;
+    A.track.addEventListener('mute', () => { if (ember.auto.on && voice.micOn) spAutoGiveUp(true); });
+  }
+  if (!ember.autoTip) { ember.autoTip = true; showToast('Ember can hear you. Say "Ember…" and it answers; everything else stays between friends.', 5500); }
+}
+function spAutoStop() {
+  const A = ember.auto;
+  if (A.rec) { A.rec.onend = null; try { A.rec.abort(); } catch (e) { } }
+  A.rec = null; A.on = false;
+}
+function spAutoGiveUp(stolen) {
+  ember.auto.broken = true;
+  spAutoStop();
+  showToast(stolen ? 'On this device Ember can\'t listen while voice chat is on, so it stopped listening. Type "Ember, …" in the chat to talk to it.' : 'Ember can\'t listen on this device. Type "Ember, …" in the chat to talk to it.', 6500);
+}
+function spWords(t) { return new Set(String(t).toLowerCase().replace(/[^\p{L}\p{N}\s']/gu, ' ').split(/\s+/).filter(w => w.length > 2)); }
+// a friend said nearly the same thing a moment ago (their voice came out of my speakers)
+function spEcho(t) {
+  const w = spWords(t), now = performance.now();
+  if (!w.size) return false;
+  return ember.othersSaid.some(o => now - o.at < 8000 && [...w].filter(x => o.w.has(x)).length / w.size >= 0.6);
+}
+function spHeardAloud(raw) {
+  // speech recognition often writes the name as "Amber"
+  const v = cleanText(String(raw).replace(/\bamber\b/gi, 'Ember'), 140);
+  if (!/\bember\b/i.test(v) || spirit.ph !== 'awake') return;
+  const now = performance.now();
+  // while Ember is talking only "shh" gets through, so it never answers its own voice
+  if (SP_HUSH.test(v)) { spSend(v); return; }
+  if (ember.cur || ember.lines.length || now - ember.lineEnd < 1500) return;
+  // wait a moment: a friend's typed or spoken words may still be on their way
+  setTimeout(() => { if (!spEcho(v)) spSend(v); }, 700);
+}
+
 // ---- options along the bottom of the screen ----
 // Near the awake fire, a row of buttons: the replies Ember suggested for what it just said, then
 // ways to talk to it. Ember itself only speaks in its bubble over the fire.
@@ -7194,70 +7288,41 @@ function spReplies() {
   return ch.o && ch.o.length ? ch.o.slice(0, 3) : Brain ? Brain.pickOptions(ch.k) : [];
 }
 // Tapping a reply says it out loud at the fire; asking for a story or a question gets one.
-function spPick(text) {
-  getAC();
-  if (ember.busy) { showToast('Ember is still answering. Give it a moment.', 2500); return; }
-  const v = cleanText(text, 140);
-  if (/\b(story|stories|tale|another one)\b/i.test(v)) {
-    const g = /spook|scar|ghost|creep|chill/i.test(v) ? 'spooky' : /funny|silly|laugh/i.test(v) ? 'funny' : /legend|myth/i.test(v) ? 'legend' : /about (us|everyone)/i.test(v) ? 'us' : (ember.lastGenre || 'cozy');
-    ember.lastGenre = g; say(v, 'e'); spAsk('story', '', g); return;
-  }
-  if (/\b(ask (us|me|something)|question|something else)\b/i.test(v)) { say(v, 'e'); spAsk('question'); return; }
-  spSend(v);
-}
-function spSleepTap() {
-  const now = performance.now();
-  if (now - ember.sleepArm > 3500) { ember.sleepArm = now; spRenderRow(true); setTimeout(() => spRenderRow(true), 3600); return; }
-  ember.sleepArm = 0;
-  say('Goodnight, Ember.', 'e');
-  spSet({ ph: 'sleep' });
-}
-function spVoiceTap() {
-  getAC();
-  ember.voiceOn = !ember.voiceOn;
-  store('campfire.emberVoice', ember.voiceOn);
-  if (!ember.voiceOn) { try { if (claudeTts) claudeTts.stop(); } catch (e) { } try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { } }
-  spRenderRow(true);
+// the row only shows while there's something to tap
+function spShowRow(on) {
+  if (!on) ember.rowKey = '';
+  if ($('emberRow').hidden === !on) return;
+  $('emberRow').hidden = !on; document.body.classList.toggle('ember-on', on);
 }
 function spRenderRow(force) {
   const want = spRowWanted();
   if (want !== ember.rowOn) {
-    ember.rowOn = want; $('emberRow').hidden = !want; document.body.classList.toggle('ember-on', want); force = true;
-    if (!want) { ember.rowMode = 'main'; if (ember.listen.on) spListenStop(); }
+    ember.rowOn = want; force = true;
+    if (!want && ember.listen.on) spListenStop();
   }
-  if (!want) return;
+  if (!want) { spShowRow(false); return; }
   const now = performance.now();
   if (!force && now - ember.uiAt < 200) return;
   ember.uiAt = now;
-  const busy = ember.busy, talking = !!ember.cur || ember.lines.length > 0 || busy, listening = ember.listen.on;
-  const parts = []; // [key, label, class, action, disabled, aria-label]: 'reply' ones on the top row, 'tool' ones below
-  if (ember.rowMode === 'story') {
-    for (const [g, d] of Object.entries(Brain ? Brain.GENRES : {})) parts.push(['g:' + g, d.label, 'reply', () => { ember.rowMode = 'main'; ember.lastGenre = g; getAC(); if (ember.busy) return; say(`Tell us ${SP_LABEL[g]}, Ember!`, 'e'); spAsk('story', '', g); }, busy]);
-    parts.push(['back', '‹ Back', 'tool', () => { ember.rowMode = 'main'; spRenderRow(true); }]);
-  } else {
-    for (const r of spReplies()) parts.push(['r:' + r, r, 'reply', () => spPick(r), busy]);
-    parts.push(['story', '📖 Story', 'tool', () => { ember.rowMode = 'story'; spRenderRow(true); }, busy]);
-    parts.push(['question', '❓ Ask us', 'tool', () => spPick('Ask us a question'), busy]);
-    if (spCanListen()) parts.push(['mic', listening ? '● Listening… tap to send' : '🎙 Speak', listening ? 'tool on' : 'tool', () => spListen(), busy && !listening]);
-    parts.push(['type', '⌨️ Type', 'tool', () => spTypeToEmber()]);
-    if (talking) parts.push(['hush', '🤫 Hush', 'tool', () => { spHush(true); spRenderRow(true); }]);
-    if (spVoiceAvail()) parts.push(['voice', ember.voiceOn ? '🔊' : '🔇', 'tool', spVoiceTap, false, ember.voiceOn ? 'Mute Ember\'s voice' : 'Hear Ember\'s voice']);
-    parts.push(['sleep', now - ember.sleepArm < 3500 ? 'Sure? Tap again' : '🌙 Goodnight', 'tool', spSleepTap, false, 'Let Ember go back to sleep']);
-  }
+  const busy = ember.busy;
+  const parts = []; // [key, label, class, action, disabled]: the replies Ember suggested for what it just said
+  for (const r of spReplies()) parts.push(['r:' + r, r, 'reply', () => spSend(r), busy]);
   const key = parts.map(p => `${p[0]}|${p[1]}|${p[2]}|${p[4] ? 1 : 0}`).join(';');
   if (key === ember.rowKey) return;
   ember.rowKey = key;
-  $('emberReplies').textContent = ''; $('emberTools').textContent = '';
+  spShowRow(parts.length > 0);
+  $('emberReplies').textContent = '';
   for (const [, label, cls, fn, dis, aria] of parts) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'em-chip ' + cls; b.textContent = label; b.disabled = !!dis;
     if (aria) b.setAttribute('aria-label', aria);
     b.addEventListener('click', e => { e.stopPropagation(); fn(); });
-    $(cls.startsWith('reply') ? 'emberReplies' : 'emberTools').appendChild(b);
+    $('emberReplies').appendChild(b);
   }
 }
 // every frame (while joined)
 function spiritTick(now) {
+  spAutoTick(now);
   const dt = Math.min(0.1, Math.max(0, (now - (ember.tickAt || now)) / 1000));
   ember.tickAt = now;
   // count my laps round the sleeping fire
@@ -7436,7 +7501,7 @@ function drawSpiritOverlay(t, now) {
   else if (st.think) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
 }
 window.campfireSpiritDebug = () => ({
-  ph: spirit.ph, v: spirit.v, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
+  ph: spirit.ph, v: spirit.v, hears: ember.auto.on, talking: !!ember.cur || ember.lines.length > 0, rowShown: !$('emberRow').hidden, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
   said: ember.cap ? ember.cap.t : '', options: spReplies(), row: ember.rowOn ? [...$('emberRow').querySelectorAll('button')].map(b => b.textContent) : [], mumble: ember.mumble ? ember.mumble.text : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
 });
 // Local testing only: hop to a spot on the map.
@@ -7458,7 +7523,7 @@ window.addEventListener('keydown', e => {
   if ((e.key === 'r' || e.key === 'R') && !e.repeat) { smPrimary(); return; }
   if ((e.key === 'f' || e.key === 'F') && !e.repeat) { smServe(false); return; }
   if (/^[1-7]$/.test(e.key) && !e.repeat && nearGlade()) { ritStrike(+e.key - 1); return; }
-  if ((e.key === 't' || e.key === 'T') && !e.repeat && ember.rowOn) { e.preventDefault(); spListen(); return; }
+  if ((e.key === 't' || e.key === 'T') && !e.repeat && spirit.ph === 'awake' && spCanHear()) { e.preventDefault(); if (ember.auto.on) showToast('Ember is already listening. Just say "Ember…"', 3000); else spListen(); return; }
   const k = e.key.toLowerCase();
   if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { keys.add(k); e.preventDefault(); }
 });

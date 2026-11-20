@@ -57,7 +57,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
 | Serve | Click **Serve!**, or press F | Tap **Serve!** |
 | Wake the fire | Walk round the fire 7 times without stopping | Walk round the fire 7 times without stopping |
-| Talk to Ember | Click the buttons along the bottom near the fire; press T to speak, or start a chat message with "Ember," | Tap the buttons along the bottom near the fire (🎙 Speak to talk out loud) |
+| Talk to Ember | With your mic on, say "Ember, …"; or start a chat message with "Ember,", press T to speak once, or click a reply along the bottom | With your mic on, say "Ember, …"; or start a chat message with "Ember,", or tap a reply along the bottom |
 
 ## Voice chat
 
@@ -80,10 +80,15 @@ The fire has a spirit, fast asleep in the coals. While it sleeps the fire is jus
 
 **To wake it, walk round the fire seven times** without stopping. Go either way round, but keep going the same way, stay inside the clearing (not out past the edge of the firelight), and don't stand still. Each lap wakes a spark that circles the flames (friends see them too, along with your trail of embers), and the fire grows a little. There's no lap counter: count the sparks. If you wander off, turn back or stop for too long, the sparks fade and you start again. On the seventh lap the sparks dive into the fire, it flares up in every colour, a ring of light sweeps across the clearing, and Ember opens its eyes and says hello.
 
-Ember only speaks in a speech bubble over the fire (and out loud), so nothing covers it. Near the fire, two rows of buttons appear along the bottom of the screen:
+Ember only speaks in a speech bubble over the fire (and out loud), so nothing covers it.
 
-- **Replies** (top row, gold): three things you could say back, suggested by Ember for whatever it just said. Tap one and you say it out loud at the fire; Ember answers.
-- **📖 Story** (pick cozy, spooky, funny, a legend of the campsite, or one starring everyone at the fire), **❓ Ask us** (a question for the circle to talk about), **🎙 Speak** (say something out loud, or press T; your words show in the chat box and are sent when you stop), **⌨️ Type** (or start any chat message with "Ember,"), **🤫 Hush** (stops Ember talking on your screen), **🔊** (mutes Ember's voice just for you) and **🌙 Goodnight** (tap twice to put Ember back to sleep for everyone).
+**Talking to Ember:**
+
+- **Just talk, with your mic on.** When your voice-chat mic is on and you're near the awake fire, Ember listens too. Anything you say with "Ember" in it goes to Ember; everything else stays between friends. Ember ignores its own voice, and a friend's voice coming out of your speakers isn't sent twice.
+- **Or type** a chat message that starts with "Ember," (or press T to say one thing out loud, when your mic is off).
+- **Or tap a reply.** Along the bottom of the screen, Ember suggests three things you could say back to whatever it just said. Tap one and you say it out loud at the fire.
+
+A few things work by just asking: "Ember, tell us a story" (say spooky, funny, cozy, a legend, or one about us), "Ember, ask us a question", "Ember, shh" (stops it talking for everyone who hears you) and "Goodnight, Ember" (puts it back to sleep for everyone). To mute Ember's voice just for you, turn off **Ember speaks out loud** in the **?** panel.
 
 Everyone near the fire hears Ember and sees its words. Walk the seven laps again to wake it after Goodnight. Like everything else, Ember falls asleep again when the lobby empties.
 
@@ -116,7 +121,7 @@ You can also add **Claude** with `ANTHROPIC_API_KEY` (from [console.anthropic.co
 
 The keys stay on the server; players' browsers never see them. To stop strangers who find your link from using up the limits, the server only answers lobbies that have someone in them and limits how often each lobby and each person can ask. Render's **Logs** show a line whenever Ember switches brains and why (for example "Ember: Groq llama-3.3-70b-versatile too many requests; resting 12s, switching to Groq openai/gpt-oss-120b"), and a line if a key is wrong or a model has been retired. Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
 
-**Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead.
+**Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead. On a few phones the speech recognition can't share the microphone with voice chat; there, Ember stops listening (so friends can still hear you) and says to type instead.
 
 ## The singing stones
 
