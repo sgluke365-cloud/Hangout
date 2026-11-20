@@ -205,6 +205,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ember-hot);
 .mic[aria-pressed="true"] { background: var(--ember); border-color: var(--ember); color: #2a1606; }
 .mic[aria-pressed="true"] .slash { display: none; }
 .mic.busy { opacity: 0.6; }
+.mic { position: relative; }
+/* a little flame while Ember is listening */
+.mic.ember-hears::after {
+  content: ''; position: absolute; top: -4px; right: -4px; width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 60%, #fff3c4 0 22%, #ffb347 45%, #ff6a1a 100%);
+  box-shadow: 0 0 8px rgba(255, 140, 50, 0.9); animation: emberEar 1.6s ease-in-out infinite;
+}
+@keyframes emberEar { 50% { transform: scale(0.8); opacity: 0.75; } }
+@media (prefers-reduced-motion: reduce) { .mic.ember-hears::after { animation: none; } }
 .emo-wrap { position: relative; flex: none; }
 .emo-toggle {
   display: inline-flex; align-items: center; justify-content: center;
@@ -854,7 +863,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play a song from the music book on the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire. With your mic on, just talk: anything you say with "Ember" in it goes to Ember ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), and everything else stays between friends. You can also type "Ember, …" in the chat, press T to speak once, or tap one of the replies Ember suggests along the bottom. Turn Ember's voice off for yourself in the settings below.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire, in its own voice from the flames. With your mic on, just talk: anything you say with "Ember" in it goes to Ember ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), and everything else stays between friends (a little flame on the mic button means Ember is listening; on phones, what you say near the awake fire is turned into text by the server's speech service so Ember can spot its name). You can also type "Ember, …" in the chat, press T to speak once, or tap one of the replies Ember suggests along the bottom. Turn Ember's voice off for yourself in the settings below.</p>
     <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. With your mic on, stand inside the ring and sing them the first line of Amazing Grace (or play it on the stones: tap them, or press 1 to 7), and see what opens. The stones only listen while your mic is on and you're inside the ring, and what they hear stays on your device.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
@@ -2500,7 +2509,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.14';
+const VERSION = 'v0.15';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6777,7 +6786,10 @@ const ember = {
   hist: [], chans: new Map(), cap: null, lines: [], cur: null, lookKey: 'me',
   voiceOn: load('campfire.emberVoice') !== false,
   listen: { on: false, rec: null, final: '', heard: '' },
-  auto: { on: false, rec: null, track: null, restartAt: 0, fails: 0, broken: false }
+  auto: { on: false, rec: null, track: null, restartAt: 0, fails: 0, broken: false },
+  ears: { on: false, broken: false, restartAt: 0, restUntil: 0, src: null, node: null, sink: null, rate: 48000, pre: [], seg: null, floor: 0.008, busy: false, next: null, sent: [], tiredTip: false },
+  earsOk: false, deafTip: false, hearingShown: false,
+  voiceSrv: false, sayRestUntil: 0, voiceSrc: null, vfx: null, noise: null
 };
 me.spk = null;
 me.el = 0;                                   // my laps round the fire so far: presence 'el'
@@ -6937,6 +6949,13 @@ function spVoiceFor(lang) {
   const pool = webVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang));
   if (!pool.length) return null;
   if (lang === 'en') {
+    // natural (neural) voices first: Edge's "Online (Natural)" voices, Apple's Premium/Enhanced ones
+    for (const p of ['Ryan Online', 'Thomas Online', 'Guy Online', 'Christopher Online', 'Andrew Online', 'Brian Online', 'Davis Online', 'Eric Online']) {
+      const v = pool.find(x => x.name.includes(p));
+      if (v) return v;
+    }
+    const nat = pool.find(x => /natural|neural|premium|enhanced/i.test(x.name) && !/female|woman|aria|jenny|sonia|libby|emma|ava|michelle/i.test(x.name));
+    if (nat) return nat;
     for (const p of ['Google UK English Male', 'Daniel', 'Microsoft Ryan', 'Microsoft Guy', 'Microsoft Davis', 'Arthur', 'Microsoft George', 'Aaron', 'Rishi', 'Microsoft David', 'Alex', 'Google US English']) {
       const v = pool.find(x => x.name.includes(p));
       if (v) return v;
@@ -6944,13 +6963,15 @@ function spVoiceFor(lang) {
   }
   return pool.find(v => v.localService) || pool[0];
 }
-function spVoiceAvail() { return !!claudeTts || (WEB_TTS && !IN_CLAUDE); }
+function spVoiceAvail() { return !!claudeTts || (!IN_CLAUDE && (WEB_TTS || ember.voiceSrv)); }
 function spSplit(text) { return (text.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean); }
 function spQueue(text) {
   for (const s of spSplit(text)) ember.lines.push(s);
   if (ember.lines.length > 60) ember.lines.splice(0, ember.lines.length - 60);
 }
 // One sentence at a time: shown over the fire, and spoken if Ember's voice is on.
+// Ember's voice comes from the server when it has one (a natural voice, with the fire spirit's
+// echo, its ghostly double and crackles added here), otherwise from the device's own voice.
 function spLineTick(now) {
   const c = ember.cur;
   if (c && (c.done || now > c.until)) { ember.cur = null; ember.lineEnd = now; }
@@ -6960,31 +6981,154 @@ function spLineTick(now) {
   ember.cur = cur;
   if (!ember.voiceOn || !spVoiceAvail() || !spCanHear()) return;
   cur.voice = true; cur.until = now + 5000 + text.length * 120; // in case the voice never says it's done
-  // If no voice actually came out (no voices on this device, or it refused), just show the words for a while.
-  const silent = () => { cur.voice = false; cur.until = cur.at + Math.max(1800, text.length * 62); };
-  const finish = () => { if (performance.now() - cur.at < text.length * 25) silent(); else cur.done = true; };
   if (claudeTts) {
     cur.started = true;
-    claudeTts.speak(text, { voice: 'rounded', rate: 0.95 }).then(finish, e => {
+    const silent = () => { cur.voice = false; cur.until = cur.at + Math.max(1800, text.length * 62); };
+    claudeTts.speak(text, { voice: 'rounded', rate: 0.95 }).then(() => { cur.done = true; }, e => {
       silent();
       if (e && e.code === 'not_granted') { claudeTts = null; spRenderRow(true); }
     });
     return;
   }
+  if (spSpiritVoiceOk()) {
+    cur.until = now + 15000 + text.length * 90; // getting the voice, then saying it
+    spSayAudio(text).then(buf => {
+      if (ember.cur !== cur || cur.done) return;
+      if (buf && ember.voiceOn) spPlayVoice(cur, buf);
+      else spSpeakDevice(cur);
+    });
+    for (const next of ember.lines.slice(0, 2)) spSayAudio(next); // the next lines get ready meanwhile, so there are no gaps
+    return;
+  }
+  spSpeakDevice(cur);
+}
+function spSpeakDevice(cur) {
+  const text = cur.text, now = performance.now();
+  // If no voice actually came out (no voices on this device, or it refused), just show the words for a while.
+  const silent = () => { cur.voice = false; cur.until = cur.at + Math.max(1800, text.length * 62); };
+  if (!WEB_TTS || IN_CLAUDE) { silent(); return; }
+  cur.until = now + 5000 + text.length * 120;
+  const finish = () => { if (performance.now() - now < text.length * 25) silent(); else cur.done = true; };
   try {
     const lang = spLangOf(text), u = new SpeechSynthesisUtterance(text), v = spVoiceFor(lang);
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = lang === 'en' ? 'en-GB' : lang;
-    u.pitch = lang === 'en' ? 0.78 : 0.92; u.rate = 0.94;
-    u.volume = clamp(1 - Math.max(0, dist(me.x, me.y, FIRE.x, FIRE.y) - 160) / 260, 0.25, 1);
+    // close to the voice's natural pitch: pushed lower, phone voices start to sound robotic
+    u.pitch = lang === 'en' ? 0.9 : 0.95; u.rate = 0.97;
+    u.volume = spVoiceVol();
     u.onstart = () => { cur.started = true; };
     u.onend = finish; u.onerror = silent;
     speechSynthesis.speak(u);
   } catch (e) { silent(); }
 }
+function spVoiceVol() { return clamp(1 - Math.max(0, dist(me.x, me.y, FIRE.x, FIRE.y) - 160) / 260, 0.25, 1); }
+function spSpiritVoiceOk() { return !IN_CLAUDE && ember.voiceSrv && performance.now() >= ember.sayRestUntil && !!getAC(); }
+// Ember's lines from the server, ready to play. Everyone at the fire asks for the same lines,
+// and the server makes each one once.
+const spSays = new Map(); // text -> Promise<AudioBuffer|null>
+function spSayAudio(text) {
+  if (spSays.has(text)) return spSays.get(text);
+  const mood = ember.cap && ember.cap.k === 'story' ? ember.cap.g || '' : '';
+  const p = (async () => {
+    const ac = getAC();
+    if (!ac || !spSpiritVoiceOk()) return null;
+    try {
+      const r = await fetch('/ember-say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room: ROOM_CODE, text, mood }) });
+      if (!r.ok) {
+        let j = null; try { j = await r.json(); } catch (e) { }
+        if (r.status === 503) ember.voiceSrv = false;
+        else if (r.status === 429 && j && j.error === 'resting') ember.sayRestUntil = performance.now() + clamp(num(j.retry, 60), 10, 6 * 3600) * 1000;
+        spSays.delete(text);
+        return null;
+      }
+      const data = await r.arrayBuffer();
+      return await new Promise((ok, bad) => ac.decodeAudioData(data, ok, bad)); // the callback form works in older Safari too
+    } catch (e) { spSays.delete(text); return null; }
+  })();
+  spSays.set(text, p);
+  if (spSays.size > 40) spSays.delete(spSays.keys().next().value);
+  return p;
+}
+function spPlayVoice(cur, buf) {
+  const ac = getAC(), fx = spVoiceFx(ac);
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.value = 0.97; // a touch slower and deeper: an old spirit, unhurried
+  const g = ac.createGain(); g.gain.value = spVoiceVol();
+  src.connect(g); g.connect(fx.input);
+  const secs = buf.duration / 0.97;
+  cur.started = true; cur.until = performance.now() + secs * 1000 + 1500;
+  src.onended = () => { cur.done = true; if (ember.voiceSrc === src) ember.voiceSrc = null; };
+  ember.voiceSrc = src;
+  src.start();
+  spCrackles(ac, fx, secs, g.gain.value);
+}
+// The fire spirit's sound: the voice, warmed; a ghostly double a breath behind it, darker and
+// wavering like heat over the flames; and an echo, as if it spoke from somewhere much bigger
+// than the fire. A meter on the end lets Ember's mouth and flames follow its voice.
+function spVoiceFx(ac) {
+  if (ember.vfx && ember.vfx.ac === ac) return ember.vfx;
+  const input = ac.createGain(), out = ac.createGain();
+  const warm = ac.createBiquadFilter(); warm.type = 'lowshelf'; warm.frequency.value = 200; warm.gain.value = 3.5;
+  const soft = ac.createBiquadFilter(); soft.type = 'highshelf'; soft.frequency.value = 7000; soft.gain.value = -2.5;
+  input.connect(warm); warm.connect(soft);
+  const dry = ac.createGain(); dry.gain.value = 0.85;
+  soft.connect(dry); dry.connect(out);
+  const dly = ac.createDelay(0.2); dly.delayTime.value = 0.034;
+  const lfo = ac.createOscillator(); lfo.frequency.value = 0.37;
+  const depth = ac.createGain(); depth.gain.value = 0.008;
+  lfo.connect(depth); depth.connect(dly.delayTime); lfo.start();
+  const dark = ac.createBiquadFilter(); dark.type = 'lowpass'; dark.frequency.value = 1700;
+  const ghost = ac.createGain(); ghost.gain.value = 0.3;
+  soft.connect(dly); dly.connect(dark); dark.connect(ghost); ghost.connect(out);
+  const verb = ac.createConvolver(); verb.buffer = spImpulse(ac, 2.6, 2.4);
+  const verbTone = ac.createBiquadFilter(); verbTone.type = 'lowpass'; verbTone.frequency.value = 2600;
+  const wet = ac.createGain(); wet.gain.value = 0.34;
+  soft.connect(verb); verb.connect(verbTone); verbTone.connect(wet); wet.connect(out);
+  const an = ac.createAnalyser(); an.fftSize = 512;
+  out.connect(an); out.connect(ac.destination);
+  ember.vfx = { ac, input, out, an, buf: new Float32Array(512) };
+  return ember.vfx;
+}
+// a soft, dark echo: noise that fades away, a little later in one ear than the other
+function spImpulse(ac, secs, decay) {
+  const rate = ac.sampleRate, n = Math.floor(rate * secs), b = ac.createBuffer(2, n, rate);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c), pre = Math.floor(rate * (0.018 + c * 0.007));
+    for (let i = pre; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay);
+  }
+  return b;
+}
+// little pops and crackles from the fire while Ember talks
+function spCrackles(ac, fx, secs, vol) {
+  if (!ember.noise) {
+    const n = Math.floor(ac.sampleRate * 0.06), b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    ember.noise = b;
+  }
+  let t = ac.currentTime + 0.05;
+  const end = ac.currentTime + secs;
+  while ((t += 0.14 + Math.random() * 0.5) < end) {
+    const s = ac.createBufferSource(); s.buffer = ember.noise; s.playbackRate.value = 0.6 + Math.random() * 1.2;
+    const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 4000; f.Q.value = 1.4;
+    const g = ac.createGain(); g.gain.value = (0.05 + Math.random() * 0.11) * vol;
+    s.connect(f); f.connect(g); g.connect(fx.out);
+    s.start(t); s.stop(t + 0.1);
+  }
+}
+// how loud Ember's voice is right now, 0..1 (null when the device's own voice is talking)
+function spVoiceLevel() {
+  const fx = ember.vfx;
+  if (!fx || !ember.voiceSrc) return null;
+  fx.an.getFloatTimeDomainData(fx.buf);
+  let sum = 0;
+  for (let i = 0; i < fx.buf.length; i++) sum += fx.buf[i] * fx.buf[i];
+  return clamp(Math.sqrt(sum / fx.buf.length) * 7, 0, 1);
+}
 // Stop Ember talking on this screen (and stop my own question being answered, if asked).
 function spHush(abort) {
   ember.lines.length = 0;
   if (ember.cur) ember.cur.done = true;
+  if (ember.voiceSrc) { try { ember.voiceSrc.stop(); } catch (e) { } ember.voiceSrc = null; }
   try { if (claudeTts) claudeTts.stop(); } catch (e) { }
   try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { }
   if (abort && ember.ctrl) { try { ember.ctrl.abort(); } catch (e) { } }
@@ -7144,7 +7288,7 @@ if (IN_CLAUDE) {
   window.claude.use('tts').then(t => { claudeTts = t || null; spRenderRow(true); }, () => { });
   window.claude.use('dictation').then(d => { claudeDict = d || null; if (d) spWireDictation(d); spRenderRow(true); }, () => { });
 } else if (HOSTED) {
-  fetch('/spirit-status', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { ember.ai = j && j.ai ? 'server' : 'book'; spRenderRow(true); }, () => { ember.ai = 'book'; });
+  fetch('/spirit-status', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { ember.ai = j && j.ai ? 'server' : 'book'; ember.earsOk = !!(j && j.ears); ember.voiceSrv = !!(j && j.voice); spRenderRow(true); }, () => { ember.ai = 'book'; });
 } else ember.ai = 'book';
 
 // ---- talking to Ember out loud ----
@@ -7211,22 +7355,46 @@ $('emberVoiceBtn').addEventListener('click', () => {
   getAC();
   ember.voiceOn = !ember.voiceOn;
   store('campfire.emberVoice', ember.voiceOn);
-  if (!ember.voiceOn) { try { if (claudeTts) claudeTts.stop(); } catch (e) { } try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { } }
+  if (!ember.voiceOn) {
+    try { if (claudeTts) claudeTts.stop(); } catch (e) { }
+    try { if (WEB_TTS && !IN_CLAUDE) speechSynthesis.cancel(); } catch (e) { }
+    if (ember.voiceSrc) { try { ember.voiceSrc.stop(); } catch (e) { } ember.voiceSrc = null; }
+  }
   spVoiceUi();
 });
 spVoiceUi();
 
 // ---- Ember hears you when your microphone is on ----
-// With voice chat on near the awake fire, this device also listens with the browser's speech
-// recognition. Only sentences with "Ember" in them go to Ember; the rest stays between friends.
+// With voice chat on near the awake fire, Ember listens too. Only sentences with "Ember" in them
+// go to Ember; the rest stays between friends. There are two ways to listen:
+//  - on computers, the browser's own speech recognition, which runs alongside voice chat;
+//  - on phones, the browser can't recognise speech while voice chat has the microphone (Android
+//    Chrome hears only silence), so this page cuts what you say into short recordings from the
+//    voice-chat microphone itself, and the server turns them into text (Groq), if it has a key.
 // Ember's own voice (and a friend's voice coming out of your speakers) is never taken for yours.
-function spAutoWanted() {
-  return !IN_CLAUDE && !!SR && voice.micOn && !!voice.micTrack && spirit.ph === 'awake' && spCanHear() && !ember.listen.on && !ember.auto.broken && !document.hidden;
+const SP_PHONE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+function spHearWanted() {
+  return !IN_CLAUDE && voice.micOn && !!voice.micTrack && spirit.ph === 'awake' && spCanHear() && !ember.listen.on && !document.hidden;
 }
+// which ears this device uses: 'browser', 'server', or '' when it can't hear
+function spEarKind() {
+  if (SR && !SP_PHONE && !ember.auto.broken) return 'browser';
+  if (ember.earsOk && !ember.ears.broken) return 'server';
+  return '';
+}
+function spEmberTalking() { return !!ember.cur || ember.lines.length > 0 || performance.now() - ember.lineEnd < 1500; }
 function spAutoTick(now) {
-  const A = ember.auto, want = spAutoWanted();
-  if (!want && A.on) spAutoStop();
-  else if (want && !A.on && now >= A.restartAt) spAutoStart(now);
+  const want = spHearWanted(), kind = want ? spEarKind() : '';
+  const A = ember.auto, E = ember.ears;
+  if (kind !== 'browser' && A.on) spAutoStop();
+  if (kind !== 'server' && E.on) spEarsStop();
+  if (kind === 'browser' && !A.on && now >= A.restartAt) spAutoStart(now);
+  if (kind === 'server' && !E.on && now >= E.restartAt) spEarsStart(now);
+  if (want && !kind && ember.ai && !ember.deafTip) { ember.deafTip = true; showToast('Ember can\'t hear voices in this browser. Type "Ember, …" in the chat to talk to it.', 6000); }
+  // a little flame on the mic button while Ember is listening
+  const hearing = A.on || E.on;
+  if (hearing && !ember.autoTip) { ember.autoTip = true; showToast('Ember can hear you. Say "Ember…" and it answers; everything else stays between friends.', 5500); }
+  if (hearing !== ember.hearingShown) { ember.hearingShown = hearing; $('micBtn').classList.toggle('ember-hears', hearing); }
 }
 function spAutoStart(now) {
   const A = ember.auto;
@@ -7241,13 +7409,12 @@ function spAutoStart(now) {
   rec.onend = () => { if (A.rec === rec) { A.rec = null; A.on = false; A.restartAt = performance.now() + (A.fails ? 4000 : 500); } };
   try { rec.start(); } catch (e) { A.restartAt = now + 3000; return; }
   A.rec = rec; A.on = true;
-  // On some phones the speech recogniser takes the microphone away from voice chat. If that
-  // happens, stop listening for Ember rather than cut friends off.
+  // If the speech recogniser takes the microphone away from voice chat, stop it rather than cut
+  // friends off (the server's ears take over when there are any).
   if (A.track !== voice.micTrack) {
     A.track = voice.micTrack;
     A.track.addEventListener('mute', () => { if (ember.auto.on && voice.micOn) spAutoGiveUp(true); });
   }
-  if (!ember.autoTip) { ember.autoTip = true; showToast('Ember can hear you. Say "Ember…" and it answers; everything else stays between friends.', 5500); }
 }
 function spAutoStop() {
   const A = ember.auto;
@@ -7257,7 +7424,94 @@ function spAutoStop() {
 function spAutoGiveUp(stolen) {
   ember.auto.broken = true;
   spAutoStop();
+  if (ember.earsOk) return; // the server listens instead
   showToast(stolen ? 'On this device Ember can\'t listen while voice chat is on, so it stopped listening. Type "Ember, …" in the chat to talk to it.' : 'Ember can\'t listen on this device. Type "Ember, …" in the chat to talk to it.', 6500);
+}
+
+// The server's ears: short recordings of what you say, from the voice-chat microphone.
+const EAR_RATE = 16000;
+function spEarsStart(now) {
+  const E = ember.ears, ac = getAC();
+  if (!ac || !voice.micStream || typeof ac.createScriptProcessor !== 'function') { E.broken = true; return; }
+  try {
+    E.src = ac.createMediaStreamSource(voice.micStream);
+    E.node = ac.createScriptProcessor(4096, 1, 1);
+    E.sink = ac.createGain(); E.sink.gain.value = 0; // it has to reach the speakers to run, silently
+    E.src.connect(E.node); E.node.connect(E.sink); E.sink.connect(ac.destination);
+  } catch (e) { spEarsStop(); E.broken = true; return; }
+  E.rate = ac.sampleRate; E.pre = []; E.seg = null; E.floor = 0.008;
+  E.node.onaudioprocess = ev => spEarsChunk(ev.inputBuffer.getChannelData(0));
+  E.on = true;
+}
+function spEarsStop() {
+  const E = ember.ears;
+  if (E.node) E.node.onaudioprocess = null;
+  for (const n of [E.src, E.node, E.sink]) if (n) try { n.disconnect(); } catch (e) { }
+  E.src = E.node = E.sink = null; E.on = false; E.seg = null; E.pre = [];
+}
+// Every ~85 ms of microphone sound: is someone talking? Collect what they say until they pause.
+function spEarsChunk(raw) {
+  const E = ember.ears;
+  let sum = 0;
+  for (let i = 0; i < raw.length; i++) sum += raw[i] * raw[i];
+  const rms = Math.sqrt(sum / raw.length);
+  // a 16 kHz copy (averaging the samples in between keeps it clean enough for speech)
+  const step = E.rate / EAR_RATE, n = Math.floor(raw.length / step), pcm = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = Math.floor(i * step), b = Math.min(raw.length, Math.floor((i + 1) * step));
+    let t = 0; for (let j = a; j < b; j++) t += raw[j];
+    pcm[i] = t / Math.max(1, b - a);
+  }
+  const loud = rms > Math.max(0.02, E.floor * 3);
+  const g = E.seg;
+  if (!g) {
+    if (!loud) E.floor = E.floor * 0.97 + rms * 0.03;
+    E.pre.push(pcm); if (E.pre.length > 5) E.pre.shift(); // keep the moment before you start talking
+    if (loud) { E.seg = { parts: E.pre, len: E.pre.reduce((t, p) => t + p.length, 0), voiced: 1, quiet: 0, during: spEmberTalking() }; E.pre = []; }
+    return;
+  }
+  g.parts.push(pcm); g.len += pcm.length;
+  if (loud) { g.voiced++; g.quiet = 0; } else g.quiet++;
+  if (spEmberTalking()) g.during = true;
+  if (g.quiet >= 11 || g.len >= EAR_RATE * 10) { E.seg = null; spEarsSend(g); }
+}
+function spEarsSend(g) {
+  const E = ember.ears, now = performance.now();
+  if (g.voiced < 4) return; // a cough or a clap
+  if (g.during && g.len > EAR_RATE * 3) return; // most likely Ember's own voice; only a short "Ember, shh" is worth checking
+  if (now < E.restUntil) return;
+  E.sent = E.sent.filter(t => now - t < 60e3);
+  if (E.sent.length >= 12) return; // the free limit is shared by everyone, so not too often
+  const wav = spWav(g.parts.slice(0, g.parts.length - Math.max(0, g.quiet - 2)));
+  if (E.busy) { E.next = wav; return; }
+  spEarsPost(wav);
+}
+async function spEarsPost(wav) {
+  const E = ember.ears;
+  E.busy = true; E.sent.push(performance.now());
+  try {
+    const r = await fetch('/ember-hear?room=' + encodeURIComponent(ROOM_CODE), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav });
+    let j = null; try { j = await r.json(); } catch (e) { }
+    if (r.ok && j && typeof j.text === 'string') { if (j.text) spHeardAloud(j.text); }
+    else if (r.status === 503 || r.status === 415) ember.earsOk = false;
+    else if (r.status === 429) {
+      E.restUntil = performance.now() + clamp(num(j && j.retry, 30), 5, 3600) * 1000;
+      if (j && j.error === 'resting' && !E.tiredTip) { E.tiredTip = true; showToast('Ember\'s ears are resting for a while (the free speech limit). Type "Ember, …" in the chat meanwhile.', 6500); }
+    }
+  } catch (e) { }
+  E.busy = false;
+  if (E.next) { const w = E.next; E.next = null; spEarsPost(w); }
+}
+function spWav(parts) {
+  const n = parts.reduce((t, p) => t + p.length, 0), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, EAR_RATE, true); v.setUint32(28, EAR_RATE * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (const p of parts) for (let i = 0; i < p.length; i++, o += 2) v.setInt16(o, Math.max(-1, Math.min(1, p[i])) * 0x7fff, true);
+  return new Blob([buf], { type: 'audio/wav' });
 }
 function spWords(t) { return new Set(String(t).toLowerCase().replace(/[^\p{L}\p{N}\s']/gu, ' ').split(/\s+/).filter(w => w.length > 2)); }
 // a friend said nearly the same thing a moment ago (their voice came out of my speakers)
@@ -7267,8 +7521,8 @@ function spEcho(t) {
   return ember.othersSaid.some(o => now - o.at < 8000 && [...w].filter(x => o.w.has(x)).length / w.size >= 0.6);
 }
 function spHeardAloud(raw) {
-  // speech recognition often writes the name as "Amber"
-  const v = cleanText(String(raw).replace(/\bamber\b/gi, 'Ember'), 140);
+  // speech recognition often writes the name as "Amber", or "member" right after a hello
+  const v = cleanText(String(raw).replace(/\b(amber|emba)\b/gi, 'Ember').replace(/^(\s*(hey|hi|hello|ok|okay|oh|yo)[\s,]+)member\b/i, '$1Ember'), 140);
   if (!/\bember\b/i.test(v) || spirit.ph !== 'awake') return;
   const now = performance.now();
   // while Ember is talking only "shh" gets through, so it never answers its own voice
@@ -7361,6 +7615,8 @@ function spFireState(now, t) {
     }
     const c = ember.cur;
     st.talk = !!(c && !c.done && (!c.voice || c.started));
+    st.lvl = st.talk ? spVoiceLevel() : null;
+    if (st.lvl != null) st.s *= 1 + 0.07 * st.lvl; // the flames swell as Ember speaks
     if (!st.talk) for (const ch of ember.chans.values()) if (!ch.d && !ch.t && now - ch.started < 30000) { st.think = true; break; }
   } else {
     const n = spLapsShown();
@@ -7401,7 +7657,7 @@ function drawSpiritFace(g, t, st) {
   const my = -17 * s;
   g.fillStyle = '#4a1606'; g.strokeStyle = '#4a1606'; g.lineWidth = 1.6 * s;
   if (st.talk) {
-    const o = 0.3 + 0.7 * Math.abs(Math.sin(t * 13) * Math.sin(t * 5.3 + 1));
+    const o = st.lvl != null ? clamp(0.12 + st.lvl * 1.1, 0.12, 1) : 0.3 + 0.7 * Math.abs(Math.sin(t * 13) * Math.sin(t * 5.3 + 1));
     g.beginPath(); g.ellipse(0, my, 3.4 * s, (0.8 + 3 * o) * s, 0, 0, Math.PI * 2); g.fill();
   } else if (st.think) { g.beginPath(); g.arc(0, my, 1.4 * s, 0, Math.PI * 2); g.fill(); }
   else { g.beginPath(); g.arc(0, my - 2.6 * s, 4 * s, 0.22 * Math.PI, 0.78 * Math.PI); g.stroke(); }
@@ -7501,7 +7757,7 @@ function drawSpiritOverlay(t, now) {
   else if (st.think) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
 }
 window.campfireSpiritDebug = () => ({
-  ph: spirit.ph, v: spirit.v, hears: ember.auto.on, talking: !!ember.cur || ember.lines.length > 0, rowShown: !$('emberRow').hidden, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
+  ph: spirit.ph, v: spirit.v, hears: ember.auto.on || ember.ears.on, spiritVoice: !!ember.voiceSrc, voiceSrv: ember.voiceSrv, lvl: ember.fs ? ember.fs.lvl : null, ears: ember.ears.on ? 'server' : ember.auto.on ? 'browser' : '', talking: !!ember.cur || ember.lines.length > 0, rowShown: !$('emberRow').hidden, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
   said: ember.cap ? ember.cap.t : '', options: spReplies(), row: ember.rowOn ? [...$('emberRow').querySelectorAll('button')].map(b => b.textContent) : [], mumble: ember.mumble ? ember.mumble.text : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
 });
 // Local testing only: hop to a spot on the map.

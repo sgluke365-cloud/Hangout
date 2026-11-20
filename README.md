@@ -84,7 +84,9 @@ Ember only speaks in a speech bubble over the fire (and out loud), so nothing co
 
 **Talking to Ember:**
 
-- **Just talk, with your mic on.** When your voice-chat mic is on and you're near the awake fire, Ember listens too. Anything you say with "Ember" in it goes to Ember; everything else stays between friends. Ember ignores its own voice, and a friend's voice coming out of your speakers isn't sent twice.
+- **Just talk, with your mic on.** When your voice-chat mic is on and you're near the awake fire, Ember listens too (a little flame shows on the mic button). Anything you say with "Ember" in it goes to Ember; everything else stays between friends. Ember ignores its own voice, and a friend's voice coming out of your speakers isn't sent twice.
+  - On computers, the browser's own speech recognition listens.
+  - On phones, the browser can't recognise speech while voice chat has the microphone (Android Chrome hears only silence), so the page cuts what you say near the awake fire into short recordings from the voice-chat mic and the server turns them into text with Groq's Whisper (the same free `GROQ_API_KEY`; about 4,000 recordings a day across two models). The server doesn't keep or log them. Without a Groq key, phones type "Ember, …" instead.
 - **Or type** a chat message that starts with "Ember," (or press T to say one thing out loud, when your mic is off).
 - **Or tap a reply.** Along the bottom of the screen, Ember suggests three things you could say back to whatever it just said. Tap one and you say it out loud at the fire.
 
@@ -102,7 +104,7 @@ Out of the box Ember is in **storybook mode**: it tells a set of built-in storie
 
 **Ember switches brains by itself.** Every model on every service has its own limits, so Ember lines them all up in a chain:
 
-Groq Llama 3.3 70B → Groq GPT-OSS 120B → Groq GPT-OSS 20B → Groq Llama 3.1 8B → Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Gemini 3.6 Flash → Gemini 3.1 Flash-Lite
+Groq GPT-OSS 120B → Groq GPT-OSS 20B → Groq Qwen 3.8 27B → (Groq Llama 3.3 70B → Llama 3.1 8B, which Groq made Enterprise-only in 2026; they rest a day when refused) → Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Gemini 3.6 Flash → Gemini 3.1 Flash-Lite
 
 Each question goes to the first brain that isn't resting. When a brain says it's had too many requests, it rests until its limit resets (for Groq usually under a minute; Gemini's daily limits reset at midnight Pacific time, which is 3 or 4 pm in Singapore), and Ember uses the next one. Only when every brain is resting does Ember fall back to its storybook for a little while. To see which brains are ready or resting, open `/spirit-status` on your game's address (for example `https://campfire-74jx.onrender.com/spirit-status`).
 
@@ -114,14 +116,23 @@ You can also add **Claude** with `ANTHROPIC_API_KEY` (from [console.anthropic.co
 | `GEMINI_API_KEY` | (none) | Free Gemini key |
 | `ANTHROPIC_API_KEY` | (none) | Claude key (paid after the starter credit) |
 | `SPIRIT_ORDER` | `anthropic,groq,gemini` | Which services to try first |
-| `GROQ_MODELS` | `llama-3.3-70b-versatile,openai/gpt-oss-120b,openai/gpt-oss-20b,llama-3.1-8b-instant` | Groq models to use, in order |
+| `GROQ_MODELS` | `openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b,llama-3.3-70b-versatile,llama-3.1-8b-instant` | Groq models to use, in order |
+| `GROQ_EAR_MODELS` | `whisper-large-v3-turbo,whisper-large-v3` | Groq speech-to-text models for Ember's ears on phones |
 | `GEMINI_MODELS` | `gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.6-flash,gemini-3.1-flash-lite` | Gemini models to use, in order |
 | `SPIRIT_MODEL` | `claude-haiku-5-5` | Which Claude model to use |
 | `SPIRIT_DAILY_LIMIT` | `400` | Most Claude answers per day. `0` means no limit. Free brains aren't counted |
 
 The keys stay on the server; players' browsers never see them. To stop strangers who find your link from using up the limits, the server only answers lobbies that have someone in them and limits how often each lobby and each person can ask. Render's **Logs** show a line whenever Ember switches brains and why (for example "Ember: Groq llama-3.3-70b-versatile too many requests; resting 12s, switching to Groq openai/gpt-oss-120b"), and a line if a key is wrong or a model has been retired. Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
 
-**Voice:** Ember speaks with your device's built-in speech voice (it picks a low storyteller voice when there is one). Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead. On a few phones the speech recognition can't share the microphone with voice chat; there, Ember stops listening (so friends can still hear you) and says to type instead.
+**Ember's voice:** a natural voice from the server, made to sound like a fire spirit in the page: warmed, with a ghostly double a breath behind it (wavering like heat over the flames), an echo as if it spoke from somewhere much bigger than the fire, and crackles while it talks. Its mouth and flames move with its voice. Everyone at the fire asks for the same lines, so each line is made once. The server tries these in order:
+
+| Voice | Key on Render | Free? | Default voice |
+| --- | --- | --- | --- |
+| Deepgram Aura-2 (best) | `DEEPGRAM_API_KEY` from [console.deepgram.com](https://console.deepgram.com) | $200 credit at sign-up, no card, doesn't expire (millions of characters) | `DEEPGRAM_VOICE=aura-2-draco-en` (warm British baritone, a storyteller). Others: `aura-2-zeus-en` (deep), `aura-2-pluto-en`, `aura-2-orion-en`, `aura-2-pandora-en` (breathy, female) |
+| Groq Orpheus | your `GROQ_API_KEY` | Yes, but only about 100 lines a day | `GROQ_VOICE=troy` (also austin, daniel, autumn, diana, hannah; `off` to skip). Groq may ask you to accept the model's terms once: open `canopylabs/orpheus-v1-english` in the [Groq playground](https://console.groq.com/playground) |
+| The device's own voice | none | Yes | the most natural voice on the device |
+
+`EMBER_VOICE_DAILY_CHARS` (default 100,000) caps how much Ember says a day through the server, so the credit lasts. `/spirit-status` shows which voices are resting and why. Talking to Ember out loud uses the browser's speech recognition: Chrome, Edge and Safari support it; in Firefox, type instead. On a few phones the speech recognition can't share the microphone with voice chat; there, Ember stops listening (so friends can still hear you) and says to type instead.
 
 ## The singing stones
 

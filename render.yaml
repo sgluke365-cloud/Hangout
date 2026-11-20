@@ -16,3 +16,6 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Optional: a natural voice for Ember (Deepgram: $200 free credit, no card).
+      - key: DEEPGRAM_API_KEY
+        sync: false
