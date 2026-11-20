@@ -2509,7 +2509,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.15';
+const VERSION = 'v0.15.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6789,7 +6789,7 @@ const ember = {
   auto: { on: false, rec: null, track: null, restartAt: 0, fails: 0, broken: false },
   ears: { on: false, broken: false, restartAt: 0, restUntil: 0, src: null, node: null, sink: null, rate: 48000, pre: [], seg: null, floor: 0.008, busy: false, next: null, sent: [], tiredTip: false },
   earsOk: false, deafTip: false, hearingShown: false,
-  voiceSrv: false, sayRestUntil: 0, voiceSrc: null, vfx: null, noise: null
+  voiceSrv: false, sayRestUntil: 0, voiceSrc: null, vfx: null, noise: null, lvlS: 0
 };
 me.spk = null;
 me.el = 0;                                   // my laps round the fire so far: presence 'el'
@@ -6968,6 +6968,8 @@ function spSplit(text) { return (text.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s
 function spQueue(text) {
   for (const s of spSplit(text)) ember.lines.push(s);
   if (ember.lines.length > 60) ember.lines.splice(0, ember.lines.length - 60);
+  // start making the voice for the next few lines right away, so it's ready when their turn comes
+  if (ember.voiceOn && !claudeTts && spSpiritVoiceOk() && spCanHear()) for (const l of ember.lines.slice(0, 3)) spSayAudio(l);
 }
 // One sentence at a time: shown over the fire, and spoken if Ember's voice is on.
 // Ember's voice comes from the server when it has one (a natural voice, with the fire spirit's
@@ -7615,8 +7617,14 @@ function spFireState(now, t) {
     }
     const c = ember.cur;
     st.talk = !!(c && !c.done && (!c.voice || c.started));
-    st.lvl = st.talk ? spVoiceLevel() : null;
-    if (st.lvl != null) st.s *= 1 + 0.07 * st.lvl; // the flames swell as Ember speaks
+    st.base = st.s; // the bubble sits on this, so it doesn't bob with Ember's voice
+    const raw = st.talk ? spVoiceLevel() : null;
+    if (raw == null) { ember.lvlS = 0; st.lvl = null; }
+    else {
+      ember.lvlS += (raw - ember.lvlS) * (raw > ember.lvlS ? 0.55 : 0.2); // quick to open, slower to close
+      st.lvl = ember.lvlS;
+      st.s *= 1 + 0.05 * st.lvl; // the flames swell gently as Ember speaks
+    }
     if (!st.talk) for (const ch of ember.chans.values()) if (!ch.d && !ch.t && now - ch.started < 30000) { st.think = true; break; }
   } else {
     const n = spLapsShown();
@@ -7657,7 +7665,7 @@ function drawSpiritFace(g, t, st) {
   const my = -17 * s;
   g.fillStyle = '#4a1606'; g.strokeStyle = '#4a1606'; g.lineWidth = 1.6 * s;
   if (st.talk) {
-    const o = st.lvl != null ? clamp(0.12 + st.lvl * 1.1, 0.12, 1) : 0.3 + 0.7 * Math.abs(Math.sin(t * 13) * Math.sin(t * 5.3 + 1));
+    const o = st.lvl != null ? clamp(0.15 + st.lvl * 1.2, 0.15, 1) : 0.3 + 0.7 * Math.abs(Math.sin(t * 13) * Math.sin(t * 5.3 + 1));
     g.beginPath(); g.ellipse(0, my, 3.4 * s, (0.8 + 3 * o) * s, 0, 0, Math.PI * 2); g.fill();
   } else if (st.think) { g.beginPath(); g.arc(0, my, 1.4 * s, 0, Math.PI * 2); g.fill(); }
   else { g.beginPath(); g.arc(0, my - 2.6 * s, 4 * s, 0.22 * Math.PI, 0.78 * Math.PI); g.stroke(); }
@@ -7751,13 +7759,17 @@ function drawSpiritOverlay(t, now) {
     return;
   }
   if (spirit.ph !== 'awake') return;
-  const st = spFireState(now, t), [sx, sy] = w2s(FIRE.x, FIRE.y - 92 * Math.min(st.s, 1.5));
+  const st = spFireState(now, t), [sx, sy] = w2s(FIRE.x, FIRE.y - 92 * Math.min(st.base || st.s, 1.5));
   const c = ember.cur;
-  if (c && c.text) drawEmberBubble(ctx, sx, sy, c.text, clamp((now - c.at) / 200, 0, 1));
+  // the words appear as Ember starts to say them (a moment's wait for its voice, at most 3 s)
+  const shown = c && c.text && (!c.voice || c.started || now - c.at > 3000);
+  ember.bubble = shown ? c.text : ''; ember.bubbleY = sy;
+  if (shown) { if (!c.shownAt) c.shownAt = now; drawEmberBubble(ctx, sx, sy, c.text, clamp((now - c.shownAt) / 160, 0, 1)); }
+  else if (c && c.text) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
   else if (st.think) drawEmberBubble(ctx, sx, sy, '.'.repeat(1 + Math.floor(now / 350) % 3).padEnd(3, ' '), 0.9);
 }
 window.campfireSpiritDebug = () => ({
-  ph: spirit.ph, v: spirit.v, hears: ember.auto.on || ember.ears.on, spiritVoice: !!ember.voiceSrc, voiceSrv: ember.voiceSrv, lvl: ember.fs ? ember.fs.lvl : null, ears: ember.ears.on ? 'server' : ember.auto.on ? 'browser' : '', talking: !!ember.cur || ember.lines.length > 0, rowShown: !$('emberRow').hidden, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
+  ph: spirit.ph, v: spirit.v, hears: ember.auto.on || ember.ears.on, spiritVoice: !!ember.voiceSrc, bubble: ember.bubble || '', bubbleY: ember.bubbleY, voiceSrv: ember.voiceSrv, lvl: ember.fs ? ember.fs.lvl : null, ears: ember.ears.on ? 'server' : ember.auto.on ? 'browser' : '', talking: !!ember.cur || ember.lines.length > 0, rowShown: !$('emberRow').hidden, laps: ember.laps.state.laps, shown: spLapsShown(), ai: ember.ai, voice: ember.voiceOn && spVoiceAvail(), busy: ember.busy,
   said: ember.cap ? ember.cap.t : '', options: spReplies(), row: ember.rowOn ? [...$('emberRow').querySelectorAll('button')].map(b => b.textContent) : [], mumble: ember.mumble ? ember.mumble.text : '', lines: ember.lines.length, me: { x: Math.round(me.x), y: Math.round(me.y) }
 });
 // Local testing only: hop to a spot on the map.
