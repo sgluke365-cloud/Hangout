@@ -226,8 +226,8 @@ function spiritHandler(req, res) {
     const iu = spiritIps.get(ip) || { times: [], last: 0 };
     spiritRooms.set(code, ru); spiritIps.set(ip, iu);
     if (ru.inflight >= 2 || now - iu.last < 1500) return reply(429, { error: 'busy' });
-    // Ember joining in by itself: at most once every 12 s per lobby, even if two players ask
-    if (input.kind === 'chime') { if (now - (ru.chimeAt || 0) < 12000) return reply(429, { error: 'busy' }); ru.chimeAt = now; }
+    // Ember joining in by itself: at most once every 10 s per lobby, even if two players ask
+    if (input.kind === 'chime') { if (now - (ru.chimeAt || 0) < 10000) return reply(429, { error: 'busy' }); ru.chimeAt = now; }
     if (recent(ru.times).length >= 60 || recent(iu.times).length >= 40) return reply(429, { error: 'limit' });
 
     const p = Brain.build(input);

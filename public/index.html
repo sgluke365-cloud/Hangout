@@ -863,7 +863,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play a song from the music book on the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. To talk to it directly, just say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
     <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. With your mic on, stand inside the ring and sing them the first line of Amazing Grace (or play it on the stones: tap them, or press 1 to 7), and see what opens. The stones only listen while your mic is on and you're inside the ring, and what they hear stays on your device.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
@@ -2219,7 +2219,7 @@ $('chatForm').addEventListener('submit', e => {
   chatInput.value = '';
   growChat();
   // "Ember, ..." at the awake fire goes to the spirit
-  if (spAddressed(v)) spSend(v); else { say(v); spOverheard(me.name, v, 'me'); }
+  if (spForEmber(v, spAddressed(v))) spSend(v); else { say(v); spOverheard(me.name, v, 'me'); }
   chatInput.blur();
 });
 // Reactions live in one smiley button; tap it to open a small picker (like WhatsApp reactions).
@@ -2523,7 +2523,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.16';
+const VERSION = 'v0.16.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6804,7 +6804,7 @@ const ember = {
   ears: { on: false, broken: false, restartAt: 0, restUntil: 0, src: null, node: null, sink: null, rate: 48000, pre: [], seg: null, floor: 0.008, busy: false, next: null, sent: [], tiredTip: false },
   earsOk: false, deafTip: false, hearingShown: false,
   voiceSrv: false, sayRestUntil: 0, voiceSrc: null, vfx: null, noise: null, lvlS: 0,
-  joinOn: load('campfire.emberJoins') !== false, convo: [], convoNew: 0, convoAt: 0, chimeAt: -1e9, chimeCtrl: null, joinTip: false
+  joinOn: load('campfire.emberJoins') !== false, lastSaid: '', lastWith: '', convo: [], convoNew: 0, convoAt: 0, chimeAt: -1e9, chimeCtrl: null, joinTip: false
 };
 me.spk = null;
 me.el = 0;                                   // my laps round the fire so far: presence 'el'
@@ -6995,7 +6995,7 @@ function spLineTick(now) {
   if (ember.cur || !ember.lines.length) return;
   const text = ember.lines.shift();
   const cur = { text, at: now, until: now + Math.max(1800, text.length * 62), done: false, voice: false, started: false };
-  ember.cur = cur;
+  ember.cur = cur; ember.lastSaid = text;
   if (!ember.voiceOn || !spVoiceAvail() || !spCanHear()) return;
   cur.voice = true; cur.until = now + 5000 + text.length * 120; // in case the voice never says it's done
   if (claudeTts) {
@@ -7173,6 +7173,7 @@ function spHear(ch) {
   if (ch.d && !ch.logged) {
     ch.logged = true;
     if (ch.t && hear) { ember.convo.push({ n: 'Ember', t: ch.t.slice(0, 240), at: performance.now(), w: new Set() }); ember.convoNew = 0; if (ember.convo.length > 24) ember.convo.shift(); }
+    ember.lastWith = ch.k === 'chime' || ch.k === 'wake' ? '' : ch.who; // who Ember was just talking with
     const asked = ch.k === 'talk' ? ch.q : ch.k === 'story' ? `(asks you for ${ch.q})` : ch.k === 'question' ? '(asks you for a question for the circle)' : '';
     if (asked) ember.hist.push({ n: ch.who, t: asked });
     if (ch.t) ember.hist.push({ n: 'Ember', t: ch.t.slice(0, 400) });
@@ -7292,6 +7293,30 @@ async function spAskClaude(input, onText, signal) {
   }
 }
 function spAddressed(v) { return spirit.ph === 'awake' && spCanHear() && /^\s*((hey|hi|hello|ok|okay|oh|dear|yo)[\s,!]+)?ember\b/i.test(v); }
+// Is this meant for Ember, even without its name? (Only with "Ember joins the conversation" on.)
+//  - you're alone at the fire: who else would you be talking to;
+//  - Ember spoke in the last 20 s and asked something: this is the answer;
+//  - Ember just answered you (in the last 20 s), and you ask about "you" ("and what about you?").
+function spForEmber(v, named) {
+  if (spirit.ph !== 'awake' || !spCanHear()) return false;
+  if (named) return true;
+  if (!ember.joinOn || ember.busy || ember.chimeCtrl) return false;
+  if (spAloneAtFire()) return true;
+  if (performance.now() - ember.lineEnd < 20000 && ember.lastSaid) {
+    if (/\?["'”’)\]]*\s*$/.test(ember.lastSaid)) return true;
+    if (ember.lastWith === me.name && /\b(you|your|yours|yourself|ya)\b/i.test(v)) return true;
+  }
+  return false;
+}
+function spAloneAtFire() {
+  for (const o of others.values()) {
+    if (!o.p || !o.p.n || inChurch(o.rx)) continue;
+    if (dist(o.rx, o.ry, FIRE.x, FIRE.y) < 380 || dist(o.rx, o.ry, me.x, me.y) < EARSHOT) return false;
+  }
+  return true;
+}
+// a question to the circle: "?" at the end, or how spoken questions usually start
+function spIsQuestion(v) { return /\?\s*$/.test(v) || /^\s*(how|what|why|who|where|when|which|do|does|did|are|is|was|were|can|could|would|will|should|have|has|anyone|any)\b/i.test(v); }
 // What someone says to Ember, typed, spoken or tapped. A few things work by just asking:
 // "tell us a (spooky) story", "ask us a question", "shh" and "goodnight".
 const SP_HUSH = /\b(shh+|hush|be quiet|quiet now|stop talking|that's enough)\b/i;
@@ -7575,7 +7600,7 @@ function spHeardAloud(raw) {
   if (ember.cur || ember.lines.length || now - ember.lineEnd < 1500) return; // most likely Ember's own voice
   const go = () => {
     if (spEcho(v)) return; // a friend's voice from the speakers
-    if (toEmber) spSend(v);
+    if (spForEmber(v, toEmber)) spSend(v);
     else if (ember.joinOn) { say(v, 'h'); spOverheard(me.name, v, 'me'); }
   };
   // only when a friend's voice could be coming out of the speakers, wait a moment for their words
@@ -7602,7 +7627,7 @@ function spOverheard(name, text, key, o, direct) {
   ember.convo.push({ n: name, t: cleanText(text, 240), at: now, w });
   if (ember.convo.length > 24) ember.convo.shift();
   ember.convoAt = now;
-  if (!direct) ember.convoNew += /\?\s*$/.test(text) && text.split(/\s+/).length >= 4 ? 2 : 1; // a question to the circle counts double
+  if (!direct) ember.convoNew += spIsQuestion(text) ? 2 : 1; // a question to the circle counts double
 }
 // the device that decides: whoever at the fire (with joining on) has the lowest id
 function spJoinLeader() {
@@ -7616,8 +7641,8 @@ function spJoinLeader() {
 function spJoinTick(now) {
   if (!ember.joinOn || ember.ai !== 'server' || spirit.ph !== 'awake' || !spCanHear()) return;
   if (!ember.joinTip && now - ember.wokeAt > 15000 && !spEmberTalking()) { ember.joinTip = true; showToast('Ember is listening to the circle now, and may join in. Turn this off in the ? panel.', 5500); }
-  if (ember.convoNew < 2 || now - ember.convoAt < 2500) return; // something new was said, and the friends paused
-  if (ember.busy || ember.chimeCtrl || spEmberTalking() || now - ember.lineEnd < 12000 || now - ember.chimeAt < 20000) return;
+  if (ember.convoNew < 2 || now - ember.convoAt < 2000) return; // something new was said, and the friends paused
+  if (ember.busy || ember.chimeCtrl || spEmberTalking() || now - ember.lineEnd < 8000 || now - ember.chimeAt < 15000) return;
   for (const ch of ember.chans.values()) if (!ch.d && now - ch.started < 30000) return; // someone else's answer is coming
   ember.convo = ember.convo.filter(c => now - c.at < 6 * 60e3);
   if (!spJoinLeader()) return;

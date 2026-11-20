@@ -97,6 +97,7 @@
       for (const c of q.convo) lines.push(`${c.n}: ${c.t}`);
       lines.push('');
       lines.push('Decide whether to join in, the way a good friend sitting at the fire would. Join in only if you have something genuinely worth adding: a warm or funny reaction, a curious question about what someone just shared, a little memory or tale of the forest that the topic reminds you of, or an answer to something they wondered about. Speak to them naturally, by name when it fits, in 1 or 2 short sentences, under 40 words. Never repeat what someone said, and never explain that you were listening.');
+      lines.push('If someone seems to be talking to you (asking how you are, asking the fire or the night something, or answering what you said), always answer them.');
       lines.push('Stay quiet if someone is in the middle of telling something, if the talk is private, sad or tense (unless a gentle word would truly help), or if you would only be filling silence. Staying quiet is often right. To stay quiet, reply with exactly PASS and nothing else.');
     }
     if (q.kind !== 'bye') {
