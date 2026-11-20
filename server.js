@@ -252,9 +252,10 @@ function spiritHandler(req, res) {
         }
       }
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'X-Ember-Brain': got.brain.id });
-      res.write(first);
-      for await (const piece of got.rest) res.write(piece);
-      res.end();
+      const ahead = input.voice === true ? voiceAhead(p.kind, input.genre) : null;
+      res.write(first); if (ahead) ahead.add(first);
+      for await (const piece of got.rest) { res.write(piece); if (ahead) ahead.add(piece); }
+      res.end(); if (ahead) ahead.done();
       console.log(`Ember answered (${String(p.kind || 'talk').replace(/[^a-z]/g, '').slice(0, 12)}) with ${Brains.label(got.brain)} in ${((Date.now() - now) / 1000).toFixed(1)}s.`);
     } catch (e) {
       if (!res.headersSent) reply(502, { error: 'upstream' });
@@ -320,6 +321,39 @@ setInterval(() => {
   for (const [k, v] of sayCache) if (v.at < cut) sayCache.delete(k);
   for (const [k, v] of sayIps) if (!v.inflight && !recent(v.times).length) sayIps.delete(k);
 }, 60e3);
+// Start making a line of Ember's voice, or reuse the one already made or on its way. Returns the
+// cache entry, or null when the day's characters are used up.
+function sayStart(raw, mood) {
+  const text = String(raw || '').replace(/\s+/g, ' ').trim();
+  if (!text || text.length > 600) return null;
+  const key = mood + '|' + text;
+  let hit = sayCache.get(key);
+  if (hit) return hit;
+  if (Brains.voiceChars() + text.length > VOICE_DAILY_CHARS) return null;
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 25000);
+  const p = Brains.speak(text, mood, ctrl.signal).catch(e => { if (e && e.name !== 'AbortError') console.warn('Ember\'s voice failed:', e.message); return null; })
+    .finally(() => clearTimeout(timer));
+  hit = { at: Date.now(), p };
+  sayCache.set(key, hit);
+  if (sayCache.size > 200) sayCache.delete(sayCache.keys().next().value);
+  p.then(r => { if (!r) sayCache.delete(key); });
+  return hit;
+}
+// While an answer streams in, start the voice for its first sentences straight away, so it's
+// ready (or nearly) by the time the players' games ask for it.
+const SAY_MOODS = ['spooky', 'legend', 'funny', 'cozy', 'us'];
+function voiceAhead(kind, genre) {
+  if (!Brains.voices.length) return null;
+  const mood = kind === 'story' && SAY_MOODS.includes(genre) ? genre : '';
+  let raw = '', n = 0;
+  const step = final => {
+    if (n >= 3) return;
+    const t = Brain.spoken(raw).text;
+    const lines = Brain.sentences(t.slice(0, final ? t.length : Brain.lastBreak(t)));
+    while (n < lines.length && n < 3) sayStart(lines[n++], mood);
+  };
+  return { add(piece) { raw += piece; step(false); }, done() { step(true); } };
+}
 function secondsToUtcMidnight() { const d = new Date(); return Math.ceil((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - d) / 1000); }
 function sayHandler(req, res) {
   const reply = (code, obj) => { if (!res.headersSent) { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); } };
@@ -335,24 +369,18 @@ function sayHandler(req, res) {
     if (!ROOM_RE.test(code) || !rooms.has(code)) return reply(403, { error: 'no_room' });
     const text = String(input.text || '').replace(/\s+/g, ' ').trim();
     if (!text || text.length > 600) return reply(400, { error: 'bad_text' });
-    const mood = ['spooky', 'legend', 'funny', 'cozy', 'us'].includes(input.mood) ? input.mood : '';
-    const key = mood + '|' + text;
-    let hit = sayCache.get(key);
+    const mood = SAY_MOODS.includes(input.mood) ? input.mood : '';
+    let hit = sayCache.get(mood + '|' + text);
     if (!hit) {
       const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?').split(',')[0].trim();
       const u = sayIps.get(ip) || { times: [], inflight: 0 };
       sayIps.set(ip, u);
       const now = Date.now();
       if (u.inflight >= 4 || u.times.filter(t => now - t < 60e3).length >= 40 || recent(u.times).length >= 300) return reply(429, { error: 'limit', retry: 20 });
-      if (Brains.voiceChars() + text.length > VOICE_DAILY_CHARS) return reply(429, { error: 'resting', retry: secondsToUtcMidnight() });
+      hit = sayStart(text, mood);
+      if (!hit) return reply(429, { error: 'resting', retry: secondsToUtcMidnight() });
       u.inflight++; u.times.push(now);
-      const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 25000);
-      const p = Brains.speak(text, mood, ctrl.signal).catch(e => { if (e && e.name !== 'AbortError') console.warn('Ember\'s voice failed:', e.message); return null; })
-        .finally(() => { clearTimeout(timer); u.inflight--; });
-      hit = { at: now, p };
-      sayCache.set(key, hit);
-      if (sayCache.size > 200) sayCache.delete(sayCache.keys().next().value);
-      p.then(r => { if (!r) sayCache.delete(key); });
+      hit.p.finally(() => { u.inflight--; });
     }
     const r = await hit.p;
     if (!r) return reply(429, { error: 'resting', retry: Brains.voicesRetryIn() || 60 });

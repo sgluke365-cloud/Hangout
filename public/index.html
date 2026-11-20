@@ -6979,7 +6979,7 @@ function spVoiceFor(lang) {
   return pool.find(v => v.localService) || pool[0];
 }
 function spVoiceAvail() { return !!claudeTts || (!IN_CLAUDE && (WEB_TTS || ember.voiceSrv)); }
-function spSplit(text) { return (text.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean); }
+function spSplit(text) { return Brain ? Brain.sentences(text) : (text.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean); }
 function spQueue(text) {
   for (const s of spSplit(text)) ember.lines.push(s);
   if (ember.lines.length > 60) ember.lines.splice(0, ember.lines.length - 60);
@@ -7164,7 +7164,7 @@ function spChan(key, init) {
   }
   return ch;
 }
-function spLastBreak(t) { let i = 0, m; const re = /[.!?…]+["'”’)\]]*\s+/g; while ((m = re.exec(t))) i = m.index + m[0].length; return i; }
+function spLastBreak(t) { if (Brain) return Brain.lastBreak(t); let i = 0, m; const re = /[.!?…]+["'”’)\]]*\s+/g; while ((m = re.exec(t))) i = m.index + m[0].length; return i; }
 function spHear(ch) {
   const hear = spCanHear();
   if (!ember.cap || ch.started >= ember.cap.started) ember.cap = ch;
@@ -7221,12 +7221,13 @@ async function spAsk(kind, text, genre) {
   if (!quiet) open();
   const input = { kind, text: kind === 'talk' ? text : '', genre, who: me.name, people: spPeople(), history: ember.hist.slice(-10), hour: new Date().getHours(), wakers: spirit.wk };
   if (quiet) input.convo = ember.convo.slice(-16).map(c => ({ n: c.n, t: c.t }));
+  input.voice = ember.voiceSrv; // the server starts Ember's voice while the answer is still being written
   let out = '', opts = [];
   const onText = full => {
     if (typeof full !== 'string') return;
-    const P = Brain.parse(full);
+    const P = Brain.spoken(full); // the same cleaning the server does before it starts Ember's voice
     opts = P.options;
-    const clean = P.text.replace(/\*[^*\n]{1,60}\*/g, '').replace(/[#*_`]/g, '').replace(/\s*\n+\s*/g, ' ').replace(/^\s+/, '');
+    const clean = P.text;
     if (clean === out || (quiet && !clean.trim())) return;
     if (quiet && !ch && ember.busy) { ctrl.abort(); return; } // someone spoke to Ember meanwhile
     open();

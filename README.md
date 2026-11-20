@@ -126,7 +126,7 @@ You can also add **Claude** with `ANTHROPIC_API_KEY` (from [console.anthropic.co
 
 The keys stay on the server; players' browsers never see them. To stop strangers who find your link from using up the limits, the server only answers lobbies that have someone in them and limits how often each lobby and each person can ask. Render's **Logs** show a line whenever Ember switches brains and why (for example "Ember: Groq llama-3.3-70b-versatile too many requests; resting 12s, switching to Groq openai/gpt-oss-120b"), and a line if a key is wrong or a model has been retired. Inside Claude (the artifact version), Ember talks through Claude itself and needs no key.
 
-**Ember's voice:** a natural voice from the server, made to sound like a fire spirit in the page: warmed, with a ghostly double a breath behind it (wavering like heat over the flames), an echo as if it spoke from somewhere much bigger than the fire, and crackles while it talks. Its mouth and flames move with its voice. Everyone at the fire asks for the same lines, so each line is made once. The server tries these in order:
+**Ember's voice:** a natural voice from the server, made to sound like a fire spirit in the page: warmed, with a ghostly double a breath behind it (wavering like heat over the flames), an echo as if it spoke from somewhere much bigger than the fire, and crackles while it talks. Its mouth and flames move with its voice. Everyone at the fire asks for the same lines, so each line is made once, and the server starts on the first sentences while the answer is still being written. The server tries these in order:
 
 | Voice | Key on Render | Free? | Default voice |
 | --- | --- | --- | --- |

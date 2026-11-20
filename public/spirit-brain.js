@@ -251,5 +251,18 @@
     return fill(pick(GENERIC), q);
   }
 
-  return { GENRES, LIMITS, PERSONA, build, offline, parse, pickOptions, tidy, clean };
+  // ---------- What Ember says out loud, one sentence at a time ----------
+  // Shared by the page (its bubble and voice) and the server (which starts making the voice for
+  // the first sentences while the answer is still being written), so both cut sentences alike.
+  function spoken(raw) {
+    const P = parse(raw);
+    // **bold** words stay (as plain words); *stage directions* like *crackles* go
+    const text = P.text.replace(/\*\*([^*\n]+)\*\*/g, '$1').replace(/\*[^*\n]{1,60}\*/g, '').replace(/[#*_`]/g, '').replace(/\s*\n+\s*/g, ' ').replace(/^\s+/, '');
+    return { text, options: P.options };
+  }
+  // where the last finished sentence ends (only once something follows it)
+  function lastBreak(t) { let i = 0, m; const re = /[.!?…]+["'”’)\]]*\s+/g; while ((m = re.exec(t))) i = m.index + m[0].length; return i; }
+  function sentences(text) { return (String(text).match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean); }
+
+  return { GENRES, LIMITS, PERSONA, build, offline, parse, pickOptions, tidy, clean, spoken, lastBreak, sentences };
 });
