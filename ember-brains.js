@@ -94,7 +94,7 @@ async function refusal(b, r) {
     const reset = Math.max(retryAfter, duration(r.headers.get('x-ratelimit-reset-requests')), duration(r.headers.get('x-ratelimit-reset-tokens')));
     return new Refused(/per day|\brpd\b|\btpd\b|daily/.test(low) ? 'daily limit reached' : 'too many requests', Math.min(24 * HOUR, Math.max(reset, 10e3)));
   }
-  if (/terms/.test(low) && st >= 400 && st < 500) return new Refused(`needs its terms accepted once: open ${b.model} in the Groq console playground (console.groq.com/playground) and accept them`, HOUR);
+  if (/terms/.test(low) && st >= 400 && st < 500) return new Refused(`needs its terms accepted once: open ${b.model} in the Groq console playground (console.groq.com/playground) and accept them`, 5 * MIN); // check again soon: once they're accepted, the voice comes back by itself
   if (st === 402) return new Refused('no credit left (HTTP 402)', 6 * HOUR);
   if (st === 401 || st === 403) return new Refused(`the key was refused (HTTP ${st}); check ${b.service.toUpperCase()}_API_KEY`, HOUR);
   if (st === 404 || /decommission|not found|not supported|deprecated|does not exist/.test(low)) return new Refused(`model not available (HTTP ${st})`, 24 * HOUR);
