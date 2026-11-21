@@ -2566,7 +2566,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.19';
+const VERSION = 'v0.19.1';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -5180,7 +5180,57 @@ const RitualSong = (() => {
     }
     return best;
   }
-  return { LINES, STEPS, TUNES, SIMILAR, detectPitch, toMidi, createListener, progress, createContour, likeness };
+
+  // ---- how far through the line the singing has got, by shape (lights the stones as you go) ----
+  // Each reference is split into the line's nine notes (A-ma-zing grace, how sweet the sound) by a
+  // monotone fit to their levels around the middle of the tune. Then the newest stretch of singing is
+  // lined up against the start of a reference, from its first or second note up to anywhere in it,
+  // and the furthest note reached with a good fit is how far you've got.
+  const LEVELS = [-5, 0, 4, 0, 4, 2, 0, -3, -5];
+  function segment(Y) {
+    const m = Y.length, K = LEVELS.length, INF = 1e9, dp = new Float64Array(m * K).fill(INF), from = new Int8Array(m * K);
+    dp[0] = Math.abs(Y[0] - LEVELS[0]);
+    for (let i = 1; i < m; i++) for (let k = 0; k < K; k++) {
+      const stay = dp[(i - 1) * K + k], step = k ? dp[(i - 1) * K + k - 1] : INF;
+      dp[i * K + k] = Math.abs(Y[i] - LEVELS[k]) + Math.min(stay, step); from[i * K + k] = step < stay ? 1 : 0;
+    }
+    const note = new Int8Array(m);
+    for (let i = m - 1, k = K - 1; i >= 0; i--) { note[i] = k; if (i && from[i * K + k]) k--; }
+    const level = LEVELS.map((_, k) => { const v = []; for (let i = 0; i < m; i++) if (note[i] === k) v.push(Y[i]); return v.length ? median(v) : LEVELS[k]; });
+    return { note, level };
+  }
+  const SEG = TUNES.map(segment);
+  const PART = 0.18;  // a little looser than SIMILAR: this only lights stones, it never opens the door
+  function reach(line, t, part) {
+    if (part === undefined) part = PART;
+    const Y = TUNES[t], { note, level } = SEG[t], m = Y.length;
+    const X = line.slice(-Math.min(line.length, 2 * m)), n = X.length;
+    if (n < 6) return 0;
+    const tail = X.slice(-3), xe = median(tail), W = m + 1, INF = 1e9;
+    const D = new Float64Array((n + 1) * W), N = new Float64Array((n + 1) * W);
+    const shifts = [];
+    for (let k = 2; k < level.length; k++) { const s = xe - level[k]; if (!shifts.some(v => Math.abs(v - s) < 0.3)) shifts.push(s); }
+    let best = 0;
+    for (const shift of shifts) {
+      D.fill(INF); N.fill(0);
+      const c = (i, j) => { const d = Math.abs(X[i - 1] - Y[j - 1] - shift) - 0.5; return d <= 0 ? 0 : Math.min(9, d * d); };
+      for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+        let b = INF, L = 0;
+        if (note[j - 1] <= 1) b = 0;                     // the fit may begin here (first or second note)
+        let v = D[(i - 1) * W + j - 1]; if (v < b) { b = v; L = N[(i - 1) * W + j - 1]; }
+        if (j >= 2) { v = D[(i - 1) * W + j - 2] + c(i, j - 1); if (v < b) { b = v; L = N[(i - 1) * W + j - 2] + 1; } }
+        if (i >= 2) { v = D[(i - 2) * W + j - 1] + c(i - 1, j); if (v < b) { b = v; L = N[(i - 2) * W + j - 1] + 1; } }
+        D[i * W + j] = b + c(i, j); N[i * W + j] = L + 1;
+      }
+      for (let j = m; j >= 1; j--) {
+        const k = note[j - 1] + 1;
+        if (k <= Math.max(best, 2)) break;
+        if (N[n * W + j] >= 6 && D[n * W + j] / N[n * W + j] < part) { best = k; break; }
+      }
+    }
+    return best;
+  }
+  return { LINES, STEPS, TUNES, SIMILAR, detectPitch, toMidi, createListener, progress, createContour, likeness, reach, SEG };
 })();
 
 // ---- layout ----
@@ -5258,6 +5308,7 @@ const rit = {
   hum: null, humLvl: 0, owBus: null, owInp: null, bellT: 2,
   taps: [], tapAt: 0, tapProg: 0,      // my stone taps (as notes) and how far through the line they get
   mic: null, singProg: 0,              // while the stones are listening to me sing
+  fin: null,                           // the line is sung: the last stones light up one by one, then the door opens
   ssEv: 0, ssList: [],                 // my recent taps, for presence (so friends hear them)
   doorStars: ritDoorStars(36), riftStars: ritDoorStars(18),
   sky: Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.2, ph: Math.random() * 6.283, sp: 0.6 + Math.random() * 1.6 }))
@@ -5271,8 +5322,9 @@ function ritDoorOpen() { return ritPhase() === 'open'; }
 function ritDoorShowing() { return ritPhase() !== 'closed'; }
 function nearGlade() { return joined && inGlade(me.x, me.y); }
 function ritCanPlay() { return nearGlade() && rit.door.ready(ritNow()); }
-// Which stones glow: all of them while the door is open, otherwise the notes of the tune so far
-// (mine, or whoever in the glade is furthest through it).
+// Which stones glow: all of them while the door is open, otherwise they light one after another round
+// the ring as the tune goes on (mine, or whoever in the glade is furthest through it): the nine notes of
+// the line fill the seven stones, so all seven are glowing by the time the door opens.
 function ritGladeProg() {
   let k = me.rp;
   for (const o of others.values()) if (o.p && o.p.n && inGlade(o.rx, o.ry)) k = Math.max(k, o.rp || 0);
@@ -5280,7 +5332,8 @@ function ritGladeProg() {
 }
 function ritLitSet() {
   if (ritDoorShowing()) return new Set([0, 1, 2, 3, 4, 5, 6]);
-  return new Set(GRACE_STONES.slice(0, ritGladeProg()));
+  const n = Math.round(ritGladeProg() * RIT_STONES.length / RitualSong.STEPS);
+  return new Set(RIT_STONES.slice(0, n).map(s => s.i));
 }
 
 // ---- playing the stones ----
@@ -5307,7 +5360,7 @@ function ritStrike(i) {
   if (rit.tapProg >= RitualSong.STEPS) ritSung('played');
 }
 function ritSetProgress() {
-  const k = Math.max(rit.tapProg, rit.mic ? rit.singProg : 0);
+  const k = Math.max(rit.tapProg, rit.mic ? rit.singProg : 0, rit.fin ? rit.fin.prog : 0);
   if (k !== me.rp) { me.rp = k; sentDirty = true; }
 }
 // ---- singing to the stones ----
@@ -5315,8 +5368,10 @@ function ritSetProgress() {
 // listen in on it and follow along. They never ask for the mic themselves, and what they hear stays
 // on your device. About 20 times a second they find the note being sung and see how far through the
 // first line of Amazing Grace it has got. They also keep the pitch line of the singing and, taking the
-// reference singings in turn (one every 0.1 s), check whether it is close enough to the tune's shape:
-// slides, a flat note or your own little turns don't matter.
+// reference singings in turn (one every 0.1 s), check how far through the tune's shape it has got and
+// whether the whole line is close enough: slides, a flat note or your own little turns don't matter.
+// The stones show the furthest either way has got over the last two seconds of singing, so they don't
+// flicker off on a slide between notes.
 function inCircle(x, y) { return inGlade(x, y) && Math.hypot(x - GLADE.x, (y - GLADE.y) / RIT_Y) < RIT_STONE_R + 6; }
 function ritShouldListen() {
   return joined && voice.micOn && !!voice.micStream && inCircle(me.x, me.y) && me.sit < 0 && rit.door.ready(ritNow());
@@ -5328,7 +5383,7 @@ function ritListenOn() {
   try {
     const src = ac.createMediaStreamSource(voice.micStream), an = ac.createAnalyser();
     an.fftSize = 2048; src.connect(an);
-    rit.mic = { src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), line: RitualSong.createContour(), turn: 0, heardAt: 0, acc: 0, level: 0 };
+    rit.mic = { src, an, buf: new Float32Array(2048), half: new Float32Array(1024), listener: RitualSong.createListener(), line: RitualSong.createContour(), turn: 0, shape: [], hold: [], heardAt: 0, acc: 0, level: 0 };
     rit.singProg = 0;
   } catch (e) { rit.mic = null; }
 }
@@ -5353,23 +5408,38 @@ function ritListen(dt) {
   const now = performance.now();
   if (p.f) m.heardAt = now;
   // a long quiet starts the tune afresh
-  if (m.heardAt && now - m.heardAt > 8000 && (m.listener.notes.length || m.line.out.length)) { m.listener.reset(); m.line.reset(); rit.singProg = 0; ritSetProgress(); }
+  if (m.heardAt && now - m.heardAt > 8000 && (m.listener.notes.length || m.line.out.length)) { m.listener.reset(); m.line.reset(); m.shape.length = 0; m.hold.length = 0; rit.singProg = 0; ritSetProgress(); }
   const sg = m.heardAt && now - m.heardAt < 1200 ? 1 : 0;   // friends see the little notes while I'm actually singing
   if (sg !== me.sg) { me.sg = sg; sentDirty = true; }
   m.listener.push(p.f); m.line.push(p.f);
+  if (rit.fin) return;                                   // already sung: the stones are lighting up for the door
   const k = RitualSong.progress(m.listener.notes);
-  if (k !== rit.singProg) {
-    if (k > rit.singProg && k >= 1) ritStrikeFx(GRACE_STONES[k - 1], 0);   // the stone for that note lights up (silently)
-    rit.singProg = k; ritSetProgress();
+  let done = k >= RitualSong.STEPS;
+  // by shape: one reference every other reading, so the work is spread thin
+  if (!done && sg && m.line.out.length >= 10 && (m.turn = (m.turn + 1) % (2 * RitualSong.TUNES.length)) % 2 === 0) {
+    const t = m.turn >> 1;
+    if (RitualSong.likeness(m.line.out, [RitualSong.TUNES[t]]) < RitualSong.SIMILAR) done = true;
+    m.shape.push(RitualSong.reach(m.line.out, t)); if (m.shape.length > 15) m.shape.shift();
   }
-  if (k >= RitualSong.STEPS) { ritSung('sang'); return; }
-  // close enough in shape? one reference every other reading, so the work is spread thin
-  if (sg && m.line.out.length >= 10 && (m.turn = (m.turn + 1) % (2 * RitualSong.TUNES.length)) % 2 === 0) {
-    if (RitualSong.likeness(m.line.out, [RitualSong.TUNES[m.turn >> 1]]) < RitualSong.SIMILAR) {
-      for (let i = rit.singProg; i < RitualSong.STEPS; i++) ritStrikeFx(GRACE_STONES[i], 0);   // the rest of the stones catch up
-      ritSung('sang');
-    }
-  }
+  if (sg) { m.hold.push(Math.max(k, ...m.shape)); if (m.hold.length > 40) m.hold.shift(); }
+  const shown = m.hold.length ? Math.max(...m.hold) : 0;
+  if (shown !== rit.singProg) { rit.singProg = shown; ritSetProgress(); }
+  if (done) ritFinish('sang');
+}
+// The line is sung: whatever stones are still dark light up one after another, all seven glow for a
+// moment, and then the door opens. (Kept outside rit.mic, so stepping away now doesn't stop it.)
+function ritFinish(how) {
+  if (rit.fin || !rit.door.ready(ritNow())) return;
+  rit.fin = { how, prog: Math.max(me.rp, rit.singProg), at: performance.now() };
+  ritSetProgress();
+}
+function ritFinishStep() {
+  const f = rit.fin;
+  if (!f) return;
+  const now = performance.now();
+  if (!rit.door.ready(ritNow())) { rit.fin = null; ritSetProgress(); return; }   // a friend's door got there first
+  if (f.prog < RitualSong.STEPS) { if (now - f.at >= 120) { f.prog++; f.at = now; ritSetProgress(); } return; }
+  if (now - f.at >= 450) { rit.fin = null; ritSung(f.how); }
 }
 
 // ---- the door opens ----
@@ -5617,8 +5687,9 @@ function ritStep(dt) {
     if (ph === 'open' && performance.now() > rit.enterAfter && rit.door.canEnter(me.x, me.y, now)) enterOther();
     if (ritShouldListen()) ritListenOn(); else ritListenOff();
     ritListen(dt);
+    ritFinishStep();
   } else {
-    ritListenOff();
+    ritListenOff(); ritFinishStep();
     if (here === 'other' && dist(me.x, me.y, RIFT.x, RIFT.y) < 30 && performance.now() > rit.enterAfter) exitOther();
   }
   if (rit.tapProg && performance.now() - rit.tapAt > 4000) { rit.tapProg = 0; rit.taps = []; }
@@ -5646,8 +5717,11 @@ function ritStep(dt) {
   for (const list of [rit.doorStars, rit.riftStars]) for (const s of list) { s.a += dt * (1.2 / (s.r + 0.25)); s.r -= dt * s.sp; if (s.r < 0.04) { s.r = 1; s.a = Math.random() * 6.283; } }
   // stones glow with the tune so far, and flash as they sing
   const lit = there === 'camp' ? ritLitSet() : new Set();
+  const showing = ritDoorShowing();
   for (const s of RIT_STONES) {
     const want = lit.has(s.i) ? 1 : 0;
+    if (want && !s.on && !showing) ritStrikeFx(s.i, 0);   // a stone that just lit flashes (silently)
+    s.on = want;
     s.light += (want - s.light) * Math.min(1, dt * (want > s.light ? 4.5 : 1.6));
     s.flash = Math.max(0, s.flash - dt * 1.8);
   }
