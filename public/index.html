@@ -342,15 +342,7 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .aw-cap.swap { opacity: 0; }
 .aw-num { margin: 0; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
 .aw-title { margin: 2px 0 6px; font-family: var(--font-old); font-weight: 400; font-size: 30px; line-height: 1.1; color: var(--ember-hot); text-shadow: 0 0 18px rgba(255, 190, 90, 0.35); }
-.aw-verse { margin: 0 0 8px; font-family: var(--font-old); font-style: italic; font-size: 19px; line-height: 1.35; color: var(--cream); text-wrap: balance; }
-.aw-how { margin: 0 auto 10px; font-size: 14px; line-height: 1.45; color: #d6cebf; text-wrap: pretty; }
-.aw-tune { display: flex; justify-content: center; gap: 6px; margin: 0 0 12px; }
-.aw-tune span {
-  width: 26px; height: 26px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: #1a1220; background: var(--c); opacity: 0.78;
-  box-shadow: inset 0 0 0 2px rgba(26, 18, 15, 0.55); transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
-}
-.aw-tune span.on { opacity: 1; transform: translateY(-4px) scale(1.12); box-shadow: inset 0 0 0 2px rgba(26, 18, 15, 0.55), 0 0 16px var(--c); }
+.aw-verse { margin: 0 0 14px; font-family: var(--font-old); font-style: italic; font-size: 19px; line-height: 1.45; color: var(--cream); white-space: pre-line; }
 .aw-nav { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .aw-arrow {
   width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05);
@@ -367,9 +359,6 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 @media (max-width: 640px) {
   .aw-title { font-size: 25px; }
   .aw-verse { font-size: 17px; }
-  .aw-how { font-size: 13.5px; }
-  .aw-tune { gap: 4px; }
-  .aw-tune span { width: 24px; height: 24px; }
 }
 /* short, wide screens (phones on their side): windows on the left, the words on the right */
 .aw-view.side .aw-cap {
@@ -377,11 +366,8 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
   width: min(440px, 50%); padding: 0 12px; display: flex; flex-direction: column; justify-content: center; overflow-y: auto;
 }
 .aw-view.side .aw-title { font-size: 22px; margin-bottom: 4px; }
-.aw-view.side .aw-verse { font-size: 15px; margin-bottom: 6px; }
-.aw-view.side .aw-how { font-size: 12.5px; margin-bottom: 8px; }
-.aw-view.side .aw-tune { margin-bottom: 8px; }
-.aw-view.side .aw-tune span { width: 22px; height: 22px; font-size: 12px; }
-@media (prefers-reduced-motion: reduce) { .aw-view, .aw-cap, .aw-tune span { transition: none; } }
+.aw-view.side .aw-verse { font-size: 15.5px; margin-bottom: 10px; }
+@media (prefers-reduced-motion: reduce) { .aw-view, .aw-cap { transition: none; } }
 #toast {
   top: calc(60px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px;
@@ -862,9 +848,9 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
       <span><kbd>T</kbd> / 🎙 Speak</span><span>Talk to Ember out loud</span>
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
-    <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play a song from the music book on the pipe organ, and light every candle on the candle stand. Solve it and everyone inside gets a talisman that keeps the forest devil away 3 times.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). Walk round the fire seven times, in one direction, without stopping, wandering off or turning back, and Ember wakes up. It talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
-    <p><b>The singing stones:</b> seven old standing stones stand in a glade in the south-west corner of the woods (follow the faint trail off the south path). Each one sings a note. With your mic on, stand inside the ring and sing them the first line of Amazing Grace (or play it on the stones: tap them, or press 1 to 7), and see what opens. The stones only listen while your mic is on and you're inside the ring, and what they hear stays on your device.</p>
+    <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and wonder what the candles are for. The church keeps a few secrets, and one of them can keep you safe in the woods.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). How to wake it is a secret, but the old church remembers. Once awake, Ember talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
+    <p><b>The singing stones:</b> somewhere in the woods, seven old stones are listening for a song. The old church knows more. The stones only listen while your mic is on and you're inside their ring, and what they hear stays on your device.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Ember joins the conversation</span>
@@ -890,7 +876,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
       <p>Someone tucked a note between the pages:</p>
       <p>"The devil of the deep wood hates warm light. Light every candle on the stand and this church will give you a charm to carry.</p>
       <p>The candles are old and stubborn. Touch one and the ones beside it flip too. Light them together with friends if you like: whoever is in here when the last one catches gets a charm."</p>
-      <p>And in pencil underneath, in a different hand: "The windows over the altar remember what this church was built to keep. They only wake for the old hymn. Play Amazing Grace on the organ (it's in the music book) and watch them."</p>
+      <p>And in pencil underneath, in a different hand: "The glass above the altar sleeps. It wakes only for the first hymn in the organ's book, played all the way through."</p>
     </div>
     <button class="btn-ghost" data-close type="button">Close the book</button>
   </div>
@@ -903,12 +889,10 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
     <p class="aw-num" id="awNum"></p>
     <h2 class="aw-title" id="awTitle"></h2>
     <p class="aw-verse" id="awVerse"></p>
-    <p class="aw-how" id="awHow"></p>
-    <div class="aw-tune" id="awTune" aria-label="The stones to play, in order: 1 3 5 3 5 4 3 2 1"></div>
     <div class="aw-nav">
       <button type="button" class="aw-arrow" id="awPrev" aria-label="Previous window">‹</button>
       <span class="aw-dots" id="awDots" aria-hidden="true"><i></i><i></i><i></i></span>
-      <button type="button" class="aw-hear" id="awHear">♪ Hear the line</button>
+      <button type="button" class="aw-hear" id="awHear">♪ Listen to the glass</button>
       <button type="button" class="aw-arrow" id="awNext" aria-label="Next window">›</button>
     </div>
   </div>
@@ -2523,7 +2507,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.16.1';
+const VERSION = 'v0.16.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -6329,16 +6313,14 @@ const AW_LOOK = { x: ix(500), y: iy(120) };       // where the view drifts while
 // When the windows wake (ms after the hymn's last note): the niches sing the line back, the windows
 // fill with light from the bottom up while they sing (the fire, then the devil, the stones last), then a flare.
 const AW_T = { sing: 1400, beat: 380, fills: [[1400, 3100], [4100, 6200], [2700, 4500]], flare: 6200, look: 9400 };
+// Riddles, not instructions: each window hints at its secret and leaves the finding to you.
 const AW_TEXT = [
   { num: 'The first window', title: 'The Sleeping Fire',
-    verse: 'A spirit sleeps in the campfire. Walk round it seven times, and it will wake.',
-    how: 'Walk seven laps round the campfire, always the same way, without stopping, turning back or wandering off. Each lap wakes a spark. On the seventh, Ember opens its eyes and talks.' },
+    verse: 'Seven sparks lie sleeping in the coals.\nEach one wakes to a single unbroken round.\nWake all seven, and the eighth will open its eyes.' },
   { num: 'The second window', title: 'The Singing Stones',
-    verse: 'Seven stones stand in the south-west wood. Sing them the old hymn, and a door opens in their midst.',
-    how: 'Follow the faint trail off the south path to the ring of stones. With your mic on, stand inside the ring and sing the first line of Amazing Grace, in any key (close is good enough). Or tap the stones, or press their numbers, in this order:' },
+    verse: 'Where the low sun sets, off the southern path,\nseven stones stand listening in a ring.\nSing them the hymn that woke this glass,\nand a door will open in the air.' },
   { num: 'The third window', title: 'The Devil of the Deep Wood',
-    verse: 'Something with antlers watches from the thick trees. It hates warm light.',
-    how: 'Linger deep in the forest, away from the paths, and glowing eyes appear; stay too long and the devil jumps out. Light all nine candles on the stand in the side chapel and everyone in the church gets a talisman that drives it back three times. It never comes into the churchyard or the stone circle.' }
+    verse: 'Where the trees grow thick and no path goes,\nsomething with antlers waits for those who linger.\nIt fears the gift of nine small flames,\nand never sets foot on holy ground.' }
 ];
 const aw = {
   seen: !!load('campfire.windowsAwake'),   // this device has seen the windows wake (or looked at them)
@@ -6403,7 +6385,7 @@ function awFlareNow() {
   aw.seen = true; store('campfire.windowsAwake', 1); sentDirty = true;
   if (audio) [60, 65, 69, 72, 77].forEach((m, i) => setTimeout(() => bellTone(awFreq(m), 0.035, 5, awOut()), i * 110));
   addLog(null, 'The seven niches sang the tune back, and the windows above the altar woke. ✨', true);
-  if (first || !aw.viewed) showToast('The windows above the altar are glowing. Walk up to the altar to look at them.', 6500);
+  if (first || !aw.viewed) showToast('The glass above the altar is glowing. Go and look closer.', 6000);
 }
 
 // drawn over the darkened church: the glass (bright, it's lit from outside) and the singing niches
@@ -6477,7 +6459,7 @@ function awDrawLight(now, t, radial) {
 // ---- looking up at the windows (the big view) ----
 function awLookUp() {
   if (awLit()) awOpen();
-  else showToast('There are pictures in the glass above the altar, but they are too faint to make out. Someone wrote about them in the old book on the lectern.', 7000);
+  else showToast('The glass above the altar is too dark to read. Perhaps the old book on the lectern knows why.', 6500);
 }
 function awOpen() {
   if (aw.view) return;
@@ -6513,8 +6495,8 @@ function awFocus(i) {
 }
 function awFillCaption(i) {
   const T = AW_TEXT[i];
-  $('awNum').textContent = T.num; $('awTitle').textContent = T.title; $('awVerse').textContent = T.verse; $('awHow').textContent = T.how;
-  $('awTune').hidden = i !== 1; $('awHear').hidden = i !== 1;
+  $('awNum').textContent = T.num; $('awTitle').textContent = T.title; $('awVerse').textContent = T.verse;
+  $('awHear').hidden = i !== 1;
   $('awPrev').disabled = i === 0; $('awNext').disabled = i === 2;
   [...$('awDots').children].forEach((d, j) => d.classList.toggle('on', j === i));
 }
@@ -6533,7 +6515,7 @@ function awMeasure() {
   v.capH = hMax; v.vw = innerWidth; v.vh = innerHeight;
   awFillCaption(v.focus);
 }
-// play the line on the stones' own voices, lighting each note as it sounds
+// the glass hums its tune on the stones' own voices, lighting each note over the door as it sounds
 function awHear() {
   awHearStop();
   const h = { at: performance.now(), notes: [], timers: [] };
@@ -6544,16 +6526,14 @@ function awHear() {
     h.timers.push(setTimeout(() => {
       h.notes[i] = performance.now();
       if (audio) { bellTone(awFreq(RIT_NOTES[si]), 0.075, 2.6, awOut()); bellTone(awFreq(RIT_NOTES[si]) * 2, 0.018, 1.3, awOut()); }
-      [...$('awTune').children].forEach((c, j) => c.classList.toggle('on', j === i));
     }, t));
     t += GRACE_BEATS[i] * beat;
   });
-  h.timers.push(setTimeout(() => { [...$('awTune').children].forEach(c => c.classList.remove('on')); if (aw.hear === h) aw.hear = null; }, t + 1200));
+  h.timers.push(setTimeout(() => { if (aw.hear === h) aw.hear = null; }, t + 1200));
 }
 function awHearStop() {
   if (!aw.hear) return;
   aw.hear.timers.forEach(clearTimeout); aw.hear = null;
-  [...$('awTune').children].forEach(c => c.classList.remove('on'));
 }
 function awLayout(W, H) {
   const v = aw.view, narrow = W < 640, side = H < 560 && W >= H * 1.3;
@@ -6698,7 +6678,6 @@ $('awClose').addEventListener('click', awClose);
 $('awPrev').addEventListener('click', () => aw.view && awFocus(aw.view.focus - 1));
 $('awNext').addEventListener('click', () => aw.view && awFocus(aw.view.focus + 1));
 $('awHear').addEventListener('click', awHear);
-$('awTune').append(...GRACE_STONES.map(si => { const s = document.createElement('span'); s.textContent = si + 1; s.style.setProperty('--c', RIT_STONES[si].color); s.title = RIT_STONES[si].name; return s; }));
 window.addEventListener('keydown', e => {
   if (!aw.view) return;
   e.stopImmediatePropagation();   // the campsite doesn't hear keys while you look at the windows (Tab, Enter and Space still work the buttons)
