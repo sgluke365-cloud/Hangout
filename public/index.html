@@ -498,6 +498,23 @@ body.scared .hud { opacity: 0; pointer-events: none; transition: opacity 0.08s; 
 .ow-card .card-deck, .ow-card .card-by { color: #6b5a96; }
 .ow-card .card-text { color: #2c2245; }
 .ow-next { background: linear-gradient(180deg, #d4b8ff, #a77bff); color: #1c0f38; }
+/* the singing stones' questions: a slate-grey card edged in the stone's own colour */
+#stPanel {
+  --stone: #b06bff;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  width: min(330px, calc(100vw - 24px)); box-sizing: border-box;
+  background: rgba(18, 24, 30, 0.88); border: 1px solid color-mix(in srgb, var(--stone) 55%, transparent); border-radius: 18px;
+  padding: 12px; display: grid; gap: 10px; backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 36px color-mix(in srgb, var(--stone) 22%, transparent);
+}
+@media (max-width: 640px) {
+  #stPanel { left: 50%; right: auto; transform: translateX(-50%); top: calc(54px + env(safe-area-inset-top, 0px)); }
+}
+#stPanel .story-head h2 { color: color-mix(in srgb, var(--stone) 55%, #f6ecd8); }
+.st-card, .card.stone-card { background: #e6e4dc; box-shadow: 0 2px 0 #a9a596, 0 8px 18px rgba(0,0,0,0.35), inset 4px 0 0 var(--stone, #b06bff); }
+.st-card .card-deck, .st-card .card-by, .card.stone-card .card-deck, .card.stone-card .card-by { color: #5d5a50; }
+.st-card .card-text, .card.stone-card .card-text { color: #26251f; }
 /* ---------- pipe organ keyboard ---------- */
 #orgPanel {
   left: 50%; transform: translateX(-50%);
@@ -772,6 +789,18 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
   <div class="story-row"><button class="btn-warm ow-next" id="owNext" type="button">Turn another card</button></div>
 </div>
 
+<div class="hud" id="stPanel" hidden>
+  <div class="story-head">
+    <h2 id="stTitle">The stone</h2>
+    <button class="btn-ghost small" id="stHide" type="button">Hide card</button>
+  </div>
+  <div class="card st-card" id="stCard">
+    <div class="card-deck" id="stDeck">Carved in the stone</div>
+    <p class="card-text" id="stText"></p>
+    <div class="card-by" id="stBy"></div>
+  </div>
+</div>
+
 <div class="hud" id="orgPanel" hidden>
   <div class="story-head">
     <h2>Pipe organ</h2>
@@ -850,7 +879,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and wonder what the candles are for. The church keeps a few secrets, and one of them can keep you safe in the woods.</p>
     <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). How to wake it is a secret, but the old church remembers. Once awake, Ember talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
-    <p><b>The singing stones:</b> somewhere in the woods, seven old stones are listening for a song. The old church knows more. The stones only listen while your mic is on and you're inside their ring, and what they hear stays on your device.</p>
+    <p><b>The singing stones:</b> somewhere in the woods, seven old stones are listening for a song. The old church knows more. The stones only listen while your mic is on and you're inside their ring, and what they hear stays on your device. Each stone also keeps a question for whoever touches it.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
       <span>Ember joins the conversation</span>
@@ -1081,6 +1110,18 @@ const SHIRTS = ['#d9643a', '#e8b04a', '#5f9e6e', '#4f7fb8', '#9b6bc4', '#c9506a'
 const HATS = ['none', 'beanie', 'cap', 'straw'];
 const HAT_LABEL = { none: 'None', beanie: 'Beanie', cap: 'Cap', straw: 'Straw' };
 
+// Each singing stone keeps a question (the first one is carved into it) and two more it whispers.
+// Same order as the stones: Memory, Laughter, Courage, Longing, Wonder, Truth, Kinship.
+const STONE_ASKS = [
+  ['What is a childhood memory you wish you could relive?', 'A smell or a sound that takes you straight back somewhere', 'Something from the house you grew up in that you still remember exactly'],
+  ['What is the funniest thing that ever happened to you?', 'A time you laughed at completely the wrong moment', 'The person who makes you laugh hardest, and how they do it'],
+  ['What is something you did despite being afraid?', 'A time you said sorry when it was hard to', 'Something you want to try but are still a little scared of'],
+  ['What is something you miss?', 'A place you think about more than you expected to', 'A dream you had once that still crosses your mind'],
+  ['What experience changed how you see the world?', 'The most beautiful thing you have ever seen outdoors', 'A stranger who turned into someone who mattered'],
+  ['What is something you wish you could tell your younger self?', 'Something people often get wrong about you', 'Something you have been feeling lately but have not said out loud'],
+  ['Who made you feel that you belonged?', 'A moment with the people here that you still think about', 'Someone who showed up for you when you needed it']
+];
+const stoneOfCard = text => STONE_ASKS.findIndex(a => a.includes(text));
 const DECKS = {
   warm: { name: 'Warm-up', cards: [
     'A small thing that made your week better',
@@ -1117,7 +1158,8 @@ const DECKS = {
     'What home means to you now',
     'A time you had to start over',
     'What you hope people feel after time with you'
-  ] }
+  ] },
+  stones: { name: 'The Stones', cards: STONE_ASKS.flat() }
 };
 const CATCHES = [
   ['a sleepy carp', 34, 58], ['a silver minnow', 6, 11], ['a speckled trout', 25, 48], ['a moon perch', 18, 30],
@@ -1966,6 +2008,7 @@ function onPeers(change) {
   resolveSpirit(freshPeers);
   resolveDoor(freshPeers);
   resolveOw();
+  resolveStoneCard();
   updateStatus();
   manageVoice();
 }
@@ -2045,7 +2088,8 @@ function pushPresence(force) {
     org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev, pg: guide.song + 1 } : null,
     sp: spirit, spk: me.spk, ew: me.ew, el: me.el || null, ej: ember.joinOn ? 1 : 0,
     rp: me.rp || null, sg: me.sg || null, ss: rit.ssList.length ? { e: rit.ssEv, l: rit.ssList } : null,
-    pt: door.v ? door : null, ow: owCard.v ? owCard : null
+    pt: door.v ? door : null, ow: owCard.v ? owCard : null,
+    sq: stoneCard.v ? stoneCard : null
   }).catch(() => { });
 }
 
@@ -2107,8 +2151,14 @@ function renderStory(flip) {
   const box = $('story');
   box.hidden = !(joined && me.sit >= 0) || sm.showing;
   if (box.hidden) return;
-  deckBtns.forEach(b => b.setAttribute('aria-pressed', String(story.deck === b.dataset.deck)));
-  $('cardDeck').textContent = DECKS[story.deck].name;
+  deckBtns.forEach(b => {
+    b.setAttribute('aria-pressed', String(story.deck === b.dataset.deck));
+    if (b.dataset.deck === 'stones') b.hidden = !(stonesHeard.size || story.deck === 'stones');
+  });
+  const sIdx = story.deck === 'stones' ? stoneOfCard(story.text) : -1;
+  $('card').classList.toggle('stone-card', story.deck === 'stones');
+  if (sIdx >= 0) $('card').style.setProperty('--stone', RitualCore.STONES[sIdx].color); else $('card').style.removeProperty('--stone');
+  $('cardDeck').textContent = sIdx >= 0 ? `The ${RitualCore.STONES[sIdx].name} stone` : DECKS[story.deck].name;
   $('cardText').textContent = story.text || 'Draw a card to start the circle.';
   $('cardBy').textContent = story.text && story.by ? `Drawn by ${story.by}` : 'Pick a deck, then draw.';
   if (flip && story.text) { const c = $('card'); c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); }
@@ -2140,7 +2190,10 @@ const deckBtns = Object.entries(DECKS).map(([k, d]) => {
   return b;
 });
 $('drawBtn').addEventListener('click', () => {
-  const cards = DECKS[story.deck].cards.filter(c => c !== story.text);
+  let pool = DECKS[story.deck].cards;
+  // the stones' deck holds only the questions of stones you have touched (all of them if a friend picked it)
+  if (story.deck === 'stones' && stonesHeard.size) pool = pool.filter(c => stonesHeard.has(stoneOfCard(c)));
+  const cards = pool.filter(c => c !== story.text);
   setStory({ text: rnd(cards), by: me.name, holder: myPeer || 'me', hname: me.name });
 });
 $('passBtn').addEventListener('click', () => {
@@ -2507,7 +2560,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.16.2';
+const VERSION = 'v0.17';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -5468,10 +5521,87 @@ function renderOwCard(flip) {
   if (flip) { const c = $('owCard'); c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); }
 }
 $('owNext').addEventListener('click', nextOwCard);
+
+// ---- the stones' questions ----
+// Stand beside one of the seven stones and touch it: it hums its note and its question appears on a
+// card for everyone in the glade (shared like the Otherwhere card: highest version wins). The first
+// touch shows the question carved into the stone; touching it again turns to the next one it keeps.
+// Stones you have heard are remembered on your device, and their questions become a deck
+// (The Stones) in the story circle at the fire. Touching a stone doesn't count towards the song.
+let stoneCard = { v: 0, i: -1, k: 0, by: '' };    // shared: presence 'sq'
+const stonesHeard = new Set((load('campfire.stonesHeard') || []).filter(n => Number.isInteger(n) && n >= 0 && n < 7));
+const stoneUi = { hidden: false, shown: false };
+function nearStone() {
+  if (!joined || roomOf(me.x) !== 'camp' || !inGlade(me.x, me.y) || ritDoorShowing()) return -1;
+  let best = -1, bd = 40;
+  for (const st of RIT_STONES) { const d = dist(me.x, me.y, st.x, st.y + 4); if (d < bd) { bd = d; best = st.i; } }
+  return best;
+}
+function hearStone(i) {
+  if (stonesHeard.has(i)) return false;
+  const first = stonesHeard.size === 0;
+  stonesHeard.add(i);
+  store('campfire.stonesHeard', [...stonesHeard]);
+  if (me.sit >= 0) renderStory(false);
+  return first;
+}
+function touchStone(i) {
+  const same = stoneCard.i === i;
+  const k = same ? (stoneCard.k + 1) % STONE_ASKS[i].length : 0;
+  stoneCard = { v: stoneCard.v + 1, i, k, by: me.name };
+  ritStrikeFx(i, 0.7);
+  sentDirty = true; pushPresence(true);
+  stoneUi.hidden = false;
+  const first = hearStone(i);
+  renderStoneCard(true);
+  if (first) addLog(null, 'The stones remember. Their questions will be waiting in the story circle at the fire.', true);
+}
+function resolveStoneCard() {
+  let best = null, bestPeer = '';
+  for (const o of others.values()) {
+    const s = o.p && o.p.sq;
+    if (!s || typeof s.v !== 'number' || !(s.v > 0)) continue;
+    if (!best || s.v > best.v || (s.v === best.v && String(o.peer) > bestPeer)) { best = s; bestPeer = String(o.peer); }
+  }
+  if (!best) return;
+  if (stoneCard.v > best.v || (stoneCard.v === best.v && String(myPeer || '') >= bestPeer)) return;
+  const i = clamp(num(best.i, 0) | 0, 0, 6);
+  const next = { v: best.v, i, k: clamp(num(best.k, 0) | 0, 0, STONE_ASKS[i].length - 1), by: cleanText(best.by, 16) };
+  const changed = next.i !== stoneCard.i || next.k !== stoneCard.k;
+  stoneCard = next; sentDirty = true;
+  if (changed && nearGlade() && roomOf(me.x) === 'camp') {
+    // friends in the glade hear the stone hum, see its question, and remember the stone too
+    ritStrikeFx(next.i, 0.5);
+    stoneUi.hidden = false;
+    hearStone(next.i);
+    renderStoneCard(true);
+    if (next.by) addLog(null, `${next.by} touched the ${RitualCore.STONES[next.i].name} stone.`, true);
+  }
+}
+function stoneShouldShow() {
+  return joined && stoneCard.v > 0 && stoneCard.i >= 0 && !stoneUi.hidden && roomOf(me.x) === 'camp' && nearGlade() && !ritDoorShowing();
+}
+function renderStoneCard(flip) {
+  const box = $('stPanel'), show = stoneShouldShow();
+  stoneUi.shown = show;
+  box.hidden = !show;
+  if (!show) return;
+  const S = RitualCore.STONES[stoneCard.i];
+  box.style.setProperty('--stone', S.color);
+  $('stCard').style.setProperty('--stone', S.color);
+  $('stTitle').textContent = `The ${S.name} stone`;
+  $('stDeck').textContent = stoneCard.k === 0 ? 'Carved in the stone' : 'The stone whispers';
+  $('stText').textContent = STONE_ASKS[stoneCard.i][stoneCard.k];
+  $('stBy').textContent = (stoneCard.by ? `${stoneCard.by} touched it. ` : '') + 'Take turns answering; anyone can pass.';
+  if (flip) { const c = $('stCard'); c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); }
+}
+function stoneTick() { if (stoneShouldShow() !== stoneUi.shown) renderStoneCard(false); }
+$('stHide').addEventListener('click', () => { stoneUi.hidden = true; renderStoneCard(false); });
 $('owHide').addEventListener('click', () => { rit.cardHidden = true; renderOwCard(false); updateActionBtn(); });
 
 // ---- every frame ----
 function ritStep(dt) {
+  stoneTick();
   const now = ritNow(), here = roomOf(me.x), ph = rit.door.phase(now);
   if (ph !== rit.lastPhase) { const prev = rit.lastPhase; rit.lastPhase = ph; ritOnPhase(ph, prev); }
   if (here === 'camp') {
@@ -7993,6 +8123,7 @@ function doAction() {
   if (smHoldsStick()) return;
   if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) { walkTo(GLADE.x, GLADE.y, 'door'); return; }
   if (inOther(me.x)) { if (nearRift()) walkTo(RIFT.x, RIFT.y, 'home'); else { rit.cardHidden = !rit.cardHidden; renderOwCard(true); } return; }
+  if (nearStone() >= 0 && me.sit < 0 && me.pew < 0 && !me.fish) { touchStone(nearStone()); return; }
   if (sm.in && !sm.served && sm.phase === 'join') smLeave();
   if (me.sit >= 0) { stand(); return; }
   if (me.pew >= 0) { standPew(); return; }
@@ -8037,6 +8168,7 @@ function updateActionBtn() {
   b.classList.remove('bite');
   if (ritDoorOpen() && roomOf(me.x) === 'camp' && dist(me.x, me.y, GLADE.x, GLADE.y) < 260) label = 'Step into the door';
   else if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
+  else if (nearStone() >= 0 && !me.fish) label = `Touch the ${RitualCore.STONES[nearStone()].name} stone`;
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
   else if (nearFire()) label = 'Sit by the fire';
   else if (atDock()) label = 'Cast a line';
