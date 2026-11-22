@@ -94,6 +94,8 @@ Ember only speaks in a speech bubble over the fire (and out loud), so nothing co
 
 A few things work by just asking: "Ember, tell us a story" (say spooky, funny, cozy, a legend, or one about us), "Ember, ask us a question", "Ember, shh" (stops it talking for everyone who hears you) and "Goodnight, Ember" (puts it back to sleep for everyone). To mute Ember's voice just for you, turn off **Ember speaks out loud** in the **?** panel.
 
+**Ember remembers the old story.** Ember knows the world's myth (from *The Seven Things We Must Never Forget*) as its own past: how it was born from the first true story told in the clearing and fell asleep when people stopped sharing, the forest devil as the keeper of forgotten things, the old church and its three windows, the seven stones as the seven things that make us human, and the Otherwhere as the lives we never lived. It tells it in small pieces when the talk touches it, keeps the devil's true identity a mystery, often turns the story back into a question for the friends, and still never gives away how the puzzles are solved. Ask "Ember, where did you come from?" or for a legend. When Ember decides by itself whether to join in, it carries only a short summary of the story, which keeps its requests small enough for the free AI tiers. Storybook mode (no AI) has new legends and replies that match the story too.
+
 Everyone near the fire hears Ember and sees its words. Walk the seven laps again to wake it after Goodnight. Like everything else, Ember falls asleep again when the lobby empties.
 
 ### Let Ember really talk (optional, free)
