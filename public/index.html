@@ -839,6 +839,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
         <button class="emote" type="button" role="menuitem" data-emo="wave" aria-label="Wave">👋</button>
         <button class="emote" type="button" role="menuitem" data-emo="laugh" aria-label="Laugh">😂</button>
         <button class="emote" type="button" role="menuitem" data-emo="heart" aria-label="Heart">❤️</button>
+        <button class="emote" type="button" role="menuitem" data-emo="tear" aria-label="Tear">😢</button>
       </div>
     </div>
     <textarea id="chatInput" rows="1" maxlength="140" enterkeyhint="send" placeholder="Say something to people nearby" aria-label="Chat message"></textarea>
@@ -878,7 +879,7 @@ body.ember-on #log { bottom: calc(166px + env(safe-area-inset-bottom, 0px)); }
     </div>
     <p>People only hear you when they are close by. Sit on a log by the fire to join the story circle: draw a card, share, then pass the talking stick. The dock by the lake is good for quiet fishing. Stay out of the deep forest unless you like surprises.</p>
     <p><b>The old church:</b> somewhere in the deep woods past the eastern tree line, an old church is hidden. There's no path, so you'll have to go looking (the forest devil lives out there too). Inside it's warm and quiet: sit on a pew, read the old book, play the pipe organ, and wonder what the candles are for. The church keeps a few secrets, and one of them can keep you safe in the woods.</p>
-    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). How to wake it is a secret, but the old church remembers. Once awake, Ember talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it.</p>
+    <p><b>The campfire spirit:</b> the fire has a spirit, fast asleep (watch for the little z's, and listen: it talks in its sleep). How to wake it is a secret, but the old church remembers. Once awake, Ember talks in a bubble over the fire, in its own voice from the flames. Ember follows the conversation at the fire (what's typed, and what's said out loud by anyone with their mic on) and now and then joins in when the friends pause. You don't need its name when you're alone at the fire, when you're answering something Ember just asked, or when you ask it back ("and what about you?"). Otherwise, say or type "Ember, …" ("Ember, tell us a spooky story", "Ember, ask us a question", "Ember, shh", "Goodnight, Ember"), press T to speak once, or tap one of the replies Ember suggests along the bottom. A little flame on the mic button means Ember can hear you; on phones, what you say near the awake fire is turned into text by the server's speech service. Turn off "Ember joins the conversation" below and your words only reach Ember when you speak to it. And Ember isn't the only one out there who loves a good story.</p>
     <p><b>The singing stones:</b> somewhere in the woods, seven old stones are listening for a song. The old church knows more. The stones only listen while your mic is on and you're inside their ring, and what they hear stays on your device. Each stone also keeps a question for whoever touches it.</p>
     <p><b>S'mores showdown:</b> at the fire, click or tap Roast s'mores and friends grab a stick. To roast, press and hold the Hold to roast button with your mouse or finger (or hold Space) to dip the marshmallow into the flames. Let go to pull it out before it gets too hot. Click or tap Serve! when it looks golden. Closest to golden brown wins the crown.</p>
     <div class="setting-row">
@@ -1770,7 +1771,7 @@ let lastSent = 0, sentDirty = true;
 let lastPeersCount = 0;
 
 // ===== Join screen =====
-const EMO_ICON = { wave: '👋', laugh: '😂', heart: '❤️', scream: '😱' };
+const EMO_ICON = { wave: '👋', laugh: '😂', heart: '❤️', tear: '😢', scream: '😱' };
 function buildSwatches() {
   const mk = (box, items, key, render) => {
     box.innerHTML = '';
@@ -1974,7 +1975,7 @@ function onPeers(change) {
       o.lastMsg = Math.max(o.lastMsg, m.i);
     }
     if (pr.emo && typeof pr.emo.i === 'number' && pr.emo.i > o.lastEmo) {
-      if (!o.fresh && EMO_ICON[pr.emo.k]) emotes.set(peer.peer, { k: pr.emo.k, at: performance.now() });
+      if (!o.fresh && EMO_ICON[pr.emo.k]) { emotes.set(peer.peer, { k: pr.emo.k, at: performance.now() }); dvEmote(o.rx, o.ry, pr.emo.k); }
       o.lastEmo = pr.emo.i;
     }
     // s'mores: tell the fire when someone's marshmallow goes up in flames
@@ -2006,6 +2007,7 @@ function onPeers(change) {
   resolveChapel();
   resolveOrgan();
   resolveSpirit(freshPeers);
+  resolveDevil(freshPeers);
   resolveDoor(freshPeers);
   resolveOw();
   resolveStoneCard();
@@ -2087,6 +2089,7 @@ function pushPresence(force) {
     pw: me.pew, tal: me.tal, cp: chapel, wa: aw.seen ? 1 : 0,
     org: me.organ ? { h: [...organ.voices.keys()], k: organ.ev, pg: guide.song + 1 } : null,
     sp: spirit, spk: me.spk, ew: me.ew, el: me.el || null, ej: ember.joinOn ? 1 : 0,
+    dv: dv.st || dv.h ? { h: Math.round(dv.h * 10) / 10, st: dv.st, p: dv.p, r: dv.r, rk: dv.rk, by: dv.by } : null, dh: me.dh || null,
     rp: me.rp || null, sg: me.sg || null, ss: rit.ssList.length ? { e: rit.ssEv, l: rit.ssList } : null,
     pt: door.v ? door : null, ow: owCard.v ? owCard : null,
     sq: stoneCard.v ? stoneCard : null
@@ -2255,6 +2258,8 @@ $('chatForm').addEventListener('submit', e => {
   if (!v) return;
   chatInput.value = '';
   growChat();
+  // asking the forest devil over (or to go on with its story) is for the devil, not Ember
+  if (dvMySaid(v)) { say(v); spOverheard(me.name, v, 'me'); chatInput.blur(); return; }
   // "Ember, ..." at the awake fire goes to the spirit
   if (spForEmber(v, spAddressed(v))) spSend(v); else { say(v); spOverheard(me.name, v, 'me'); }
   chatInput.blur();
@@ -2275,6 +2280,7 @@ document.querySelectorAll('.emote').forEach(b => b.addEventListener('click', () 
   emotes.set('me', { k: b.dataset.emo, at: performance.now() });
   sentDirty = true; pushPresence(true);
   setEmoTray(false);
+  dvEmote(me.x, me.y, b.dataset.emo); // the forest devil may be listening
 }));
 
 // ===== Toast & modals =====
@@ -2560,7 +2566,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.18';
+const VERSION = 'v0.19';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -2582,14 +2588,16 @@ function scareActive() { return scare.at >= 0 && (performance.now() - scare.at) 
 function updateScare(dt) {
   const now = performance.now();
   if (scareActive()) return (now - scare.at) / 1000 < SCARE_FREEZE;
-  if (!scare.on || me.sit >= 0 || me.pew >= 0 || inChurch(me.x) || inOther(me.x) || me.fish || now < scare.until) { scare.forestT = 0; scare.eyes = null; scare.whispered = false; return false; }
+  // nothing lurks in the woods while the forest devil is at the edge of the clearing or at the fire
+  if (!scare.on || me.sit >= 0 || me.pew >= 0 || inChurch(me.x) || inOther(me.x) || me.fish || now < scare.until || dvBusyHere()) { scare.forestT = 0; scare.eyes = null; scare.whispered = false; return false; }
   if (inForest(me.x, me.y)) scare.forestT += dt;
   else scare.forestT = Math.max(0, scare.forestT - dt * 2);
   const k = scare.forestT / scare.need;
   if (k > 0.3 && !scare.eyes) pickEyes();
   if (k <= 0.05) { scare.eyes = null; scare.whispered = false; }
-  if (k > 0.55 && !scare.whispered) { scare.whispered = true; addLog(null, me.tal > 0 ? 'Something is moving in the trees… your talisman grows warm.' : 'Something is moving in the trees…', true); }
-  if (k >= 1) { if (me.tal > 0) wardScare(); else startScare(); }
+  if (k > 0.55 && !scare.whispered) { scare.whispered = true; addLog(null, dvGentle() ? 'Gold eyes are watching you from the trees. They look… friendly.' : me.tal > 0 ? 'Something is moving in the trees… your talisman grows warm.' : 'Something is moving in the trees…', true); }
+  // once the devil has told its story and gone home, it only peeks out and nods
+  if (k >= 1) { if (dvGentle()) dvFriendlyEyes(); else if (me.tal > 0) wardScare(); else startScare(); }
   return false;
 }
 // With a talisman, the devil's lunge is turned back by a flash of warm light instead.
@@ -2709,18 +2717,19 @@ function drawWatchingEyes(g, t) {
   const [sx, sy] = w2s(e.x, e.y);
   g.save();
   g.globalAlpha = a;
+  const kind = dvGentle();
   for (const side of [-1, 1]) {
     const ex = sx + side * 7 * ZOOM, ey = sy;
     const gl = g.createRadialGradient(ex, ey, 0, ex, ey, 12 * ZOOM);
-    gl.addColorStop(0, 'rgba(255,60,40,0.55)'); gl.addColorStop(1, 'rgba(255,60,40,0)');
+    gl.addColorStop(0, kind ? 'rgba(255,200,90,0.55)' : 'rgba(255,60,40,0.55)'); gl.addColorStop(1, kind ? 'rgba(255,200,90,0)' : 'rgba(255,60,40,0)');
     g.fillStyle = gl; g.fillRect(ex - 12 * ZOOM, ey - 12 * ZOOM, 24 * ZOOM, 24 * ZOOM);
-    g.fillStyle = '#ffd0b0';
+    g.fillStyle = kind ? '#fff2c0' : '#ffd0b0';
     g.beginPath(); g.ellipse(ex, ey, 3.2 * ZOOM, 2.2 * ZOOM * blink, side * 0.25, 0, Math.PI * 2); g.fill();
   }
   g.restore();
-  // darken the edges as the forest closes in
+  // darken the edges as the forest closes in (only a little, once the devil is a friend)
   const v = g.createRadialGradient(VW / 2, VH / 2, Math.min(VW, VH) * 0.25, VW / 2, VH / 2, Math.max(VW, VH) * 0.75);
-  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${0.55 * k})`);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${(kind ? 0.2 : 0.55) * k})`);
   g.fillStyle = v; g.fillRect(0, 0, VW, VH);
 }
 function drawScare(g, t) {
@@ -7329,7 +7338,7 @@ async function spAsk(kind, text, genre) {
     spHear(ch); spRenderRow(true);
   };
   if (!quiet) open();
-  const input = { kind, text: kind === 'talk' ? text : '', genre, who: me.name, people: spPeople(), history: ember.hist.slice(-10), hour: new Date().getHours(), wakers: spirit.wk };
+  const input = { kind, text: kind === 'talk' ? text : '', genre, who: me.name, people: spPeople(), history: ember.hist.slice(-10), hour: new Date().getHours(), wakers: spirit.wk, devil: dvForEmber() };
   if (quiet) input.convo = ember.convo.slice(-16).map(c => ({ n: c.n, t: c.t }));
   input.voice = ember.voiceSrv; // the server starts Ember's voice while the answer is still being written
   let out = '', opts = [];
@@ -7707,8 +7716,10 @@ function spHeardAloud(raw) {
   const toEmber = /\bember\b/i.test(v);
   if (toEmber && SP_HUSH.test(v)) { spSend(v); return; }
   if (ember.cur || ember.lines.length || now - ember.lineEnd < 1500) return; // most likely Ember's own voice
+  if (dvl.cur || now - dvl.lineEnd < 1500) return;                              // or the forest devil's
   const go = () => {
     if (spEcho(v)) return; // a friend's voice from the speakers
+    if (dvMySaid(v)) { if (ember.joinOn) { say(v, 'h'); spOverheard(me.name, v, 'me'); } return; }
     if (spForEmber(v, toEmber)) spSend(v);
     else if (ember.joinOn) { say(v, 'h'); spOverheard(me.name, v, 'me'); }
   };
@@ -7737,6 +7748,7 @@ function spOverheard(name, text, key, o, direct) {
   if (ember.convo.length > 24) ember.convo.shift();
   ember.convoAt = now;
   if (!direct) ember.convoNew += spIsQuestion(text) ? 2 : 1; // a question to the circle counts double
+  dvHeard(name, text); // the forest devil is listening too
 }
 // the device that decides: whoever at the fire (with joining on) has the lowest id
 function spJoinLeader() {
@@ -7752,6 +7764,7 @@ function spJoinTick(now) {
   if (!ember.joinTip && now - ember.wokeAt > 15000 && !spEmberTalking()) { ember.joinTip = true; showToast('Ember is listening to the circle now, and may join in. Turn this off in the ? panel.', 5500); }
   if (ember.convoNew < 2 || now - ember.convoAt < 2000) return; // something new was said, and the friends paused
   if (ember.busy || ember.chimeCtrl || spEmberTalking() || now - ember.lineEnd < 8000 || now - ember.chimeAt < 15000) return;
+  if (dvHolding(now)) return; // the forest devil is talking, or walking over to the fire
   for (const ch of ember.chans.values()) if (!ch.d && now - ch.started < 30000) return; // someone else's answer is coming
   ember.convo = ember.convo.filter(c => now - c.at < 6 * 60e3);
   if (!spJoinLeader()) return;
@@ -7787,6 +7800,7 @@ function spRenderRow(force) {
   ember.uiAt = now;
   const busy = ember.busy;
   const parts = []; // [key, label, class, action, disabled]: the replies Ember suggested for what it just said
+  if (dvWaiting() && !dvTalking()) parts.push(['dv:go', DV_GO_ON_SAY, 'reply', () => dvGoOn(true), false]); // ask the forest devil to go on
   for (const r of spReplies()) parts.push(['r:' + r, r, 'reply', () => spSend(r), busy]);
   const key = parts.map(p => `${p[0]}|${p[1]}|${p[2]}|${p[4] ? 1 : 0}`).join(';');
   if (key === ember.rowKey) return;
@@ -7820,6 +7834,7 @@ function spiritTick(now) {
   spFxTick(dt);
   spMumbleTick(now);
   spLineTick(now);
+  devilTick(now);
   spRenderRow(false);
 }
 
@@ -8001,6 +8016,810 @@ window.campfireSpiritDebug = () => ({
 // Local testing only: hop to a spot on the map.
 if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.campfireTestGo = (x, y) => { if (me.sit >= 0) stand(); me.x = x; me.y = y; me.target = null; sentDirty = true; snapCam(); };
 
+// ===== The forest devil comes to the fire =====
+// The devil of the deep woods was never evil: it keeps the stories people forgot. Once Ember is
+// awake and friends start talking at the fire, it starts to listen from beyond the firelight. The
+// more (and the deeper) they share, the closer it comes: eyes far off in the trees, then a shape
+// between them, then it stands at the edge of the clearing. Now and then it laughs at a joke or
+// cries at a sad story. Walk up to it (if you dare) or ask it to join you, and it comes to sit by
+// the fire and tells the story it has carried all these years, a chapter at a time, asking the
+// friends something after each: the first fire, the first friend, how the world was told into
+// being, and how it became the forest devil. Then it goes home to the woods, lighter, and leaves its
+// ember in the fire. After that the woods are gentle for everyone who heard it.
+// Shared in presence like Ember: 'dv' = { h: how interested it is, st: how close it has come,
+// p: how far its story has got, r/rk: its latest laugh or cry, by: who invited it }. Every field only
+// grows, so friends' copies merge by taking the larger value. One device at the fire (the lowest id)
+// listens and decides; anyone can invite it or ask it to go on. 'dh' = chapters heard on this device.
+const DV_EDGE = { x: 1100, y: 800 };  // the edge of the clearing, south-east, towards the deep woods
+const DV_MID = { x: 1196, y: 793 };   // half hidden behind a tree further out
+const DV_FAR = { x: 1300, y: 760 };   // deeper in the trees: only its eyes show
+const DV_SEAT = { x: 752, y: 600 };   // on the ground in the gap between the two western logs
+// from the edge to its place by the fire, round the outside of the logs (and back again when it leaves)
+const DV_PATH = [[DV_EDGE.x, DV_EDGE.y], [905, 792], [772, 706], [DV_SEAT.x, DV_SEAT.y]];
+function dvAlong(path, k) {
+  let total = 0;
+  const segs = [];
+  for (let i = 1; i < path.length; i++) { const l = dist(path[i - 1][0], path[i - 1][1], path[i][0], path[i][1]); segs.push(l); total += l; }
+  let d = clamp(k, 0, 1) * total;
+  for (let i = 0; i < segs.length; i++) {
+    if (d <= segs[i] || i === segs.length - 1) { const u = segs[i] ? clamp(d / segs[i], 0, 1) : 1; return { x: path[i][0] + (path[i + 1][0] - path[i][0]) * u, y: path[i][1] + (path[i + 1][1] - path[i][1]) * u }; }
+    d -= segs[i];
+  }
+  return { x: path[path.length - 1][0], y: path[path.length - 1][1] };
+}
+const DV_NEED = [0, 6, 26, 52];       // interest it needs to listen from afar, come closer, reach the edge
+const DV_WALK = 8, DV_LEAVE = 12;     // seconds to walk to the fire, and to go home
+const DV_HELLO = [
+  '…It has been a long, long time since anyone asked me to sit.',
+  'Your stories reached me all the way out in the trees. So let me give you one back. The one I have been carrying.'
+];
+const DV_AGAIN = ['You came back. I remember your voices.', 'Where was I… ah. Yes.'];
+const DV_TALE = [
+  { name: 'The first fire', lines: [
+    'Before there were paths, there were only the woods. And the cold. And me.',
+    'I don’t remember being born. I only remember being cold, for a very long time.',
+    'One night the sky split open and set a pine alight. I carried a burning branch here, to this clearing, and I set it down.',
+    'It was a small fire. It warmed my hands, but nothing else.',
+    'Every night I sat beside it, and I could feel it waiting for something. I didn’t know what.'
+  ], ask: 'Tell me… where was the first place that ever felt warm to you?' },
+  { name: 'The first friend', lines: [
+    'One night someone came out of the dark, following the light. Lost, and shivering.',
+    'We had no words for each other yet. So I gave them the warm side of the fire.',
+    'Then, because the night was long, I told them something true. That I had been afraid of the dark my whole life.',
+    'They didn’t laugh. They stayed. And when I had finished, they told me theirs: a river, a mother’s song, a dog that followed them everywhere.',
+    'Somewhere between my story and theirs, the fire opened two small, bright eyes. That was Ember, waking for the very first time.',
+    'And that is how I learned what a friend is. Someone who stays to hear the end.'
+  ], ask: 'Who stayed to hear the end of your story, when you needed them to?' },
+  { name: 'How the world was told', lines: [
+    'After that, others came. Every night a few more, carrying their stories like kindling.',
+    'Wherever the firelight reached, the woods woke up. Flowers opened. The trees began to whisper. The stars leaned closer to listen.',
+    'Seven things came up again and again, in every story anyone told: Memory, Laughter, Courage, Longing, Wonder, Truth and Kinship.',
+    'So we stood a stone for each of them in the glade, so nobody would ever forget. And someone, I never knew who, built a house of glass and song at the edge of the woods, to keep the tune.',
+    'That is how the world came to be. It was never made. It was told, one story at a time.'
+  ], ask: 'What is one small moment that made your world a little bigger?' },
+  { name: 'How I became the forest devil', lines: [
+    'Then people grew busy. Then careful. They stopped telling the stories that mattered. The sad ones. The true ones.',
+    'But a story doesn’t vanish when nobody tells it. It wanders off into the trees and waits there, in the cold.',
+    'Somebody had to keep them. Friendships that faded. Promises nobody kept. Words that were never said in time. So I went into the woods and gathered every one.',
+    'I carried so many sad stories, for so long, that I forgot my own. My face went dark. My eyes began to burn. All that tangled sorrow grew into antlers.',
+    'People saw me between the trees and screamed. So I became what they saw.',
+    'But I was never a devil. Only the first one who ever told a story here, still carrying all the ones you forgot.'
+  ], ask: 'So tell me, before I go… who is someone you wish you had spent more time with?' }
+];
+const DV_BYE = ['…Thank you. For remembering them out loud.', 'I think I can set a few of them down now.', 'Keep the fire going. I will still be listening, but not from the dark.'];
+// friends who have heard all of it before: it only comes to listen, then says goodnight
+const DV_RETURN = ['You came back. I remember your voices.', 'I have no more of my story to tell. Tonight I only want to listen. Go on.'];
+const DV_BYE_AGAIN = ['Thank you for letting me sit with you again.', 'Keep the fire going. I will still be listening, but not from the dark.'];
+const DV_STAGE_LOG = [
+  '',
+  'Somewhere beyond the firelight, something has stopped to listen.',
+  'Eyes between the trees, closer now. Whatever it is, it is listening to every word.',
+  'The forest devil has come to the edge of the clearing. It isn’t hunting. It’s listening.'
+];
+const DV_REACT_LOG = {
+  laugh: [['Out past the firelight, something laughed. It sounded like old branches creaking.', 'Somewhere in the trees, a low, rusty chuckle.'], ['The forest devil laughs at the edge of the clearing, a sound like an old door swinging.'], ['The forest devil laughs, and its antlers shake.']],
+  cry: [['Out in the dark, something lets out a long, shaky sigh.', 'Something in the trees is crying, very quietly.'], ['At the edge of the clearing, the forest devil wipes its eyes with a long, crooked hand.'], ['A glowing tear rolls down the forest devil’s face and hisses on the ground.']]
+};
+// what it hears in the talk at the fire
+const DV_LAUGH = /\b(ha(ha)+h?|he(he)+|lo+l+|lmf?ao+|rofl|hilarious|so funny|that'?s funny|too funny|i'?m dead)\b|😂|🤣|😆|😹|💀/i;
+const DV_SAD = /\b(passed away|died|funeral|cancer|hospital|grave|grief|grieving|i miss|miss(ed)? (him|her|them|you|my|home)|lost (my|him|her|them|touch)|never got to|never said|goodbye|lonely|all alone|cried|crying|tears|heartbroken|broke my heart|broke up|divorce|sad|regret|wish i had|wish i'?d)\b|😢|😭|🥺|💔/i;
+const DV_MEMORY = /\b(remember|when i was|growing up|grew up|childhood|as a kid|years ago|back then|used to|my (mum|mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|nan|brother|sister|friend|best friend|wife|husband|partner|son|daughter|family|first))\b/i;
+const DV_FEEL = /\b(feel|felt|afraid|scared|proud|love|loved|miss|missed|lonely|happy|sad|sorry|regret|wish|hope|dream|ashamed|grateful|thankful)\b/i;
+// inviting it over ("come and join us", "devil, come sit with us"), or asking it to go on
+const DV_ASK = /\b(come (on )?(and )?(join us|sit with us|sit down|over here|closer|to the fire|warm up)|join us|sit with us|you can come (over|closer|here|and)|you('re| are) welcome (to|here))\b/i;
+const DV_COME = /\b(come|join|sit|welcome)\b/i;
+const DV_WHO = /\b(devil|creature|monster|beast|stranger|shadow|antlers?|forest friend|friend in the (trees|woods|dark)|you (out )?there|out there|over there|big guy)\b/i;
+const DV_NOT = /\b(don'?t|do not|never|go away|leave us|stay away|get away|not you)\b/i;
+const DV_GO_ON = /\b(what happened (next|then|after that)|and then what|tell us (more|the rest)|what came next)\b/i;
+const DV_GO = /\b(go on|keep going|carry on|continue)\b/i;
+const DV_GO_ON_SAY = 'What happened next?';
+
+let dv = { h: 0, st: 0, p: 0, r: 0, rk: '', by: '' };
+const dvl = {                                    // this device's side of it
+  heard: clamp(num(load('campfire.devilHeard'), 0) | 0, 0, 5),  // chapters heard here (5: and its goodbye)
+  friend: load('campfire.devilFriend') === 1,                   // has its ember: the woods are gentle now
+  stAt: -1e9, walkAt: -1e9, leaveAt: -1e9, edgeAt: -1e9, hint: 0,
+  lines: [], cur: null, lineEnd: -1e9, tellP: -1, tellAt: 0, minDur: 0, returning: false,
+  waitAt: 0, ans: { lines: 0, talk: 0, story: 0 }, noiseAt: 0,
+  react: null, reactAt: -1e9, seen: { laugh: false, cry: false },
+  pushAt: 0, hPushed: 0, stText: '', stHolder: '', lastLead: false,
+  shy: 0, near: 0, nearTip: false, braveTip: false, beatAt: 0, inviteAt: -1e9,
+  says: new Map(), vfx: null, src: null, pose: null, tips: null, tickAt: 0
+};
+me.dh = dvl.heard;
+
+// ---- shared state ----
+function dvClean(s) {
+  if (!s || typeof s !== 'object') return null;
+  return { h: clamp(num(s.h, 0), 0, 999), st: clamp(num(s.st, 0) | 0, 0, 4), p: clamp(num(s.p, 0) | 0, 0, 10), r: clamp(num(s.r, 0) | 0, 0, 1e6), rk: s.rk === 'laugh' || s.rk === 'cry' ? s.rk : '', by: cleanText(s.by, 16) };
+}
+function dvSet(patch, force) {
+  const prev = dv;
+  dv = Object.assign({}, dv, patch);
+  sentDirty = true;
+  if (force) pushPresence(true);
+  dvOnChange(prev, dv, false);
+}
+function resolveDevil(freshPeers) {
+  const prev = dv, next = Object.assign({}, dv);
+  let quiet = !joined;
+  for (const o of others.values()) {
+    const s = dvClean(o.p && o.p.dv);
+    if (!s) continue;
+    const fresh = freshPeers.has(o.peer);
+    if (s.st > next.st) { next.st = s.st; next.by = s.by; if (fresh) quiet = true; }
+    if (s.p > next.p) { next.p = s.p; if (fresh) quiet = true; }
+    if (s.h > next.h) next.h = s.h;
+    if (s.r > next.r) { next.r = s.r; next.rk = s.rk; if (fresh) quiet = true; }
+  }
+  if (next.st === prev.st && next.p === prev.p && next.r === prev.r && next.h === prev.h) return;
+  dv = next; sentDirty = true;
+  dvOnChange(prev, next, quiet);
+}
+// The devil moved on (closer, into its story, home) or laughed or cried. quiet = before we got here.
+function dvOnChange(prev, next, quiet) {
+  const now = performance.now(), loud = !quiet && joined, see = dvCanPerceive();
+  if (next.st > prev.st) {
+    dvl.stAt = loud ? now : -1e9;
+    if (next.st === 3) { dvl.edgeAt = now; dvl.hint = 0; }
+    if (next.st >= 4) dvl.walkAt = loud && prev.st === 3 ? now : -1e9;
+    if (loud && see) {
+      if (next.st <= 3) { addLog(null, DV_STAGE_LOG[next.st], true); dvStageSound(next.st); }
+      if (next.st === 3) {
+        if (!spNear()) showToast('Something is listening at the edge of the clearing…', 5000);
+        dvEmberSays(['Shh. Don’t turn round too fast. Someone has come to the edge of my clearing.', 'I don’t think it wants to frighten anyone tonight. I think it only wants to listen.']);
+      }
+      if (next.st >= 4) {
+        addLog(null, next.by && next.by !== me.name ? `${next.by} invited the forest devil to the fire. It's coming.` : 'You invited the forest devil to the fire. It’s coming.', true);
+        dvEmberSays(['Hello, old friend. Come. Sit by me.']);
+        dvChord([98, 146.83, 196], 3.2, 0.06);
+      }
+    }
+  }
+  if (next.p > prev.p) {
+    if (next.p % 2 === 1 && next.p <= 9) dvStartTelling(next.p, prev.p, loud);
+    else if (next.p % 2 === 0 && next.p <= 8) {
+      dvl.waitAt = now; dvl.ans = { lines: 0, talk: 0, story: 0 }; dvl.noiseAt = now;
+      // friends who have heard all of it: it sits, says hello, and listens
+      if (prev.p === 0) { dvl.returning = true; if (loud && spCanHear()) DV_RETURN.forEach(t => dvl.lines.push({ text: t, end: 0 })); }
+    }
+    if (next.p >= 10) {
+      dvl.leaveAt = loud ? now : -1e9;
+      dvl.lines.length = 0;
+      if (loud && see) {
+        addLog(null, 'The forest devil stands, and walks back into the woods, lighter than it came.', true);
+        setTimeout(() => { if (dvCanPerceive()) dvEmberSays(['Goodnight, old friend. I always hoped you would find your way back to the fire.']); }, 7500);
+      }
+      if (loud && spCanHear()) dvGetEmber();
+    }
+    spRenderRow(true);
+  }
+  if (next.r > prev.r && loud && next.rk) dvPlayReaction(next.rk);
+}
+// the devil's lines for one telling: a chapter (with a hello first), or its goodbye
+function dvStartTelling(p, prevP, loud) {
+  const c = (p - 1) / 2, now = performance.now();
+  let lines;
+  if (c >= 4) lines = dvl.returning ? DV_BYE_AGAIN.slice() : DV_BYE.slice();
+  else lines = (prevP === 0 ? (c === 0 ? DV_HELLO : DV_AGAIN) : []).concat(DV_TALE[c].lines, [DV_TALE[c].ask]);
+  dvl.tellP = p; dvl.tellAt = now;
+  dvl.minDur = lines.reduce((s, l) => s + 1200 + l.length * 62, 0);
+  if (!loud || !spCanHear()) { dvl.minDur = Math.min(dvl.minDur, 20000); return; } // we can't hear it: wait a while, then move on
+  if (c < 4) addLog(null, `The forest devil's story · ${['I', 'II', 'III', 'IV'][c]}. ${DV_TALE[c].name}`, true);
+  lines.forEach((t, i) => dvl.lines.push({ text: t, end: i === lines.length - 1 ? c + 1 : 0 }));
+}
+function dvCanPerceive() { return joined && roomOf(me.x) === 'camp' && dist(me.x, me.y, FIRE.x, FIRE.y) < 720; }
+// Ember's own words about the devil (only on screens where Ember is awake and can be heard)
+function dvEmberSays(lines) {
+  if (spirit.ph !== 'awake' || !spCanHear()) return;
+  for (const l of lines) ember.lines.push(l);
+}
+// Is the devil out there right now (and visible)?
+function dvPresent() { return dv.p < 10 && (dv.st >= 4 || (dv.st >= 1 && spirit.ph === 'awake')); }
+// While it's at the edge or at the fire, nothing lurks in the woods; after it goes home they're gentle.
+function dvBusyHere() { return dv.p < 10 && (dv.st >= 4 || (dv.st === 3 && spirit.ph === 'awake')); }
+function dvGentle() { return dvl.friend || dv.p >= 10; }
+function dvWaiting() { return dv.st >= 4 && dv.p >= 2 && dv.p <= 8 && dv.p % 2 === 0; }
+function dvTalking() { return !!dvl.cur || dvl.lines.length > 0; }
+// Ember keeps quiet while the devil walks over, tells its story, or has just spoken
+function dvHolding(now) {
+  if (dv.p >= 10 || dv.st < 3) return false;
+  if (dvTalking() || now - dvl.lineEnd < 6000) return true;
+  if (dv.st >= 4 && (dv.p % 2 === 1 || dv.p === 0)) return true;
+  return false;
+}
+function dvForEmber() { return dv.p >= 10 ? 'home' : dv.st >= 4 ? 'fire' : dv.st === 3 ? 'edge' : dv.st >= 1 ? 'listening' : ''; }
+
+// ---- listening (only the device that decides adds anything up) ----
+function dvLeader() {
+  if (!spCanHear()) return false;
+  const mine = String(myPeer || 'me');
+  for (const o of others.values()) {
+    if (!o.p || !o.p.n || roomOf(o.rx) !== 'camp' || dist(o.rx, o.ry, FIRE.x, FIRE.y) > 380) continue;
+    if (String(o.peer) < mine) return false;
+  }
+  return true;
+}
+function dvAdd(x) {
+  if (dv.st >= 4 || dv.p >= 10 || spirit.ph !== 'awake') return;
+  dv = Object.assign({}, dv, { h: Math.min(999, dv.h + x) });
+  const now = performance.now();
+  if (Math.floor(dv.h) !== dvl.hPushed && now - dvl.pushAt > 1500) { dvl.pushAt = now; dvl.hPushed = Math.floor(dv.h); sentDirty = true; }
+}
+// how much a line gives away: long, personal, remembered, felt
+function dvDepth(t) {
+  const words = String(t).split(/\s+/).filter(Boolean).length;
+  let s = 1.2 + Math.min(2, words / 12);
+  if (/\b(i|i'm|i've|i'd|i was|my|me|we|our)\b/i.test(t)) s += 0.6;
+  if (DV_MEMORY.test(t)) s += 1.4;
+  if (DV_FEEL.test(t)) s += 1;
+  return Math.min(6, s);
+}
+// Called for every line said at the awake fire that Ember may follow (spOverheard).
+function dvHeard(name, text) {
+  if (name === 'Ember' || !dvLeader()) return;
+  const now = performance.now();
+  dvl.noiseAt = now;
+  if (dvWaiting()) dvl.ans.lines += 1;
+  dvAdd(dvDepth(text));
+  if (DV_LAUGH.test(text)) dvReact('laugh', 0.6);
+  else if (DV_SAD.test(text)) { dvAdd(1); dvReact('cry', 0.6); }
+}
+// someone at the fire laughed (😂), was moved (❤️) or teared up (😢)
+function dvEmote(x, y, k) {
+  if (!dvLeader() || roomOf(x) !== 'camp' || dist(x, y, FIRE.x, FIRE.y) > 380) return;
+  if (k === 'laugh') { dvAdd(1); dvReact('laugh', 0.7); }
+  else if (k === 'tear') { dvAdd(1.5); dvReact('cry', 0.8); }
+  else if (k === 'heart') { dvAdd(1.5); dvReact('cry', 0.3); }
+}
+function dvReact(kind, chance) {
+  const now = performance.now();
+  if (!dvPresent() || now - dvl.reactAt < 18000) return;
+  if (dvl.seen[kind] && Math.random() > chance) return;
+  dvl.seen[kind] = true; dvl.reactAt = now;
+  dvSet({ r: dv.r + 1, rk: kind }, true);
+}
+function dvLeadTick(now, dt) {
+  const lead = dvLeader();
+  if (lead && !dvl.lastLead) { dvl.stText = story.text; dvl.stHolder = story.holder; } // just took over: don't count old cards
+  dvl.lastLead = lead;
+  if (!lead) return;
+  const awake = spirit.ph === 'awake';
+  // friends talking out loud at the fire (just that someone is talking, not what they say)
+  let talking = false;
+  const tk = voice.speaking.get('me');
+  if (tk && now - tk < 350) talking = true;
+  for (const o of others.values()) {
+    if (talking) break;
+    const s = voice.speaking.get(o.peer);
+    if (s && now - s < 350 && o.p && roomOf(o.rx) === 'camp' && dist(o.rx, o.ry, FIRE.x, FIRE.y) < 380) talking = true;
+  }
+  if (talking) { dvl.noiseAt = now; if (awake) dvAdd(0.1 * dt); if (dvWaiting()) dvl.ans.talk += dt; }
+  // the story circle: a card drawn, the talking stick passed on
+  if (story.text !== dvl.stText) { if (story.text) { dvAdd(story.deck === 'stones' ? 4 : 3); if (dvWaiting()) dvl.ans.story += 1; dvl.noiseAt = now; } dvl.stText = story.text; }
+  if (story.holder !== dvl.stHolder) { if (story.holder) { dvAdd(3); if (dvWaiting()) dvl.ans.story += 1; } dvl.stHolder = story.holder; }
+  // friends it has met before bring it closer sooner
+  if (awake && dv.st < 4 && dv.p < 10) {
+    let floor = 0;
+    const atFire = dvAtFire();
+    if (atFire.some(p => p.dh >= 5)) floor = 30; else if (atFire.some(p => p.dh >= 1)) floor = 20;
+    if (dv.h < floor) dvAdd(floor - dv.h);
+  }
+  // it comes closer as the talk deepens
+  if (awake && dv.st < 3 && dv.p < 10) {
+    let want = 0;
+    DV_NEED.forEach((n, i) => { if (dv.h >= n) want = i; });
+    if (want > dv.st) { dvSet({ st: want }, true); return; }
+  }
+  // it sits down, and after a breath begins (where these friends left off last time, if they've heard some)
+  if (dv.st >= 4 && dv.p === 0 && now - dvl.walkAt > DV_WALK * 1000 + 1800) {
+    const from = Math.min(4, ...dvAtFire().map(p => Math.min(4, p.dh)));
+    dvSet({ p: from >= 4 ? 8 : 2 * from + 1 }, true);
+    return;
+  }
+  // a chapter (or its goodbye) finished on this screen: ask its question, or go home
+  if (dv.p % 2 === 1 && dv.p <= 9) {
+    if (dvl.tellP !== dv.p) { dvl.tellP = dv.p; dvl.tellAt = now; dvl.minDur = 20000; } // took over mid-story
+    if (!dvTalking() && now - dvl.tellAt > dvl.minDur && now - dvl.lineEnd > 1500) dvSet({ p: dv.p + 1 }, true);
+    return;
+  }
+  // waiting for the friends to answer its question: go on once a few have spoken and the talk pauses
+  if (dvWaiting()) {
+    const last = dv.p === 8, a = dvl.ans, waited = now - dvl.waitAt;
+    const answered = a.lines >= (last ? 3 : 2) || a.talk >= (last ? 25 : 12) || a.story >= 1;
+    if (dvTalking()) return;
+    if ((answered && now - dvl.noiseAt > 4000 && waited > 15000) || waited > (last ? 180000 : 120000)) dvSet({ p: dv.p + 1 }, true);
+  }
+}
+// who is sitting or standing at the fire, and how much of the devil's story each has heard
+function dvAtFire() {
+  const list = [];
+  if (spCanHear()) list.push({ dh: dvl.heard });
+  for (const o of others.values()) {
+    if (!o.p || !o.p.n || roomOf(o.rx) !== 'camp' || dist(o.rx, o.ry, FIRE.x, FIRE.y) > 380) continue;
+    list.push({ dh: clamp(num(o.p.dh, 0) | 0, 0, 5) });
+  }
+  return list.length ? list : [{ dh: 0 }];
+}
+
+// ---- asking it over, and asking it to go on ----
+function dvNearEdge() { return dist(me.x, me.y, DV_EDGE.x, DV_EDGE.y); }
+function dvCanInvite() { return joined && dv.st === 3 && dv.p < 10 && spirit.ph === 'awake' && roomOf(me.x) === 'camp' && me.sit < 0 && dvNearEdge() < 100; }
+function dvInvite(how) {
+  if (dv.st !== 3 || dv.p >= 10 || spirit.ph !== 'awake') return false;
+  const now = performance.now();
+  if (now - dvl.inviteAt < 3000) return false;
+  dvl.inviteAt = now;
+  if (how === 'walk') { say('Come and sit with us by the fire.'); spOverheard(me.name, 'Come and sit with us by the fire.', 'me'); }
+  dvSet({ st: 4, by: me.name }, true);
+  return true;
+}
+function dvGoOn(said) {
+  if (!dvWaiting() || performance.now() - dvl.waitAt < 4000) return false;
+  if (said) { say(DV_GO_ON_SAY); spOverheard(me.name, DV_GO_ON_SAY, 'me'); }
+  dvSet({ p: dv.p + 1 }, true);
+  return true;
+}
+// Something I typed or said: was it for the devil? (Then it isn't sent to Ember.)
+function dvMySaid(v) {
+  if (!joined || roomOf(me.x) !== 'camp') return false;
+  const nearFireOrIt = dist(me.x, me.y, FIRE.x, FIRE.y) < 420 || dvNearEdge() < 260;
+  if (dv.st === 3 && nearFireOrIt && !DV_NOT.test(v) && (DV_ASK.test(v) || (DV_COME.test(v) && DV_WHO.test(v)))) return dvInvite('words');
+  if (dvWaiting() && dist(me.x, me.y, FIRE.x, FIRE.y) < 420 && (DV_GO_ON.test(v) || (DV_GO.test(v) && DV_WHO.test(v)))) return dvGoOn(false);
+  return false;
+}
+
+// ---- its voice ----
+// The same natural voice Ember has (from the server), played slower and deeper, with the dark of
+// the woods round it; otherwise the device's own voice, pitched low; otherwise just its words.
+function dvLineTick(now) {
+  const c = dvl.cur;
+  if (c && (c.done || now > c.until)) {
+    dvl.cur = null; dvl.lineEnd = now;
+    if (c.end) dvHeardChapter(c.end);
+  }
+  if (dvl.cur || !dvl.lines.length) return;
+  if (ember.cur || ember.lines.length || now - ember.lineEnd < 700) return; // let Ember finish first
+  if (dv.st >= 4 && now - dvl.walkAt < DV_WALK * 1000 + 800) return;   // it's still sitting down
+  const item = dvl.lines.shift(), text = item.text;
+  const cur = { text, end: item.end, at: now, until: now + Math.max(2600, text.length * 72), done: false, voice: false, started: false };
+  dvl.cur = cur;
+  ember.convo.push({ n: 'The forest devil', t: text.slice(0, 240), at: now, w: new Set() }); // so Ember knows what it said
+  if (ember.convo.length > 24) ember.convo.shift();
+  if (!ember.voiceOn || !spCanHear()) return;
+  if (claudeTts) {
+    cur.voice = true; cur.started = true; cur.until = now + 8000 + text.length * 130;
+    claudeTts.speak(text, { voice: 'rounded', rate: 0.82 }).then(() => { cur.done = true; }, () => { cur.voice = false; cur.until = cur.at + Math.max(2600, text.length * 72); });
+    return;
+  }
+  if (spSpiritVoiceOk()) {
+    cur.voice = true; cur.until = now + 16000 + text.length * 110;
+    dvSayAudio(text).then(buf => {
+      if (dvl.cur !== cur || cur.done) return;
+      if (buf && ember.voiceOn) dvPlayVoice(cur, buf); else dvSpeakDevice(cur);
+    });
+    for (const n of dvl.lines.slice(0, 2)) dvSayAudio(n.text);
+    return;
+  }
+  dvSpeakDevice(cur);
+}
+function dvSpeakDevice(cur) {
+  const text = cur.text, now = performance.now();
+  const silent = () => { cur.voice = false; cur.until = cur.at + Math.max(2600, text.length * 72); };
+  if (!WEB_TTS || IN_CLAUDE) { silent(); return; }
+  cur.voice = true; cur.until = now + 6000 + text.length * 130;
+  const finish = () => { if (performance.now() - now < text.length * 25) silent(); else cur.done = true; };
+  try {
+    const u = new SpeechSynthesisUtterance(text), v = spVoiceFor('en');
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+    u.pitch = 0.45; u.rate = 0.82; u.volume = dvVoiceVol();
+    u.onstart = () => { cur.started = true; };
+    u.onend = finish; u.onerror = silent;
+    speechSynthesis.speak(u);
+  } catch (e) { silent(); }
+}
+function dvVoiceVol() { const P = dvl.pose; return clamp(1 - Math.max(0, dist(me.x, me.y, P ? P.x : DV_SEAT.x, P ? P.y : DV_SEAT.y) - 180) / 300, 0.25, 1); }
+function dvSayAudio(text) {
+  if (dvl.says.has(text)) return dvl.says.get(text);
+  const p = (async () => {
+    const ac = getAC();
+    if (!ac || !spSpiritVoiceOk()) return null;
+    try {
+      const r = await fetch('/ember-say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room: ROOM_CODE, text, mood: '' }) });
+      if (!r.ok) { if (r.status === 503) ember.voiceSrv = false; dvl.says.delete(text); return null; }
+      const data = await r.arrayBuffer();
+      return await new Promise((ok, bad) => ac.decodeAudioData(data, ok, bad));
+    } catch (e) { dvl.says.delete(text); return null; }
+  })();
+  dvl.says.set(text, p);
+  if (dvl.says.size > 40) dvl.says.delete(dvl.says.keys().next().value);
+  return p;
+}
+function dvPlayVoice(cur, buf) {
+  const ac = getAC(), fx = dvVoiceFx(ac), src = ac.createBufferSource();
+  src.buffer = buf; src.playbackRate.value = 0.8; // slower and deeper than Ember: something very old
+  const g = ac.createGain(); g.gain.value = dvVoiceVol();
+  src.connect(g); g.connect(fx);
+  cur.started = true; cur.until = performance.now() + buf.duration / 0.8 * 1000 + 1500;
+  src.onended = () => { cur.done = true; if (dvl.src === src) dvl.src = null; };
+  dvl.src = src; src.start();
+}
+// dark and close, a little rough, with the deep woods echoing behind it
+function dvVoiceFx(ac) {
+  if (dvl.vfx && dvl.vfx.ac === ac) return dvl.vfx.input;
+  const input = ac.createGain(), out = ac.createGain();
+  const low = ac.createBiquadFilter(); low.type = 'lowshelf'; low.frequency.value = 180; low.gain.value = 6;
+  const dull = ac.createBiquadFilter(); dull.type = 'lowpass'; dull.frequency.value = 2600;
+  const rough = ac.createWaveShaper();
+  const curve = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; curve[i] = Math.tanh(x * 1.8) / Math.tanh(1.8); }
+  rough.curve = curve;
+  input.connect(low); low.connect(rough); rough.connect(dull);
+  const dry = ac.createGain(); dry.gain.value = 0.9; dull.connect(dry); dry.connect(out);
+  const verb = ac.createConvolver(); verb.buffer = spImpulse(ac, 3.4, 2.2);
+  const wet = ac.createGain(); wet.gain.value = 0.42; dull.connect(verb); verb.connect(wet); wet.connect(out);
+  out.connect(ac.destination);
+  dvl.vfx = { ac, input };
+  return input;
+}
+// a chapter finished on this screen: remember it here
+function dvHeardChapter(n) {
+  if (!spCanHear()) return;
+  if (n > dvl.heard) { dvl.heard = n; store('campfire.devilHeard', n); me.dh = n; sentDirty = true; }
+}
+// it goes home and leaves its ember in the fire: the woods are gentle from now on
+function dvGetEmber() {
+  dvl.heard = 5; store('campfire.devilHeard', 5); me.dh = 5;
+  if (!dvl.friend) { dvl.friend = true; store('campfire.devilFriend', 1); }
+  sentDirty = true;
+  setTimeout(() => {
+    if (!joined) return;
+    spBurst('255,214,120', 18);
+    dvChord([392, 493.88, 587.33, 783.99], 2.6, 0.05);
+    addLog(null, 'Where it sat, a small ember glows… and drifts into the fire.', true);
+    showToast('The forest devil left its ember in the fire. The woods feel kinder now.', 6500);
+  }, 6600);
+}
+
+// ---- sounds (they follow the campsite volume slider) ----
+function dvVol() { const P = dvl.pose; return P ? clamp(1 - dist(me.x, me.y, P.x, P.y) / 900, 0.15, 1) : 0.3; }
+function dvChord(fs, dur, vol) { fs.forEach((f, i) => setTimeout(() => spBell(f, dur, vol), i * 90)); }
+function dvStageSound(st) {
+  const ac = getAC(); if (!ac) return;
+  if (st === 1) smBurst(2.4, 220, 90, 0.05 * dvVol(), 'lowpass');           // a breath of wind in the trees
+  else if (st === 2) { smBurst(1.6, 500, 160, 0.06 * dvVol(), 'lowpass'); smBlip(70, 1.4, 'sine', 0.06 * dvVol(), 52); }
+  else if (st === 3) { smBurst(2.8, 300, 80, 0.08, 'lowpass'); dvChord([73.42, 110, 146.83], 3.6, 0.05); } // something big settles at the edge
+}
+// a low, rusty chuckle
+function dvChuckle() {
+  const ac = audio; if (!ac) return;
+  try {
+    const v = 0.5 * dvVol(), t0 = ac.currentTime;
+    for (let i = 0; i < 5; i++) {
+      const t = t0 + i * 0.19 + (i ? 0.05 : 0), f = 118 - i * 9;
+      const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f * 1.15, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.14);
+      const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 520; bp.Q.value = 2.2;
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16 * v * (1 - i * 0.12), t + 0.025); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(bp).connect(g).connect(envOut()); o.start(t); o.stop(t + 0.2);
+    }
+    smBurst(1.1, 900, 400, 0.04 * v, 'bandpass');
+  } catch (e) { }
+}
+// a long, shaky sigh
+function dvSigh() {
+  const ac = audio; if (!ac) return;
+  try {
+    const v = 0.5 * dvVol(), t0 = ac.currentTime;
+    smBurst(2.2, 1100, 260, 0.14 * v, 'bandpass');
+    const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(150, t0 + 0.2); o.frequency.exponentialRampToValueAtTime(92, t0 + 2.2);
+    const trem = ac.createOscillator(); trem.frequency.value = 6.5;
+    const tg = ac.createGain(); tg.gain.value = 0.35;
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.06 * v, t0 + 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.3);
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+    trem.connect(tg).connect(g.gain);
+    o.connect(lp).connect(g).connect(envOut()); o.start(t0); o.stop(t0 + 2.4); trem.start(t0); trem.stop(t0 + 2.4);
+  } catch (e) { }
+}
+// your own heart, when you walk up to it
+function dvBeat(vol) {
+  const ac = audio; if (!ac) return;
+  [0, 0.17].forEach((d, i) => {
+    try {
+      const t = ac.currentTime + d, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(i ? 62 : 54, t); o.frequency.exponentialRampToValueAtTime(34, t + 0.16);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol * (i ? 0.7 : 1), t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g).connect(envOut()); o.start(t); o.stop(t + 0.22);
+    } catch (e) { }
+  });
+}
+function dvPlayReaction(kind) {
+  if (!dvCanPerceive() && dvNearEdge() > 500) return;
+  const now = performance.now();
+  dvl.react = { k: kind, at: now };
+  if (kind === 'laugh') dvChuckle(); else dvSigh();
+  const tier = dv.st >= 4 ? 2 : dv.st === 3 ? 1 : 0;
+  addLog(null, rnd(DV_REACT_LOG[kind][tier]), true);
+}
+
+// ---- every frame ----
+function devilTick(now) {
+  const dt = Math.min(0.1, Math.max(0, (now - (dvl.tickAt || now)) / 1000));
+  dvl.tickAt = now;
+  if (!joined) return;
+  dvLeadTick(now, dt);
+  dvLineTick(now);
+  dvl.pose = dvPose(now);
+  // at the edge for a while and nobody has asked it over: Ember drops a hint (twice at most)
+  if (dv.st === 3 && dv.p < 10 && spirit.ph === 'awake' && dvl.hint < 2 && !ember.busy && !spEmberTalking()) {
+    const wait = dvl.hint === 0 ? 75000 : 240000;
+    if (now - dvl.edgeAt > wait) {
+      dvl.hint += 1;
+      dvEmberSays(dvl.hint === 1 ? ['It won’t come any closer by itself, I think. Somebody would have to ask it. Or walk over to it, if they’re brave.'] : ['Still there, listening. It has been out in the cold a very long time.']);
+    }
+  }
+  // walking up to it at the edge: your heart pounds, then it settles and waits to see what you'll do
+  const P = dvl.pose;
+  let near = 0;
+  if (P && dv.st === 3 && P.a > 0.5 && roomOf(me.x) === 'camp' && me.sit < 0 && dist(me.x, me.y, FIRE.x, FIRE.y) > 150) {
+    const d = dist(me.x, me.y, P.x, P.y);
+    if (d < 170) {
+      near = clamp((170 - d) / 80, 0, 1);
+      if (!dvl.nearTip) { dvl.nearTip = true; showToast('Your heart is pounding. The forest devil is watching you come closer…', 4200); }
+      const gap = d < 100 ? 1300 : 950 - near * 300;
+      if (now - dvl.beatAt > gap) { dvl.beatAt = now; dvBeat((d < 100 ? 0.12 : 0.1 + near * 0.12)); }
+      if (d < 100 && !dvl.braveTip) { dvl.braveTip = true; showToast('It isn’t running. It’s waiting to see what you’ll do.', 4200); }
+    }
+  }
+  dvl.near += (near - dvl.near) * Math.min(1, dt * 4);
+}
+
+// ---- where it is, and how it looks ----
+// pose: x, y (its feet), a (how visible), sit (0 standing … 1 sitting), body (0: only its eyes show), gold
+// (0 red … 1 gold), bloom (leaves on its antlers), walk (stepping), bow
+function dvPose(now) {
+  const lerp = (a, b, k) => a + (b - a) * k, ease = k => k * k * (3 - 2 * k);
+  if (dv.p >= 10) {
+    const e = (now - dvl.leaveAt) / 1000;
+    if (e > DV_LEAVE) return null;
+    const gold = clamp(e / 1.5, 0, 1), bloom = clamp((e - 0.4) / 1.6, 0, 1);
+    if (e < 1.5) return { x: DV_SEAT.x, y: DV_SEAT.y, a: 1, sit: 1 - ease(e / 1.5), body: 1, gold, bloom, walk: 0, bow: 0 };
+    if (e < 7) { const q = dvAlong(DV_PATH.slice().reverse(), ease((e - 1.5) / 5.5)); return { x: q.x, y: q.y, a: 1, sit: 0, body: 1, gold: 1, bloom: 1, walk: 1, bow: 0 }; }
+    const k = (e - 7) / (DV_LEAVE - 7);
+    return { x: lerp(DV_EDGE.x, DV_MID.x, k), y: lerp(DV_EDGE.y, DV_MID.y, k), a: 1 - k, sit: 0, body: 1, gold: 1, bloom: 1, walk: 1, bow: 0 };
+  }
+  if (dv.st >= 4) {
+    const e = (now - dvl.walkAt) / 1000;
+    if (e < DV_WALK) {
+      // hesitant: a few steps, a pause, then the rest of the way, and it sits
+      const k = clamp(e < 2.6 ? ease(e / 2.6) * 0.3 : e < 3.6 ? 0.3 : 0.3 + ease(clamp((e - 3.6) / (DV_WALK - 4.6), 0, 1)) * 0.7, 0, 1);
+      const sit = clamp((e - (DV_WALK - 1)) / 1, 0, 1), q = dvAlong(DV_PATH, k);
+      return { x: q.x, y: q.y, a: 1, sit, body: 1, gold: 0.4, bloom: 0, walk: e < 2.6 || (e > 3.6 && k < 1) ? 1 : 0, bow: 0 };
+    }
+    return { x: DV_SEAT.x, y: DV_SEAT.y, a: 1, sit: 1, body: 1, gold: 0.6, bloom: 0, walk: 0, bow: dvTalking() ? 0 : 0.3 };
+  }
+  if (!dvPresent()) { dvl.shy = 0; return null; }
+  const fade = clamp((now - dvl.stAt) / 2200, 0, 1);
+  if (dv.st === 3) return { x: DV_EDGE.x, y: DV_EDGE.y, a: fade, sit: 0, body: 1, gold: clamp(0.15 + dvl.near * 0.25, 0, 0.4), bloom: 0, walk: 0, bow: dvNearEdge() < 100 ? 0.5 : 0 };
+  // further out it's shy: anyone coming close makes it slip back into the dark
+  const at = dv.st === 2 ? { x: DV_MID.x + Math.sin(now / 4200) * 22, y: DV_MID.y } : { x: DV_FAR.x + Math.sin(now / 5300) * 30, y: DV_FAR.y };
+  let close = roomOf(me.x) === 'camp' && dist(me.x, me.y, at.x, at.y) < 190;
+  for (const o of others.values()) if (!close && o.p && o.p.n && roomOf(o.rx) === 'camp' && dist(o.rx, o.ry, at.x, at.y) < 190) close = true;
+  dvl.shy = clamp(dvl.shy + (close ? 1 : -0.25) * 0.03, 0, 1);
+  return { x: at.x, y: at.y, a: fade * (1 - dvl.shy), sit: 0, body: dv.st === 2 ? 1 : 0, gold: 0, bloom: 0, walk: 0, bow: 0 };
+}
+// its body, drawn with the rest of the world (so trees can stand in front of it, and night falls on it)
+function drawDevil(g, t) {
+  const P = dvl.pose;
+  if (!P || P.a <= 0.01 || !P.body) return;
+  const now = performance.now(), R = dvl.react, re = R ? (now - R.at) / 1000 : 99;
+  const laugh = R && R.k === 'laugh' && re < 2.4 ? 1 : 0, cry = R && R.k === 'cry' && re < 4 ? 1 : 0;
+  const s = P.sit, H = 118 - s * 42;              // the top of its head
+  g.save(); g.translate(P.x, P.y); g.globalAlpha = P.a;
+  g.fillStyle = 'rgba(0,0,0,0.34)'; g.beginPath(); g.ellipse(0, 1, 30 + s * 12, 9, 0, 0, Math.PI * 2); g.fill();
+  const step = P.walk ? Math.sin(t * 5.5) : 0;
+  const shake = laugh ? Math.sin(t * 38) * 1.4 : 0;
+  g.translate(shake, P.walk ? -Math.abs(step) * 2 : 0);
+  const shY = -H + 30, bow = (P.bow + cry * 0.7) * 7;
+  // the cloak: a long ragged shadow, wider and lower when it sits
+  const wB = 27 + s * 17, wS = 15 + s * 3;
+  const gr = g.createLinearGradient(0, shY, 0, 0);
+  gr.addColorStop(0, '#22141c'); gr.addColorStop(1, '#0b0609');
+  g.fillStyle = gr;
+  g.beginPath();
+  g.moveTo(-wS, shY - 3 + bow * 0.5);
+  g.bezierCurveTo(-wS - 14, shY + 20, -wB - 4, -30 + s * 10, -wB, -4);
+  const N = 10;
+  for (let i = 0; i <= N; i++) {
+    const u = i / N, x = -wB + u * wB * 2;
+    const y = (i % 2 ? -3 : 3) + Math.sin(t * 1.8 + i * 1.3) * 1.6 + (P.walk && i % 3 === 0 ? step * 2 : 0);
+    g.lineTo(x, y);
+  }
+  g.bezierCurveTo(wB + 4, -30 + s * 10, wS + 14, shY + 20, wS, shY - 3 + bow * 0.5);
+  g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(150,96,118,0.32)'; g.lineWidth = 1.3; g.stroke(); // a faint edge, so it isn't only a hole in the night
+  if (s > 0.3) { // knees under the cloak
+    g.fillStyle = '#170d13';
+    for (const side of [-1, 1]) { g.beginPath(); g.ellipse(side * 13, -24 + (1 - s) * 10, 11, 9, 0, 0, Math.PI * 2); g.fill(); }
+  }
+  // long thin arms and crooked hands
+  g.strokeStyle = '#150c11'; g.lineCap = 'round'; g.lineJoin = 'round';
+  for (const side of [-1, 1]) {
+    const sx = side * (wS + 2), sy = shY + 4 + bow * 0.4;
+    let ex, ey, hx, hy;
+    if (cry && side === 1 && s < 0.5) { ex = side * 20; ey = shY + 22; hx = 4; hy = -H + 16 + bow; }          // wiping its eyes
+    else if (s > 0.5) { ex = side * 26; ey = -36; hx = side * 9; hy = -26; }                                    // round its knees
+    else { const sw = P.walk ? step * side * 4 : Math.sin(t * 0.8 + side) * 1.5; ex = side * 25 + sw; ey = shY + 34; hx = side * 23 + sw * 1.4; hy = -20 + laugh * -8; }
+    g.lineWidth = 5; g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(ex, ey, hx, hy); g.stroke();
+    g.lineWidth = 1.6;
+    for (let f = -1; f <= 1; f++) { g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx + f * 3.2 + side * 1.5, hy + 8 - Math.abs(f) * 1.5); g.stroke(); }
+  }
+  // the head: a ragged dark mass
+  const hy = -H + 12 + bow;
+  g.fillStyle = '#120a0f'; g.strokeStyle = 'rgba(150,96,118,0.3)'; g.lineWidth = 1;
+  g.beginPath();
+  for (let i = 0; i <= 18; i++) {
+    const a = i / 18 * Math.PI * 2, j = 1 + (i % 2 ? 0.1 : -0.05);
+    const x = Math.cos(a) * 12.5 * j, y = Math.sin(a) * 14.5 * j + (Math.sin(a) > 0 ? 2.5 : 0);
+    if (i === 0) g.moveTo(x, hy + y); else g.lineTo(x, hy + y);
+  }
+  g.fill(); g.stroke();
+  // antlers
+  g.strokeStyle = '#1b1016';
+  const rr = mulberry(31);
+  const tips = [];
+  for (const side of [-1, 1]) {
+    const branch = (x, y, ang, len, w, depth) => {
+      const wob = laugh ? Math.sin(t * 30 + depth) * 0.05 : 0;
+      const x2 = x + Math.cos(ang + wob) * len, y2 = y + Math.sin(ang + wob) * len;
+      g.lineWidth = w; g.beginPath(); g.moveTo(x, y); g.lineTo(x2, y2); g.stroke();
+      if (depth > 0) {
+        branch(x2, y2, ang - side * (0.42 + rr() * 0.1), len * 0.66, w * 0.68, depth - 1);
+        branch(x2, y2, ang + side * (0.5 + rr() * 0.12), len * 0.55, w * 0.62, depth - 1);
+      } else tips.push([x2, y2]);
+    };
+    branch(side * 6, hy - 11, -Math.PI / 2 + side * 0.5, 19, 3.4, 3);
+  }
+  dvl.tips = tips;
+  // wisps of shadow rising off it
+  if (P.gold < 0.9) {
+    for (let i = 0; i < 4; i++) {
+      const k = (t * 0.35 + i / 4) % 1;
+      g.globalAlpha = P.a * (1 - k) * 0.35;
+      g.fillStyle = '#1a0f16';
+      g.beginPath(); g.arc((i % 2 ? 1 : -1) * (wS + 4) + Math.sin(t + i) * 4, shY - k * 34, 4 + k * 5, 0, Math.PI * 2); g.fill();
+    }
+  }
+  g.restore();
+}
+// its eyes (and tears, and the leaves on its antlers when it goes home) glow through the dark
+function dvLightGlow(g, t) {
+  const P = dvl.pose;
+  if (!P || P.a <= 0.01 || roomOf(me.x) !== 'camp') return;
+  const now = performance.now(), R = dvl.react, re = R ? (now - R.at) / 1000 : 99;
+  const laugh = R && R.k === 'laugh' && re < 2.4, cry = R && R.k === 'cry' && re < 4;
+  const s = P.sit, H = 118 - s * 42, bow = (P.bow + (cry ? 0.7 : 0)) * 7;
+  const hx = P.x + (laugh ? Math.sin(t * 38) * 1.4 : 0), hy = P.y - H + 12 + bow;
+  const [ex, ey] = w2s(hx, hy - 1);
+  const rgb = P.gold > 0.5 ? `255,${Math.round(160 + 50 * P.gold)},${Math.round(70 + 40 * P.gold)}` : `255,${Math.round(70 + 120 * P.gold)},${Math.round(40 + 40 * P.gold)}`;
+  const blink = Math.sin(t * 1.9 + 1) > 0.975 ? 0.15 : 1;
+  const Z = ZOOM;
+  g.save(); g.globalAlpha = P.a;
+  for (const side of [-1, 1]) {
+    const x = ex + side * 5.5 * Z;
+    spGlowDot(g, x, ey, 11 * Z, rgb, 0.55, false);
+    g.fillStyle = P.gold > 0.5 ? '#fff4cf' : '#ffd8b8';
+    if (laugh) { // squeezed shut with laughing: ^ ^
+      g.strokeStyle = g.fillStyle; g.lineWidth = 1.6 * Z; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x - 3 * Z, ey + 1 * Z); g.lineTo(x, ey - 1.8 * Z); g.lineTo(x + 3 * Z, ey + 1 * Z); g.stroke();
+    } else {
+      const droop = cry ? 0.45 : 1;
+      g.beginPath(); g.ellipse(x, ey + (1 - droop) * 1.2 * Z, 3.1 * Z, 2.1 * Z * blink * droop, side * (cry ? 0.35 : -0.2), 0, Math.PI * 2); g.fill();
+    }
+  }
+  if (laugh) { // a crack of a grin
+    g.strokeStyle = `rgba(${rgb},0.7)`; g.lineWidth = 1.4 * Z;
+    g.beginPath(); g.arc(ex, ey + 4 * Z, 5 * Z, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke();
+  }
+  if (cry && re < 3.6) { // a glowing tear runs down and falls
+    const k = clamp((re - 0.4) / 3, 0, 1);
+    const [tx, ty] = w2s(hx + 6.5, hy + 3 + k * k * (H - 18));
+    spGlowDot(g, tx, ty, 5 * Z, '170,220,255', 0.8 * (1 - k * 0.6), true);
+  }
+  if (P.bloom > 0 && dvl.tips) { // little gold leaves open on its antlers
+    for (const [x, y] of dvl.tips) {
+      const [lx, ly] = w2s(P.x + x, P.y + y);
+      spGlowDot(g, lx, ly, 5.5 * Z * P.bloom, '220,255,150', 0.75 * P.bloom, true);
+    }
+  }
+  g.restore();
+}
+// the ember it leaves where it sat: it glows a moment, then drifts into the fire
+function dvEmberGlow(g, t) {
+  if (dv.p < 10 || roomOf(me.x) !== 'camp') return;
+  const e = (performance.now() - dvl.leaveAt) / 1000;
+  if (e < 1.4 || e > 6.8) return;
+  const k = clamp((e - 4.4) / 2.2, 0, 1), q = k * k * (3 - 2 * k);
+  const x = DV_SEAT.x + (FIRE.x - DV_SEAT.x) * q, y = DV_SEAT.y - 6 + (FIRE.y - 30 - DV_SEAT.y) * q - Math.sin(q * Math.PI) * 60;
+  const [sx, sy] = w2s(x, y), pulse = 1 + Math.sin(t * 6) * 0.15, a = clamp((e - 1.4) / 0.6, 0, 1);
+  spGlowDot(g, sx, sy, 16 * ZOOM * pulse, '255,170,70', 0.8 * a, true);
+}
+// over the world: its words, its eyes at the edge of the screen when it's out of view, and the dark
+// closing in as you walk up to it
+function drawDevilOverlay(g, t, now) {
+  const P = dvl.pose;
+  if (dvl.near > 0.02) {
+    const a = dvl.near * (dvNearEdge() < 100 ? 0.25 : 0.5);
+    const v = g.createRadialGradient(VW / 2, VH / 2, Math.min(VW, VH) * 0.22, VW / 2, VH / 2, Math.max(VW, VH) * 0.72);
+    v.addColorStop(0, 'rgba(20,0,4,0)'); v.addColorStop(1, `rgba(20,0,4,${a})`);
+    g.fillStyle = v; g.fillRect(0, 0, VW, VH);
+  }
+  if (!P || P.a <= 0.05 || roomOf(me.x) !== 'camp') return;
+  const H = 118 - P.sit * 42, [sx, sy] = w2s(P.x, P.y - H - 52);
+  const c = dvl.cur;
+  if (c && c.text && (!c.voice || c.started || now - c.at > 3000)) {
+    if (!c.shownAt) c.shownAt = now;
+    dvBubble(g, clamp(sx, Math.min(170, VW / 2), Math.max(VW - 170, VW / 2)), clamp(sy, 170, VH - 40), c.text, clamp((now - c.shownAt) / 220, 0, 1));
+  } else if (c && c.text) dvBubble(g, clamp(sx, Math.min(170, VW / 2), Math.max(VW - 170, VW / 2)), clamp(sy, 170, VH - 40), '…', 0.85);
+  // out of view: two small eyes at the edge of the screen show where it is
+  const [hx, hy] = w2s(P.x, P.y - H + 12);
+  if (P.body && dist(me.x, me.y, FIRE.x, FIRE.y) < 600 && (hx < -10 || hx > VW + 10 || hy < -10 || hy > VH + 10)) {
+    const x = clamp(hx, 24, VW - 24), y = clamp(hy, 70, VH - 90), a = (0.45 + 0.2 * Math.sin(t * 2.2)) * P.a;
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const side of [-1, 1]) spGlowDot(g, x + side * 6, y, 9, P.gold > 0.5 ? '255,210,110' : '255,90,50', a, true);
+    g.restore();
+  }
+}
+function dvBubble(g, sx, sy, text, alpha) {
+  g.save(); g.globalAlpha = alpha;
+  g.font = `italic 15px "IM Fell English", Georgia, serif`;
+  const lines = spWrap(g, text, Math.min(300, VW - 70), 7);
+  const w = Math.max(...lines.map(l => g.measureText(l).width)) + 26, h = lines.length * 19 + 16;
+  const x = sx - w / 2, y = sy - h;
+  g.shadowColor = 'rgba(120,30,60,0.5)'; g.shadowBlur = 18;
+  g.fillStyle = 'rgba(18,10,16,0.94)'; roundRect(g, x, y, w, h, 12); g.fill();
+  g.beginPath(); g.moveTo(sx - 7, y + h); g.lineTo(sx, y + h + 9); g.lineTo(sx + 7, y + h); g.fill();
+  g.shadowBlur = 0;
+  g.strokeStyle = 'rgba(214,150,110,0.45)'; g.lineWidth = 1; roundRect(g, x + 0.5, y + 0.5, w - 1, h - 1, 12); g.stroke();
+  g.fillStyle = '#f1dcc4'; g.textAlign = 'center'; g.textBaseline = 'top';
+  lines.forEach((l, i) => g.fillText(l, sx, y + 9 + i * 19));
+  g.restore();
+}
+// with its ember in the fire, one small gold spark circles the flames (on this screen)
+function dvFireSpark(g, t) {
+  if (!dvl.friend || spirit.ph !== 'awake' || roomOf(me.x) !== 'camp') return;
+  const a = -t * 0.9, [sx, sy] = w2s(FIRE.x + Math.cos(a) * 44, FIRE.y + Math.sin(a) * 16 - 46 - Math.sin(t * 1.7) * 6);
+  spGlowDot(g, sx, sy, 12 * ZOOM, '255,214,120', Math.sin(a) < 0 ? 0.55 : 0.9, true);
+}
+function dvTapHit(wx, wy) {
+  const P = dvl.pose;
+  if (!P || dv.st !== 3 || P.a < 0.5) return false;
+  return Math.abs(wx - P.x) < 34 && wy > P.y - 150 && wy < P.y + 8;
+}
+// In the woods, after it has gone home: its gold eyes peek out, it nods, and it slips away.
+function dvFriendlyEyes() {
+  const now = performance.now();
+  scare.friendly = { at: now, eyes: scare.eyes ? Object.assign({}, scare.eyes) : null };
+  scare.until = now + SCARE_COOLDOWN * 1000;
+  scare.forestT = 0; scare.need = 5 + Math.random() * 5; scare.eyes = null; scare.whispered = false;
+  dvChord([523.25, 659.25, 783.99], 2.2, 0.035);
+  addLog(null, 'The forest devil peeks out from behind a tree, nods to you, and slips away into the dark.', true);
+}
+function drawFriendlyEyes(g) {
+  const f = scare.friendly;
+  if (!f) return;
+  const e = (performance.now() - f.at) / 1000;
+  if (e > 2.2 || !f.eyes) { if (e > 2.2) scare.friendly = null; return; }
+  const [ex, ey] = w2s(f.eyes.x, f.eyes.y + Math.sin(Math.min(1, e / 0.8) * Math.PI) * 6); // a little nod
+  g.save(); g.globalAlpha = clamp(1 - (e - 1.2), 0, 1); g.globalCompositeOperation = 'lighter';
+  for (const side of [-1, 1]) spGlowDot(g, ex + side * 7 * ZOOM, ey, 12 * ZOOM, '255,206,110', 0.75, true);
+  g.restore();
+}
+window.campfireDevilDebug = () => ({
+  h: Math.round(dv.h * 10) / 10, st: dv.st, p: dv.p, r: dv.r, rk: dv.rk, by: dv.by, heard: dvl.heard, friend: dvl.friend, leader: dvLeader(),
+  pose: dvl.pose ? { x: Math.round(dvl.pose.x), y: Math.round(dvl.pose.y), a: Math.round(dvl.pose.a * 100) / 100, sit: dvl.pose.sit } : null,
+  saying: dvl.cur ? dvl.cur.text : '', queued: dvl.lines.length, waiting: dvWaiting(), ans: Object.assign({}, dvl.ans), canInvite: dvCanInvite(), near: Math.round(dvl.near * 100) / 100, forEmber: dvForEmber()
+});
+
 // ===== Input =====
 const keys = new Set();
 window.addEventListener('keydown', e => {
@@ -8057,6 +8876,8 @@ const endTouch = e => {
       const s = RIT_STONES.find(q => Math.abs(wx - q.x) < 17 && wy > q.y - 52 && wy < q.y + 6);
       if (nearGlade()) ritStrike(s.i); else walkTo(s.x + (GLADE.x - s.x) * 0.25, s.y + (GLADE.y - s.y) * 0.25);
     }
+    // tapped the forest devil at the edge of the clearing: close enough, ask it over; otherwise walk up to it
+    else if (dvTapHit(wx, wy)) { if (dvCanInvite()) dvInvite('walk'); else walkTo(DV_EDGE.x - 64, DV_EDGE.y + 10); }
     else {
       const seat = SEATS.findIndex(s => dist(wx, wy, s.x, s.y) < 22);
       if (seat >= 0 && !seatTaken(seat) && dist(me.x, me.y, FIRE.x, FIRE.y) < 230) sitAt(seat);
@@ -8148,6 +8969,7 @@ function doAction() {
     pushPresence(true);
     return;
   }
+  if (dvCanInvite()) { dvInvite('walk'); return; }
   if (nearFire()) { const s = nearestFreeSeat(); if (s >= 0) sitAt(s); else showToast('Every seat is taken. Stand close and you can still listen.'); return; }
   if (atDock()) {
     me.fish = { st: 'cast', at: performance.now() };
@@ -8170,6 +8992,7 @@ function updateActionBtn() {
   else if (me.sit >= 0 || me.pew >= 0) label = 'Stand up';
   else if (nearStone() >= 0 && !me.fish) label = `Touch the ${RitualCore.STONES[nearStone()].name} stone`;
   else if (me.fish) { if (me.fish.st === 'bite') { label = 'Reel it in!'; b.classList.add('bite'); } else label = 'Waiting for a bite… (reel in)'; }
+  else if (dvCanInvite()) label = 'Invite it to the fire';
   else if (nearFire()) label = 'Sit by the fire';
   else if (atDock()) label = 'Cast a line';
   else if (nearChurchDoor()) label = 'Enter the church';
@@ -8572,6 +9395,7 @@ function render(t) {
     for (const s of GRAVES) items.push({ y: s.y, d: () => drawGrave(ctx, s) });
     for (const s of RIT_STONES) items.push({ y: s.y, d: () => drawRitStone(ctx, s) });
     items.push({ y: GLADE.y - 12, d: () => drawGladeHeart(ctx) });
+    if (dvl.pose && dvl.pose.body) items.push({ y: dvl.pose.y, d: () => drawDevil(ctx, t) });
   }
   for (const p of people) items.push({ y: p.y, d: () => drawPerson(p, t) });
   items.sort((a, b) => a.y - b.y);
@@ -8625,6 +9449,9 @@ function lightCamp(t, people) {
   }
   drawChurchGlow(ctx, t);
   spLightGlow(ctx, t, performance.now());
+  dvFireSpark(ctx, t);
+  dvLightGlow(ctx, t);
+  dvEmberGlow(ctx, t);
   ctx.restore();
 }
 // Name tags, speech, emotes and touch hints drawn over the world.
@@ -8655,7 +9482,7 @@ function drawOverlay(t, people, inside) {
       else drawBubble(ctx, sx, sy - (p.sit ? 48 : 56) * ZOOM, b.text, age > life - 800 ? (life - age) / 800 : 1, b.far);
     }
   }
-  if (!inside) drawSpiritOverlay(t, now);
+  if (!inside) { drawSpiritOverlay(t, now); drawDevilOverlay(ctx, t, now); }
   drawFloatCard(ctx, t);
   // joystick
   if (touch && touch.joy) {
@@ -8670,7 +9497,7 @@ function drawOverlay(t, people, inside) {
     const [sx, sy] = w2s(me.target.x, me.target.y);
     ctx.strokeStyle = 'rgba(255,211,107,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy, 10 + Math.sin(t * 6) * 2, 5, 0, 0, Math.PI * 2); ctx.stroke();
   }
-  if (!inside) { drawWard(ctx, t); drawScare(ctx, t); }
+  if (!inside) { drawWard(ctx, t); drawFriendlyEyes(ctx); drawScare(ctx, t); }
   if (joined) ritOverlay(roomOf(me.x));
   // a short fade to black when stepping through the church door
   const fe = (now - church.fadeAt) / 450;

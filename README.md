@@ -57,6 +57,7 @@ Then open http://localhost:3000. Friends on the same Wi-Fi can join with your co
 | Roast | Click and hold **Hold to roast** with the mouse, or hold Space | Press and hold **Hold to roast** |
 | Serve | Click **Serve!**, or press F | Tap **Serve!** |
 | Wake the fire | Walk round the fire 7 times without stopping | Walk round the fire 7 times without stopping |
+| Invite the forest devil | Walk up to it at the edge of the clearing and press E (or click it), or say "come and join us" | Walk up to it and tap it or the button, or say "come and join us" |
 | Talk to Ember | With your mic on, say "Ember, …"; or start a chat message with "Ember,", press T to speak once, or click a reply along the bottom | With your mic on, say "Ember, …"; or start a chat message with "Ember,", or tap a reply along the bottom |
 
 ## Voice chat
@@ -158,6 +159,22 @@ The windows above the altar in the old church tell the story (see below), and th
 ## Forest scares
 
 Linger in the deep forest and glowing eyes start watching from the trees. Stay a few more seconds and something jumps out with a scream. It happens at most once every 90 seconds per player, and anyone can switch it off in the **?** panel (Forest scares: Off).
+
+## The forest devil comes to the fire
+
+The devil of the deep woods was never evil. It keeps the stories people forgot, and once Ember is awake it starts to listen to the friends at the fire. The deeper the talk, the closer it comes:
+
+1. **Listening from afar.** A minute or two after friends start talking at the awake fire, a pair of eyes appears far off in the trees to the south-east, and the log says something has stopped to listen.
+2. **Closer.** A tall antlered shape half hidden behind a tree.
+3. **At the edge of the clearing.** It stands at the edge of the firelight, listening. Ember notices ("Someone has come to the edge of my clearing…") and, if nobody asks it over, hints that someone would have to. Nothing jumps out of the woods while it's there. On a phone it may be off screen: two small eyes at the edge of the screen show where it is.
+4. **Invite it.** Walk up to it (your heart pounds, the dark closes in, then it lowers its head and waits) and choose **Invite it to the fire** (E, or tap it). Or ask it from the fire, typed or out loud: "come and join us", "devil, come sit with us".
+5. **Its story.** It walks round the logs, sits in the gap on the west side of the fire and tells the story it has carried all these years, one chapter at a time: *The first fire*, *The first friend*, *How the world was told*, *How I became the forest devil*. Each chapter ends with a question for the friends. It goes on once a few of them have answered and the talk pauses (or when someone taps **What happened next?**, or says "tell us more"). After the last question (who do you wish you'd spent more time with?) it says goodbye, walks back into the woods with gold eyes and leaves on its antlers, and leaves its ember in the fire.
+
+**What it listens to:** how much is shared, not who says what. Lines said at the awake fire count (typed, or heard by Ember with the mic on), and more for long, personal ones (memories, family, feelings); so do friends talking out loud, story cards drawn and the talking stick passed on. Only words from people who have **Ember joins the conversation** on are counted. Now and then it laughs at a joke ("haha", 😂) with a rusty chuckle, or cries at a sad story (a sigh, a glowing tear). The reactions picker has a new 😢.
+
+**It remembers.** Chapters you've heard are saved on your device. Next time, it comes to listen sooner and picks up where your group left off. Friends who've heard all of it find it only comes to listen, says goodbye and goes. After it goes home, the woods are gentle for everyone who heard it: its eyes are gold, and instead of jumping out it peeks from behind a tree, nods and slips away. A small gold spark circles Ember's flames.
+
+Its voice is Ember's server voice, slowed and deepened with the dark of the woods (or the device's own voice, pitched low), and it follows **Ember speaks out loud**. With an AI brain, Ember knows where the devil is and plays host. One device at the fire (the lowest id) does the listening and decides when the devil moves on, so it's the same for everyone; anyone can invite it or ask it to go on.
 
 ## The old church
 
