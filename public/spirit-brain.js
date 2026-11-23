@@ -49,6 +49,14 @@
     'Reply in the language the friend used.'
   ];
   const PERSONA = PERSONA_PARTS.join('\n\n');
+
+  // Where the forest devil is tonight (the page tells Ember), so Ember can play host to it.
+  const DEVIL_NOW = {
+    listening: 'Tonight the forest devil has crept close, out beyond your firelight, to listen to the friends talking. Only you have noticed. Mention it only if it truly fits, and never as a threat.',
+    edge: 'Right now the forest devil is standing at the edge of your clearing, listening to the friends. It is not hunting. It will not come closer unless one of them walks over to it or asks it to join them. You may gently let them notice it, or wonder aloud whether it is lonely, but never tell them what to do.',
+    fire: 'The forest devil is sitting at your fire tonight, telling the friends its own story a piece at a time, and asking them questions of its own. Keep your words few and let it speak. You may greet it as an old friend.',
+    home: 'Tonight the forest devil sat at your fire and told the friends its own story: long ago it lit the first fire in this clearing; it told the first true story to a lost stranger, who stayed to hear the end and became its first friend, and you woke between their two stories; the world was told into being around your fire, and the seven stones were stood so nobody would forget; then it became the devil by gathering everyone\'s forgotten stories until it forgot its own. Then it went home to the woods, lighter, and left its ember in your fire. Now that it has told them itself, you may speak of it warmly, but its name stays forgotten.'
+  };
   const PERSONA_CHIME = PERSONA_PARTS.map(x => x === LORE ? LORE_SHORT : x).join('\n\n');
 
   function timeOfNight(h) {
@@ -78,6 +86,7 @@
       who: clean(i.who, 16) || 'A friend',
       people, history, convo,
       wakers: (Array.isArray(i.wakers) ? i.wakers : []).slice(0, 12).map(n => clean(n, 16)).filter(Boolean),
+      devil: Object.prototype.hasOwnProperty.call(DEVIL_NOW, i.devil) ? i.devil : '',
       hour: typeof i.hour === 'number' ? i.hour : -1
     };
   }
@@ -91,6 +100,7 @@
       lines.push('Around the fire right now: ' + q.people.map(p => p.n + (p.sit ? ' (sitting on a log)' : ' (standing nearby)') + (p.old ? ' (has woken you on an earlier night)' : '')).join(', ') + '.');
     }
     if (when) lines.push(`For ${q.who} it is ${when}.`);
+    if (q.devil) lines.push(DEVIL_NOW[q.devil]);
     if (q.history.length && q.kind !== 'chime') {
       lines.push('What has been said to you tonight, oldest first:');
       for (const h of q.history) lines.push(`${h.n}: ${h.t}`);
@@ -203,6 +213,13 @@
     [/\b(hi|hello|hey|hiya|howdy|yo|evening|good (evening|morning|afternoon))\b/i, ['Well met, {who}. Pull your log a little closer, it is cold beyond my glow.', 'Hello, {who}. I was hoping you would say something.', 'Ah, {who}. Welcome to my fire.']],
     [/\bhow are you\b|\bhow'?s it going\b/i, ['Crackling nicely, {who}, thank you. Better now that there is company.']]
   ];
+  // the storybook's replies about the devil, once it has come close
+  const DEVIL_REPLIES = {
+    listening: ['Shh, {who}. Something out past my light is listening to you all. Keep talking. I think it likes your voices.'],
+    edge: ['It is standing at the edge of my clearing, {who}. Listening. It will not come closer by itself. Somebody would have to ask it.', 'Do not be afraid of it tonight, {who}. It only wants to hear the stories. Perhaps someone brave could walk over and invite it.'],
+    fire: ['Let it speak, {who}. It has waited a very long time to tell that story.'],
+    home: ['It told you itself, {who}. The first fire, the first friend, and every story the world forgot. It went home lighter. It will always be listening now, kindly.', 'My oldest friend, {who}. I always hoped it would find its way back to the fire. You helped it.']
+  };
   const GENERIC = [
     'Mm. The wood remembers words like those, {who}. Tell me more.',
     'I will think on that as I burn, {who}. Meanwhile, ask me for a story.',
@@ -265,6 +282,7 @@
     }
     if (q.kind === 'wake') return fill(pick(WAKE), Object.assign({}, q, { people: q.wakers.length ? q.wakers.map(n => ({ n })) : q.people }));
     if (q.kind === 'bye') return fill('Mmm, goodnight, {who}. Wake me again soon.', q);
+    if (q.devil && /\b(devil|monster|creature|antlers?|eyes|that thing|out there|who is (that|it)|what is (that|it))\b/i.test(q.text)) return fill(pick(DEVIL_REPLIES[q.devil]), q);
     for (const [re, outs] of REPLIES) {
       if (!re.test(q.text)) continue;
       const out = pick(outs);
