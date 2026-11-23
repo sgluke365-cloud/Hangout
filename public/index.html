@@ -2566,7 +2566,7 @@ window.campfireVoiceDebug = () => ({
 // ===== Forest scares =====
 // Linger in the deep forest and something starts watching from the trees.
 // Stay a few seconds more and it jumps out. Can be turned off in the ? panel.
-const VERSION = 'v0.19.1';
+const VERSION = 'v0.19.2';
 const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const SCARE_LEN = 2.3, SCARE_FREEZE = 1.5, SCARE_COOLDOWN = 90;
 const scare = {
@@ -5606,10 +5606,12 @@ $('owNext').addEventListener('click', nextOwCard);
 // card for everyone in the glade (shared like the Otherwhere card: highest version wins). The first
 // touch shows the question carved into the stone; touching it again turns to the next one it keeps.
 // Stones you have heard are remembered on your device, and their questions become a deck
-// (The Stones) in the story circle at the fire. Touching a stone doesn't count towards the song.
+// (The Stones) in the story circle at the fire. Touching a stone (E, or the button) doesn't count towards
+// the song. Tapping or clicking a stone does both: it plays its note for the song and shows its question.
+// A quick second tap on the same stone (playing the tune) keeps the question; a slower one turns it.
 let stoneCard = { v: 0, i: -1, k: 0, by: '' };    // shared: presence 'sq'
 const stonesHeard = new Set((load('campfire.stonesHeard') || []).filter(n => Number.isInteger(n) && n >= 0 && n < 7));
-const stoneUi = { hidden: false, shown: false };
+const stoneUi = { hidden: false, shown: false, at: 0, logAt: 0, logBy: '' };
 function nearStone() {
   if (!joined || roomOf(me.x) !== 'camp' || !inGlade(me.x, me.y) || ritDoorShowing()) return -1;
   let best = -1, bd = 40;
@@ -5624,16 +5626,26 @@ function hearStone(i) {
   if (me.sit >= 0) renderStory(false);
   return first;
 }
-function touchStone(i) {
-  const same = stoneCard.i === i;
+function touchStone(i, tapped) {
+  if (ritDoorShowing()) return;
+  const now = performance.now(), same = stoneCard.i === i && stoneCard.v > 0;
+  const quick = tapped && same && now - stoneUi.at < 1200;
+  stoneUi.at = now;
+  if (!tapped) ritStrikeFx(i, 0.7);            // a tap has already played the stone's note
+  if (quick) { if (stoneUi.hidden) { stoneUi.hidden = false; renderStoneCard(true); } return; }
   const k = same ? (stoneCard.k + 1) % STONE_ASKS[i].length : 0;
   stoneCard = { v: stoneCard.v + 1, i, k, by: me.name };
-  ritStrikeFx(i, 0.7);
   sentDirty = true; pushPresence(true);
   stoneUi.hidden = false;
   const first = hearStone(i);
   renderStoneCard(true);
   if (first) addLog(null, 'The stones remember. Their questions will be waiting in the story circle at the fire.', true);
+}
+// Tapped or clicked a stone: its note (counts towards the song) and its question.
+function tapStone(i) {
+  if (!nearGlade()) return;
+  ritStrike(i);
+  touchStone(i, true);
 }
 function resolveStoneCard() {
   let best = null, bestPeer = '';
@@ -5654,7 +5666,12 @@ function resolveStoneCard() {
     stoneUi.hidden = false;
     hearStone(next.i);
     renderStoneCard(true);
-    if (next.by) addLog(null, `${next.by} touched the ${RitualCore.STONES[next.i].name} stone.`, true);
+    // one line per person every few seconds, so someone tapping out the tune doesn't flood the log
+    const now = performance.now();
+    if (next.by && (next.by !== stoneUi.logBy || now - stoneUi.logAt > 5000)) {
+      addLog(null, `${next.by} touched the ${RitualCore.STONES[next.i].name} stone.`, true);
+      stoneUi.logAt = now; stoneUi.logBy = next.by;
+    }
   }
 }
 function stoneShouldShow() {
@@ -6143,7 +6160,9 @@ window.campfireRitualDebug = () => ({
   room: roomOf(me.x), glade: nearGlade(), circle: inCircle(me.x, me.y), mic: voice.micOn, prog: me.rp, taps: rit.taps.length, singing: !!rit.mic,
   heard: rit.mic ? rit.mic.listener.notes.map(n => Math.round(n * 10) / 10) : [],
   door: ritPhase(), timeLeft: Math.round(rit.door.timeLeft(ritNow())), shared: door, card: owCard.i,
-  lit: [...ritLitSet()].length, x: Math.round(me.x), y: Math.round(me.y)
+  lit: [...ritLitSet()].length, x: Math.round(me.x), y: Math.round(me.y),
+  stoneCard: { i: stoneCard.i, k: stoneCard.k, by: stoneCard.by, shown: !$('stPanel').hidden, text: $('stText').textContent },
+  stonesOnScreen: RIT_STONES.map(st => w2s(st.x, st.y - 24).map(Math.round))
 });
 
 // ===== The windows above the altar =====
@@ -8945,10 +8964,11 @@ const endTouch = e => {
     }
     // tapped the door in the stone circle while it's open: walk in
     else if (ritDoorOpen() && (dist(wx, wy, GLADE.x, GLADE.y) < 50 || (Math.abs(wx - GLADE.x) < 52 && wy > GLADE.y - RIT_DOOR_H - 72 && wy < GLADE.y))) walkTo(GLADE.x, GLADE.y, 'door');
-    // tapped a standing stone: in the glade it sings; from further off, walk over to it
+    // tapped a standing stone: in the glade it sings and shows its question; from further off, walk
+    // over to it and then do the same
     else if (RIT_STONES.some(s => Math.abs(wx - s.x) < 17 && wy > s.y - 52 && wy < s.y + 6)) {
       const s = RIT_STONES.find(q => Math.abs(wx - q.x) < 17 && wy > q.y - 52 && wy < q.y + 6);
-      if (nearGlade()) ritStrike(s.i); else walkTo(s.x + (GLADE.x - s.x) * 0.25, s.y + (GLADE.y - s.y) * 0.25);
+      if (nearGlade()) tapStone(s.i); else walkTo(s.x + (GLADE.x - s.x) * 0.25, s.y + (GLADE.y - s.y) * 0.25, 'stone' + s.i);
     }
     // tapped the forest devil at the edge of the clearing: close enough, ask it over; otherwise walk up to it
     else if (dvTapHit(wx, wy)) { if (dvCanInvite()) dvInvite('walk'); else walkTo(DV_EDGE.x - 64, DV_EDGE.y + 10); }
@@ -9240,6 +9260,7 @@ function arrived() {
   else if (a === 'book' && nearBook()) readBook();
   else if (a === 'organ' && nearOrgan()) startOrgan();
   else if (a === 'windows' && nearAltarWin()) awLookUp();
+  else if (typeof a === 'string' && /^stone[0-6]$/.test(a) && nearGlade()) tapStone(+a.slice(5));
   else if (typeof a === 'number' && PEW_SEATS[a] && dist(me.x, me.y, PEW_SEATS[a].x, PEW_SEATS[a].y - 32) < 60) sitPew(a);
 }
 
